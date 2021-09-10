@@ -1,101 +1,65 @@
-import React from 'react';
+import React from 'react'
 import axios from 'axios';
-import Layout from './App/components/Layout';
-import Select from "react-virtualized-select";
+import Select from 'react-virtualized-select'
 import createFilterOptions from "react-select-fast-filter-options";
+import 'react-virtualized/styles.css'
+import 'react-virtualized-select/styles.css'
+import Layout from './App/components/Layout';
 import CoinList from './App/components/CoinList';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import "react-virtualized/styles.css";
-import "react-virtualized-select/styles.css";
 import './App.css';
 
 class App extends React.Component {
   
-constructor(props)
+  constructor(props)
 	{    
 		super(props)
     this.state = {
-      selectCoins: [],
-      selectedCoin: [],
-      toggleCoins: [],
+      coins: []
     };
+	}
 
+  componentDidMount() {
+    axios.get(`https://api.coingecko.com/api/v3/coins/list?include_platform=true`)
+    .then(response => response.data)
+    .then((data) => {
+      this.setState({ coins: data })
+     })
   }
 
-getCoin(){
-   
-    axios.get('https://api.coingecko.com/api/v3/coins/list?include_platform=true')
-    .then( res => { 
-      const options = res.data;
 
-      this.setState({ 
-        selectCoins: options, 
-        isLoaded: true
-      }); 
 
-      })
+render(){
 
-      
-}
+    const numberOfCoins = this.state.coins.length;
+    const { selectedCoin } = this.state;
+    const options = [];   
 
-/*
-componentDidUpdate(props) {
-  const shouldUpdateCarsData = 
-    prevProps.selectedManufacturer !== this.props.selectedManufacturer
-    || prevProps.selectedModels!== this.props.selectedModels
-
-  if (shouldUpdateCarsData ) {
-    // fetch API and update state
-    fetchCars(this.props.selectedManufacturer, this.props.selectedModels)
-  }
-}*/
- 
-
-render(){ 
-
-  let coinId = 'BTC';
-
-  console.log("getcoin:"+ this.state.selectCoins);
-
-  const { selectedCoin } = this.state;
-
-  //let timeframe2M = '2M';  
-  let c = 0;
-
-  const options = []; 
-
-for(c=0;c < this.state.selectCoins.length;c++){
-      let name = this.state.selectCoins[c].name;
-      let id = this.state.selectCoins[c].id;
-      options.push({label: name, value: id});
-      let len = this.state.selectCoins.length;
-  }  
-   
-  const filterOptions = createFilterOptions({options});    
-
-  console.log(this.state.selectedCoin.value)
-
-  if(this.state.selectedCoin.value !== undefined ){   
-        
-      coinId = this.state.selectedCoin.value; 
+    let c = 0;
     
-  } 
+    for(c; c < numberOfCoins; c++){
+      let name = this.state.coins[c].name;
+      let id = this.state.coins[c].id;
+      options.push({label: name, value: id});
+    }       
+
+    console.log(options)
+    const filterOptions = createFilterOptions({options});
 
   return(
     <Layout>
     <div className="coin_app container-fluid">
       <div className="col-sm-12 text-center">
         <h1>Add Coin</h1>              
-       <Select
+        <Select  
         labelKey='label'
-        filterOptions={filterOptions}
+        valueKey='id'  
         options={options}
+        filterOptions={filterOptions}
         onChange={(selectedCoin) => this.setState({selectedCoin})}
-        value={this.state.selectedCoin}
-        onValueClick={this.getCoin()}
-        valueKey='id'              
-        />
-        <CoinList coinId={coinId} />
+        value={selectedCoin}        
+      />
+        <CoinList /* coinId={coinId} */ />
         </div>            
         </div>                     
     <footer>
