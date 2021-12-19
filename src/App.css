@@ -59,9 +59,37 @@ span.addCoin {
   color: #000;
 }
 .card {
-  position: absolute;
+  position: relative;
 }
 .show { display: block; }
+
+.mdc-react-select .Select-placeholder,
+.mdc-react-select .Select-value {
+  display: none;
+}
+
+.mdc-react-select .Select-control {
+  background-color: transparent;
+  border-color: none;
+  border-radius: 0;
+  border: none;
+  color: #333;
+  cursor: default;
+  display: table;
+  border-spacing: 0;
+  border-collapse: separate;
+  height: 36px;
+  outline: none;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  box-shadow: none !important;
+}
+
+.mdc-react-select input {
+  opacity: 1 !important;
+  width: 100% !important;
+}
 
 /* Table CSS */
 table.coinTable {

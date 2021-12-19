@@ -52,13 +52,12 @@ render(){
       <div className="col-sm-12 text-center">
         <h1>Add Coin</h1>              
         <Select  
-        labelKey='label'
-        valueKey='id'  
+        className={"mdc-react-select"}
         options={options}
         filterOptions={filterOptions}
         onChange={(selectedCoin) => this.setState({selectedCoin})}
-        value={selectedCoin}        
-      />
+        value={selectedCoin.name}      
+         />
         <CoinList /* coinId={coinId} */ />
         </div>            
         </div>                     
