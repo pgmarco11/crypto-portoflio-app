@@ -6,8 +6,135 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+.left {float: left;}
+.right {float: right;}
+
+.app-header {
+    text-align: center;
+}
+.app-header.nav {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.app {
+  display: flex !important;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-main, .app-news{
+  display: flex;
+  flex-direction: column;
+}
+
+.app-wrapper{
+  display:flex;
+  flex-direction: column;
+  text-align: center;
+}
+.home-main, 
+.portfolios-main {
+  width: 70%;
+}
+* {
+  margin:0;
+  padding:0;
+  box-sizing: border-box;
+  font-family:"Roboto", "sans-serif";
+}
+.portfolios { 
+  background-color: rgb(200, 200, 200);
+  padding:10px;
+  margin: 5px;
+  box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+}
+.portfolio-adding {
+  width: 100%;
+  padding: 0 40px;
+}
+.portfolio-list, .portfolio-add {
+  flex-direction: row;
+}
+.portfolio-add {
+  margin:0 auto;
+}
+.portfolio-add button.btn-portfolio {
+  padding: 10px 20px;
+}
+
+.exchange-rate {
+  background-color: rgb(221, 230, 221);
+  padding: 20px;
+  margin-top:10px;
+  box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
+  border-radius: 10px;
+}
+.ui.container.app {
+  background-color: rgb(230, 223, 211);
+  padding: 0.5% 10px 0.5%;
+  margin: 5px;
+  box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
+  text-align: left;
+  height: 100%;
+}
+.news-feed {
+  background-color: rgb(204,204,231);
+  padding: 4%;
+  margin: 5px;
+  box-shadow: 0 3px 10px rgb( 0 0 0 / 0.2);
+  max-width: 300px;
+  flex-direction: column;
+  border-radius: 8px;
+}
+.news-feed div {
+  padding: 2.5px 0;
+}
+.content .header {
+  width: 90%;
+  float: left;
+}
+.portfolio-list i.icon {
+  float: right;
+}
+
+.input-box {
+  background-color: rgb(218, 227, 238);
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgb(0 0 0 / 20%);
+  text-align: left;
+}
+
+button{
+  border: none;
+  float: right;
+  margin-top: 6px;
+  padding: 5px 0;
+  clear: both;
+  width: 100%;
+}
+
+.btn-portfolio {
+  margin: 20px auto;
+  max-width: 250px;
+  text-align: center;
+}
+
+button:hover {
+  background-color: coral;
+}
+
+input,select {
+  border: none;
+  padding: 2px;
 }
