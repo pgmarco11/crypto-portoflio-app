@@ -1,3 +1,9 @@
+* {
+  margin:0;
+  padding:0;
+  box-sizing: border-box;
+  font-family:"Roboto", "sans-serif";
+}
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -21,7 +27,6 @@ code {
     flex-direction: row;
     justify-content: center;
 }
-
 .app {
   display: flex !important;
   flex-direction: row;
@@ -29,29 +34,43 @@ code {
   justify-content: center;
 }
 
-.app-main, .app-news{
+.app-main {
   display: flex;
   flex-direction: column;
+  float: left;
+  width: 100%;
+  margin: 0 auto;
 }
-
+.app-news {
+  width: 30%;
+  float: right;
+}
 .app-wrapper{
   display:flex;
   flex-direction: column;
   text-align: center;
 }
-.home-main, 
-.portfolios-main {
+.home-main 
+{
   width: 70%;
 }
-* {
-  margin:0;
-  padding:0;
-  box-sizing: border-box;
-  font-family:"Roboto", "sans-serif";
+.ui.container.app {
+  padding: 0.5% 10px 0.5%;
+  margin: 5px;
+  text-align: left;
+  height: 100%;
+}
+.content .header {
+  width: 90%;
+  float: left;
+}
+.portfolios-main
+{
+  width: 100%;
 }
 .portfolios { 
   background-color: rgb(200, 200, 200);
-  padding:10px;
+  padding:15px;
   margin: 5px;
   box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
   border-radius: 10px;
@@ -71,70 +90,92 @@ code {
 .portfolio-add button.btn-portfolio {
   padding: 10px 20px;
 }
+.portfolio-coins.centered.main {
+  width: 100%;
+}
+.coindata {
+  padding: 0 8px;
+}
+.search-container input {
+  background-color: #f0f0f0;
+}
+.coin-add-ui select {
+  border: 1px solid #f0f0f0;
+}
 
+.coin-analysis, .coin-portfolio {
+  overflow-x: auto;
+}
+.coin-table-header {
+  display: flex;
+  background-color: lightgray;
+  font-weight: bold;
+}
+.headerCell {
+  width: 25%;
+  padding: 10px;
+}
+.item {
+  display: flex;
+  padding: 10px;
+}
+.rowCell {
+  width: 25%;
+  float: left;
+}
+@media (max-width: 767px) {
+  .headerCell,
+  .rowCell {
+    width: 100%;
+    display: block;
+  }
+}
+.portfolio-list i.icon {
+  float: right;
+}
+.input-box {
+  background-color: rgb(218, 227, 238);
+  margin: 5px 0;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgb(0 0 0 / 20%);
+  text-align: left;
+}
+input,select {
+  border: none;
+  padding: 2px;
+}
+button{
+  border: none;
+  margin-top: 6px;
+  padding: 5px 0;
+  clear: both;
+  width: 100%;
+}
+.btn-portfolio {
+  margin: 20px auto;
+  max-width: 250px;
+  text-align: center;
+}
+button:hover {
+  background-color: coral;
+}
 .exchange-rate {
   background-color: rgb(221, 230, 221);
-  padding: 20px;
+  padding: 15px;
   margin-top:10px;
   box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
   border-radius: 10px;
 }
-.ui.container.app {
-  background-color: rgb(230, 223, 211);
-  padding: 0.5% 10px 0.5%;
-  margin: 5px;
-  box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
-  text-align: left;
-  height: 100%;
-}
 .news-feed {
   background-color: rgb(204,204,231);
-  padding: 4%;
-  margin: 5px;
-  box-shadow: 0 3px 10px rgb( 0 0 0 / 0.2);
+  padding: 15px;
+  margin: 5px 15px 0 auto;
+  box-shadow: 0 3px 10px rgb(0 0 0 / 20%);
   max-width: 300px;
   flex-direction: column;
   border-radius: 8px;
 }
 .news-feed div {
   padding: 2.5px 0;
-}
-.content .header {
-  width: 90%;
-  float: left;
-}
-.portfolio-list i.icon {
-  float: right;
-}
-
-.input-box {
-  background-color: rgb(218, 227, 238);
-  padding: 40px;
-  border-radius: 10px;
-  box-shadow: 0 3px 10px rgb(0 0 0 / 20%);
-  text-align: left;
-}
-
-button{
-  border: none;
-  float: right;
-  margin-top: 6px;
-  padding: 5px 0;
-  clear: both;
-  width: 100%;
-}
-
-.btn-portfolio {
-  margin: 20px auto;
-  max-width: 250px;
-  text-align: center;
-}
-
-button:hover {
-  background-color: coral;
-}
-
-input,select {
-  border: none;
-  padding: 2px;
 }

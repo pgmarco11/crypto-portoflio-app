@@ -5,7 +5,8 @@ function Portfolios() {
     return(
         <div className="portfolios-main"> 
             <div className="app-main">  
-            <ShowPortfolios /> 
+            <ShowPortfolios />          
+
             </div>
         </div> 
     )

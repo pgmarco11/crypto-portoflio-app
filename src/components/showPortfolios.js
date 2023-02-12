@@ -3,7 +3,8 @@ import {useNavigate, useParams, Routes, Route } from "react-router-dom"
 import api from '../api/portfolios';
 import PortfolioPage from './PortfolioPage';
 import AddPortfolio from './AddPortfolio';
-import Portfolio from './Portfolio'
+
+
 import { v4 as uuid } from 'uuid';
 import EditPortfolioMain from "./EditPortfolioMain";
 
@@ -42,6 +43,8 @@ const Portfolios = (props) => {
 
         const request = {
             id: uuid(),
+            coins: [],
+            analysis: [],
             ...portfolio
         }       
 
@@ -63,7 +66,8 @@ const Portfolios = (props) => {
 
             setPortfolios(updatePortfolioList);
 
-    };   
+    }; 
+    
 
     useEffect(() => {
         
@@ -119,9 +123,7 @@ const Portfolios = (props) => {
                                
                             />
                         }   
-                    />                   
-
-                    <Route path="/portfolio/:id" element={<Portfolio />} />
+                    />
 
                     </Routes>
 

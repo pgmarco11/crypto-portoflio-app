@@ -1,31 +1,27 @@
 import {useState, useEffect, useId} from "react"
-import Header from './Header/Header';
 import Home from './Home';
 import api from '../api/portfolios';
 import Portfolios from './Portfolios';
-import NewsFeed from './NewsFeed';
+import Portfolio from './Portfolio'
+import PortfolioCoins from './PortfolioCoins';
+import Analysis from './Analysis';
 import {Routes, Route } from "react-router-dom"
 
 function App() {
 
  
 
-  return (
-    
-        <div className="app-dashboard">
-          <Header />
+  return (   
+
           <div className="ui container app"> 
             <Routes>            
               <Route path="*" exact element={<Home />} />
-              <Route path="/portfolios" element={<Portfolios />} />
+              <Route path="/portfolios/*" element={<Portfolios />} />
+              <Route path="/analysis/*" element={<Analysis />} />
+              <Route path="/portfolio/:id" element={<Portfolio />} />
+              <Route path="/portfolios/:id/coins" component ={PortfolioCoins} />
             </Routes>
-            <div className="app-news">
-                <h2>News Feed</h2>
-                 <NewsFeed /> 
-            </div> 
           </div>
-      </div>
-
   );
 }
 

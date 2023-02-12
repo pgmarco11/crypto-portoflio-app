@@ -7,4 +7,8 @@ export const MenuList = [
         title: "Portfolios",
         url: "/portfolios"    
     },
+    {
+        title: "Analysis",
+        url: "/analysis"    
+    },
 ];
