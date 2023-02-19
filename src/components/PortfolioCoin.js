@@ -93,7 +93,8 @@ const PortfolioCoinList = (props) => {
               } 
 
     };
- 
+
+
     return (        
     
         <div className="coin-table-row" key={props.CoinId}>                
@@ -114,12 +115,12 @@ const PortfolioCoinList = (props) => {
             </div>
             <div className="item rowCell button grey">
             <div className="item btn-group">
-                <button 
+                <button className="ui red basic button"
                 onClick={() => removeCoinHandler(props.CoinId)}>
                 Delete</button>   
-                <button className="ui button blue"    
+                <button className="ui basic button blue"    
                 onClick={() => addCoinIdToAnalysis(props.CoinId)}>
-                Add to Analysis</button>
+                Add to Analysis</button>           
             </div>                
             </div>
       </div>

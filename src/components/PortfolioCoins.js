@@ -53,6 +53,7 @@ const PortfolioCoins = (props) => {
             portfolio.coins.push(selectedCoinId);
             await api.patch(`http://localhost:3006/portfolios/${portfolioId}`, { coins: portfolio.coins } );
             console.log(response.data);
+            setSelectedCoinId(''); // reset selectedCoinId to the disabled option
             CoinRefresh();
          } catch (error) {
             console.error(error);
@@ -95,7 +96,7 @@ const PortfolioCoins = (props) => {
         <div>
             <select onChange={(e) => setSelectedCoinId(e.target.value)}> 
                 
-
+                    <option value="" disabled selected>Coin List</option>
                     {filteredCoinData.map(
                                 coin => (
                                     <option value={coin.id} key={coin.id}>

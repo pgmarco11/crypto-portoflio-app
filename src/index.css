@@ -84,6 +84,9 @@ code {
 .portfolio-list, .portfolio-add {
   flex-direction: row;
 }
+.portfolio-list .header {
+  text-transform: uppercase;
+}
 .portfolio-add {
   margin:0 auto;
 }

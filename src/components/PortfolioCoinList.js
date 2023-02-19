@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import PortfolioCoin from './PortfolioCoin';
+import api from '../api/portfolios';
 
 
 const PortfolioCoinList = (props) => {
@@ -10,6 +11,18 @@ const PortfolioCoinList = (props) => {
 
     console.log("props.isLoading: "+props.isLoading) 
 
+    const addAllCoinsToAnalysis = async () => {
+        try {
+          const response = await api.get(`http://localhost:3006/portfolios/${props.id}`);
+          const portfolio = response.data;
+          portfolio.analysis = portfolio.analysis.concat(portfolio.coins);
+          await api.patch(`http://localhost:3006/portfolios/${props.id}`, { analysis: portfolio.analysis } );
+          console.log(response.data);
+          props.CoinRefresh();
+        } catch (error) {
+          console.error(error);
+        }
+      };
 
 
     return ( 
@@ -25,6 +38,8 @@ const PortfolioCoinList = (props) => {
                     <PortfolioCoin CoinId={coin} key={coin} PortfolioId={props.id} CoinRefresh={props.coinRefresh} />
                     
                 ))}
+
+                <button className="ui button blue right" onClick={addAllCoinsToAnalysis}>Add All Coins to Analysis</button>
 
             </div>
         </div>
