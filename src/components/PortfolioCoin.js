@@ -1,25 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import api from '../api/portfolios';
-// import { initializeApp } from "firebase/app";
-// import { getFirestore } from "firebase/firestore";
-// import { doc, setDoc, Timestamp } from "firebase/firestore"; 
 
-// // Your web app's Firebase configuration
-// // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-// const firebaseConfig = {
-//     apiKey: "AIzaSyA6ITy5JCbhGhLJRGfjbb1QiARFVBF2SKM",
-//     authDomain: "digitalcryptozone.firebaseapp.com",
-//     projectId: "digitalcryptozone",
-//     storageBucket: "digitalcryptozone.appspot.com",
-//     messagingSenderId: "420211325690",
-//     appId: "1:420211325690:web:4e2ccf5ba8b336f277e743",
-//     measurementId: "G-RXVHNQG210"
-// };
-
-// // Initialize Firebase
-// const app = initializeApp(firebaseConfig);
-// const db = getFirestore(app);
 
 const PortfolioCoinList = (props) => {
 
@@ -29,11 +11,11 @@ const PortfolioCoinList = (props) => {
 
     console.log("PortfolioCoin props PortfolioId: "+props.PortfolioId);
 
-      useEffect(() => {
-        
-        axios.get(`https://api.coingecko.com/api/v3/coins/${props.CoinId}`)
+      useEffect(() => {               
+        axios.get(`https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${props.CoinId}&tsyms=USD&api_key=de528b65cdbb62a301a3bbd68201919b928595d750ce18281f45ad59ee77bdfa`)
           .then(res => {
-                setCoinData(res.data); 
+            const data = res.data.DISPLAY[props.CoinId].USD;
+            setCoinData(data);              
             })
             .catch(err => {
                 console.error(err);
@@ -63,8 +45,11 @@ const PortfolioCoinList = (props) => {
 
             const updatedCoins = updatedCoinsResponse.data.coins;
             const updatedCoinData =  updatedCoins.map( async coinId => {
-            return axios.get(`https://api.coingecko.com/api/v3/coins/${coinId}`)
-                .then(res => res.data)
+            return axios.get(`https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${CoinId}&tsyms=USD&api_key=de528b65cdbb62a301a3bbd68201919b928595d750ce18281f45ad59ee77bdfa`)
+                .then(res => {
+                  const data = res.data.DISPLAY[CoinId].USD;
+                  return data;
+                })
                 .catch(err => {
                     console.error(err);
                 });
@@ -80,36 +65,43 @@ const PortfolioCoinList = (props) => {
           }
     }; 
 
-    const addCoinIdToAnalysis = async (coinId) => {  
-            try {
-                const response = await api.get(`http://localhost:3006/portfolios/${props.PortfolioId}`);
-                const portfolio = response.data;
-                portfolio.analysis.push(coinId);
-                await api.patch(`http://localhost:3006/portfolios/${props.PortfolioId}`, { analysis: portfolio.analysis } );
-                console.log(response.data);
-                props.CoinRefresh();
-             } catch (error) {
-                console.error(error);
-              } 
-
+    const addCoinIdToAnalysis = async (coinId) => {
+      try {
+        const response = await api.get(`http://localhost:3006/portfolios/${props.PortfolioId}`);
+        const portfolio = response.data;            
+       
+        const coinNameData = await api.get(`https://data-api.cryptocompare.com/asset/v1/data/by/symbol?asset_symbol=${coinId}&api_key=de528b65cdbb62a301a3bbd68201919b928595d750ce18281f45ad59ee77bdfa`);
+    
+        const coinName = coinNameData.data.Data.NAME.toLowerCase();
+        portfolio.analysis.push(coinName);
+           
+        await api.patch(`http://localhost:3006/portfolios/${props.PortfolioId}`, { analysis: portfolio.analysis });
+    
+        console.log(response.data);
+        props.CoinRefresh();
+      } catch (error) {
+        console.error(error);
+      }
     };
+    
+    console.log("coinData: "+coinData);
+    const imagePath = "https://www.cryptocompare.com/"+coinData.IMAGEURL;
 
-
-    return (        
+    return ( 
+             
     
         <div className="coin-table-row" key={props.CoinId}>                
             <div className="item rowCell image">
-                {coinData.image && <img src={coinData.image.thumb} alt={props.CoinId} />}
-                {coinData.name && <span className='coindata'>{coinData.name}</span> }
-                {coinData.symbol && <span className='coindata'>{coinData.symbol.toUpperCase()}</span> }
+                {coinData.IMAGEURL && <img src={imagePath} alt={props.CoinId} />}
+                {coinData.FROMSYMBOL && <span className='coindata'>{coinData.FROMSYMBOL.toUpperCase()}</span> }
             </div>
             <div className="item rowCell price">            
-               {coinData.market_data && coinData.market_data.current_price.usd.toLocaleString(
+               {coinData.PRICE && coinData.PRICE.toLocaleString(
                 'en-US', {style: 'currency', currency: 'USD'}
                 )}                 
             </div>
             <div className="item rowCell marketcap">            
-               {coinData.market_data && coinData.market_data.market_cap.usd.toLocaleString(
+               {coinData.MKTCAP && coinData.MKTCAP.toLocaleString(
                 'en-US', {style: 'currency', currency: 'USD'}
                 )}                 
             </div>
@@ -122,7 +114,7 @@ const PortfolioCoinList = (props) => {
                 onClick={() => addCoinIdToAnalysis(props.CoinId)}>
                 Add to Analysis</button>           
             </div>                
-            </div>
+            </div> 
       </div>
     )
 

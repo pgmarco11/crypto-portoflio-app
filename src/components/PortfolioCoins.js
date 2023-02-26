@@ -18,16 +18,19 @@ const PortfolioCoins = (props) => {
     console.log("PortfolioCoins prop 1: "+props.portfolioName);
     console.log("PortfolioCoins prop 2: "+props.portfolioId);
 
-    const portfolioId = props.portfolioId;       
+    const portfolioId = props.portfolioId;      
 
     useEffect(() => {
         setIsLoading(true);
-        axios.get('https://api.coingecko.com/api/v3/coins/list?include_platform=false')
-          .then(response => {
-            setCoinData(response.data);
+        axios
+          .get(
+            'https://min-api.cryptocompare.com/data/all/coinlist?api_key=de528b65cdbb62a301a3bbd68201919b928595d750ce18281f45ad59ee77bdfa'
+          )
+          .then((response) => {
+            setCoinData(Object.values(response.data.Data)); // extract array of coins from the Data property
             setIsLoading(false);
           })
-          .catch(error => {
+          .catch((error) => {
             console.error(error);
             setIsLoading(false);
           });
@@ -43,8 +46,11 @@ const PortfolioCoins = (props) => {
             });
     }, [portfolioId]); // run this effect only when the portfolioId changes
 
+    console.log("filter coin: "+coinData);
+
     const filteredCoinData = useMemo(() => coinData.filter(
-        coin => (coin.name.toLowerCase() + " " + coin.symbol.toLowerCase()).includes(searchValue.toLowerCase())), [coinData, searchValue]);
+        coin => (coin.FullName+coin.Symbol.toUpperCase()+coin.Symbol.toLowerCase()+coin.CoinName.toLowerCase()).includes(searchValue)), 
+        [coinData, searchValue]);
 
     const addCoinToPortfolio = async (selectedCoinId, portfolioId) => {
         try {
@@ -81,6 +87,7 @@ const PortfolioCoins = (props) => {
         });
     };    
 
+
     return (
     
         
@@ -99,8 +106,8 @@ const PortfolioCoins = (props) => {
                     <option value="" disabled selected>Coin List</option>
                     {filteredCoinData.map(
                                 coin => (
-                                    <option value={coin.id} key={coin.id}>
-                                        {coin.name} ({coin.symbol.toUpperCase()})
+                                    <option value={coin.Symbol} key={coin.Id}>
+                                        {coin.FullName}
                                     </option>
                     ))}
 

@@ -5,24 +5,39 @@ import api from '../api/portfolios';
 
 const PortfolioCoinList = (props) => {
 
-    console.log("PortfolioCoins props coingeckoId: "+props.coingeckoIds);
-
     const PortfolioCoins = props.coingeckoIds;
 
-    console.log("props.isLoading: "+props.isLoading) 
-
-    const addAllCoinsToAnalysis = async () => {
+      const addAllCoinsToAnalysis = async () => {
         try {
           const response = await api.get(`http://localhost:3006/portfolios/${props.id}`);
           const portfolio = response.data;
-          portfolio.analysis = portfolio.analysis.concat(portfolio.coins);
-          await api.patch(`http://localhost:3006/portfolios/${props.id}`, { analysis: portfolio.analysis } );
+      
+          const promises = portfolio.coins.map((coin) =>
+            api.get(
+              `https://data-api.cryptocompare.com/asset/v1/data/by/symbol?asset_symbol=${coin}&api_key=de528b65cdbb62a301a3bbd68201919b928595d750ce18281f45ad59ee77bdfa`
+            )
+          );
+          const responses = await Promise.all(promises);
+          const coinNames = responses.map((
+            response) => response.data.Data.NAME.toLowerCase()
+            );
+          portfolio.analysis = portfolio.analysis.concat(coinNames);
+
+          console.log("portfolio.analysis: "+ coinNames)
+      
+          await api.patch(`http://localhost:3006/portfolios/${props.id}`, { analysis: portfolio.analysis });
           console.log(response.data);
-          props.CoinRefresh();
+          props.coinRefresh();
         } catch (error) {
           console.error(error);
         }
       };
+
+
+
+      console.log("PortfolioCoins: "+PortfolioCoins);
+      console.log("props.id: "+props.id);
+
 
 
     return ( 
@@ -32,13 +47,14 @@ const PortfolioCoinList = (props) => {
                     <div className="headerCell" align="left">Coin</div>
                     <div className="headerCell" align="left">Price</div>
                     <div className="headerCell" align="left">Market Cap</div>
-                </div>
+                </div> 
+                   
                 {PortfolioCoins.map((coin, index) => (
                     
                     <PortfolioCoin CoinId={coin} key={coin} PortfolioId={props.id} CoinRefresh={props.coinRefresh} />
                     
-                ))}
-
+                ))}              
+            
                 <button className="ui button blue right" onClick={addAllCoinsToAnalysis}>Add All Coins to Analysis</button>
 
             </div>

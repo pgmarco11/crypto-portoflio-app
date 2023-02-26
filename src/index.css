@@ -114,18 +114,43 @@ code {
   background-color: lightgray;
   font-weight: bold;
 }
-.headerCell {
-  width: 25%;
-  padding: 10px;
-}
 .item {
   display: flex;
   padding: 10px;
 }
+.headerCell {
+  width: 8.3%;
+  padding: 10px;
+}
 .rowCell {
+  width: 8.3%;
+  float: left;
+  padding: 5px 0;
+}
+.item.rowCell input[type="text"] {
+  width: 80%;
+  background-color: #cfcfcf;
+}
+.coin-analysis .rowCell a {
+  font-size: .95rem;
+}
+.coin-portfolio .headerCell {
+  width: 25%;
+  padding: 10px;
+}
+.coin-portfolio .rowCell {
   width: 25%;
   float: left;
 }
+.coin-portfolio .rowCell img {
+  width: 10%;
+  padding: 0px 4px 4px 4px;
+}
+button.ui.red.basic.button {
+  padding: 4px 0;
+}
+
+
 @media (max-width: 767px) {
   .headerCell,
   .rowCell {
