@@ -56,7 +56,11 @@ const PortfolioCoins = (props) => {
         try {
             const response = await api.get(`http://localhost:3006/portfolios/${portfolioId}`);
             const portfolio = response.data;
-            portfolio.coins.push(selectedCoinId);
+            if (portfolio.coins) { // Check if portfolio.coins exists
+                portfolio.coins.push(selectedCoinId);
+            } else {
+                portfolio.coins = [selectedCoinId]; // If it doesn't exist, create a new array with the selected coin id
+            }
             await api.patch(`http://localhost:3006/portfolios/${portfolioId}`, { coins: portfolio.coins } );
             console.log(response.data);
             setSelectedCoinId(''); // reset selectedCoinId to the disabled option

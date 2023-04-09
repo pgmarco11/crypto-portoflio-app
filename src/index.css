@@ -59,6 +59,7 @@ code {
   margin: 5px;
   text-align: left;
   height: 100%;
+  width: 100%;
 }
 .content .header {
   width: 90%;
@@ -116,14 +117,14 @@ code {
 }
 .item {
   display: flex;
-  padding: 10px;
+  padding: 0;
 }
 .headerCell {
-  width: 8.3%;
+  width: 5.87%;
   padding: 10px;
 }
 .rowCell {
-  width: 8.3%;
+  width: 5.87%;
   float: left;
   padding: 5px 0;
 }
@@ -132,19 +133,21 @@ code {
   background-color: #cfcfcf;
 }
 .coin-analysis .rowCell a {
-  font-size: .95rem;
+  font-size: .93rem;
 }
 .coin-portfolio .headerCell {
-  width: 25%;
+  width: 14.2%;
   padding: 10px;
 }
 .coin-portfolio .rowCell {
-  width: 25%;
+  width: 14.2%;
+  margin: 5px 0;
   float: left;
 }
 .coin-portfolio .rowCell img {
-  width: 10%;
+  width: 22.2%;
   padding: 0px 4px 4px 4px;
+  margin-top: -5px;
 }
 button.ui.red.basic.button {
   padding: 4px 0;

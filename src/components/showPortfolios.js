@@ -3,8 +3,6 @@ import {useNavigate, useParams, Routes, Route } from "react-router-dom"
 import api from '../api/portfolios';
 import PortfolioPage from './PortfolioPage';
 import AddPortfolio from './AddPortfolio';
-
-
 import { v4 as uuid } from 'uuid';
 import EditPortfolioMain from "./EditPortfolioMain";
 
@@ -89,12 +87,9 @@ const Portfolios = (props) => {
             <h2>Portfolios</h2>
             <div className="ui relaxed divided list">
                 <div className="item">
-                <Routes>
-            
-                
-                
-                    <Route 
+                <Routes>  
 
+                    <Route 
                         path="/"
                         exact
                         element={                                         
@@ -103,9 +98,7 @@ const Portfolios = (props) => {
                             getPortfolioId={removePortfolioHandler}
                             />
                         }
-
-                    />
-                
+                    />                
                     <Route 
                             path="/add"
                             element={
@@ -113,27 +106,20 @@ const Portfolios = (props) => {
                                 addPortfolioHandler={addPortfolioHandler}         
                                 />}                       
                     />
-
                     <Route 
                         path="/portfolio/edit/:id"
                         element={
                             <EditPortfolioMain
                                 portfolios={portfolios}
-                                updatePortfolioHandler={updatePortfolioHandler}  
-                               
+                                updatePortfolioHandler={updatePortfolioHandler}                                
                             />
                         }   
                     />
-
                     </Routes>
-
                 </div>                
                 </div>
-
-
             </div>      
     )
-
 }
 
 export default Portfolios; 

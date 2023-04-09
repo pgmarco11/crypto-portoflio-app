@@ -22,21 +22,18 @@ const EditPortoflio = (props) => {
 
     const update = async (e) => {
        
-        e.preventDefault()
-        
-        if(portfolioName === ""){
-            alert("Please enter a portfolio name")
+        e.preventDefault();
+  
+        if (portfolioName === "") {
+            alert("Please enter a portfolio name");
             return;
         }
 
+        const updatedPortfolio = { ...props.portfolio, name: portfolioName };
 
-        await api.put(`http://localhost:3006/portfolios/${id}`, {name: portfolioName});
+        await api.put(`http://localhost:3006/portfolios/${id}`, updatedPortfolio);
 
-        // Get updated portfolio data from the API
-        const updatedPortfolio = await api.get(`http://localhost:3006/portfolios/${id}`);
-
-        setPortfolioName(updatedPortfolio.data.name);
-        props.editPortfolioHandler(updatedPortfolio.data);
+        props.editPortfolioHandler(updatedPortfolio);
 
         return history("/");
     }
