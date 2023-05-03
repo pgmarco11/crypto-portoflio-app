@@ -43,6 +43,7 @@ const PortfolioCoinList = (props) => {
               const matchingCoin = PortfolioCoins.find((coin) => coin === coinSymbol);
 
               console.log("matchingCoin: "+matchingCoin);
+
               if (matchingCoin) {
                 coinId = matchingCoin;
               }
@@ -91,6 +92,19 @@ const PortfolioCoinList = (props) => {
               if (coinName.includes("egold")) {
                 coinName = coinName.replace("egold", "elrond-erd-2");
               }
+              if (coinName.includes("haven-protocol")) {
+                coinName = coinName.replace("haven-protocol", "haven");
+              }
+              if (coinName.includes("firo")) {
+                coinName = coinName.replace("firo", "zcoin");
+              }
+              if (coinName.includes("stacks")) {
+                coinName = coinName.replace("stacks", "blockstack");
+              }
+              if (coinName.includes("conflux-network")) {
+                coinName = coinName.replace("conflux-network", "conflux-token");  
+              }
+
               
               return { coinName: coinName, coinId: coinId };
 

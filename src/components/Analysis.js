@@ -11,44 +11,293 @@ function Analysis() {
   const [coinData, setCoinData] = useState([]);
   const [marketCapSortOrder, setMarketCapSortOrder] = useState(null);
   const [volumeSortOrder, setVolumeSortOrder] = useState(null);
+  const [USD1YRSortOrder, setUSD1YRSortOrder] = useState(null);
+  const [BTC1YRSortOrder, setBTC1YRSortOrder] = useState(null);
+  const [BTC1YrPriceSortOrder, setBTC1YrPriceSortOrder] = useState(null);
+  const [inPriceChangeSortOrder, setInPriceChangeSortOrder] = useState(null);
+  const [threeMonthsChangeSortOrder, setThreeMonthsChangeSortOrder] = useState(null);
+  const [maxGradeSortOrder, setMaxGradeSortOrder] = useState(null);
+  const [futurePredSortOrder, setFuturePredSortOrder] = useState(null);
+  const [avgGainPredSortOrder, setAvgGainPredSortOrder] = useState(null);
   const [gainPrediction, setGainPrediction] = useState(0);
   const [avgGainPrediction, setAvgGainPrediction] = useState(0);
   const [inputValue, setInputValue] = useState("");
   const [totalScore, setTotalScore] = useState(0);
+  const [highestPrice, setHighestPrice] = useState(null);
   const [inputDisabled, setInputDisabled] = useState(false);
 
   const handleSortByMarketCap = () => {
     setMarketCapSortOrder(marketCapSortOrder === "asc" ? "desc" : "asc");
     setVolumeSortOrder(null);
+    setUSD1YRSortOrder(null);
+    setBTC1YRSortOrder(null);
+    setBTC1YrPriceSortOrder(null);
+    setInPriceChangeSortOrder(null);
+    setInPriceChangeSortOrder(null);
+    setMaxGradeSortOrder(null);
+    setFuturePredSortOrder(null);
+    setAvgGainPredSortOrder(null);
   };
 
   const handleSortByVolume = () => {
     setVolumeSortOrder(volumeSortOrder === "asc" ? "desc" : "asc");
     setMarketCapSortOrder(null);
+    setUSD1YRSortOrder(null)
+    setBTC1YRSortOrder(null);
+    setBTC1YrPriceSortOrder(null);
+    setInPriceChangeSortOrder(null);
+    setInPriceChangeSortOrder(null);
+    setMaxGradeSortOrder(null);
+    setFuturePredSortOrder(null);
+    setAvgGainPredSortOrder(null);
+  };  
+  
+  const handleSortByUSD1YR = () => {
+    setUSD1YRSortOrder(USD1YRSortOrder === "asc" ? "desc" : "asc");
+    setMarketCapSortOrder(null);
+    setVolumeSortOrder(null);
+    setBTC1YRSortOrder(null);
+    setBTC1YrPriceSortOrder(null);
+    setInPriceChangeSortOrder(null);
+    setInPriceChangeSortOrder(null);
+    setMaxGradeSortOrder(null);
+    setFuturePredSortOrder(null);
+    setAvgGainPredSortOrder(null);
+  }
+
+  const handleSortByBTC1YR = () => {
+    setBTC1YRSortOrder(BTC1YRSortOrder === "asc" ? "desc" : "asc");
+    setMarketCapSortOrder(null);
+    setVolumeSortOrder(null);
+    setUSD1YRSortOrder(null)
+    setBTC1YrPriceSortOrder(null);
+    setInPriceChangeSortOrder(null);
+    setInPriceChangeSortOrder(null);
+    setMaxGradeSortOrder(null);
+    setFuturePredSortOrder(null);
+    setAvgGainPredSortOrder(null);
+  };  
+
+  const handleSortByBTC1YrPrice = () => {
+     setBTC1YrPriceSortOrder(BTC1YrPriceSortOrder === "asc" ? "desc" : "asc");
+    setMarketCapSortOrder(null);
+    setVolumeSortOrder(null);
+    setUSD1YRSortOrder(null)
+    setBTC1YRSortOrder(null);
+    setInPriceChangeSortOrder(null);
+    setInPriceChangeSortOrder(null);
+    setMaxGradeSortOrder(null);
+    setFuturePredSortOrder(null);
+    setAvgGainPredSortOrder(null);
+  };  
+  const handleSortByInPriceChange = () => {
+    setInPriceChangeSortOrder(inPriceChangeSortOrder === "asc" ? "desc" : "asc");
+   setMarketCapSortOrder(null);
+   setVolumeSortOrder(null);
+   setUSD1YRSortOrder(null)
+   setBTC1YRSortOrder(null);
+   setBTC1YrPriceSortOrder(null);
+   setInPriceChangeSortOrder(null);
+   setMaxGradeSortOrder(null);
+   setFuturePredSortOrder(null);
+   setAvgGainPredSortOrder(null);
+  };  
+  const handleSortByThreeMonthChange = () => {
+    setThreeMonthsChangeSortOrder(threeMonthsChangeSortOrder === "asc" ? "desc" : "asc");
+    setMarketCapSortOrder(null);
+    setVolumeSortOrder(null);
+    setUSD1YRSortOrder(null)
+    setBTC1YRSortOrder(null);
+    setBTC1YrPriceSortOrder(null);
+    setInPriceChangeSortOrder(null);
+    setMaxGradeSortOrder(null);
+    setFuturePredSortOrder(null);
+    setAvgGainPredSortOrder(null);
+  };  
+  const handleSortByMaxGrade = () => {
+    setMaxGradeSortOrder(maxGradeSortOrder === "asc" ? "desc" : "asc");
+    setMarketCapSortOrder(null);
+    setVolumeSortOrder(null);
+    setUSD1YRSortOrder(null)
+    setBTC1YRSortOrder(null);
+    setBTC1YrPriceSortOrder(null);
+    setInPriceChangeSortOrder(null);
+    setThreeMonthsChangeSortOrder(null);
+    setFuturePredSortOrder(null);
+    setAvgGainPredSortOrder(null);
+  };  
+  const handleSortFutureGain = () => {
+    setFuturePredSortOrder(futurePredSortOrder === "asc" ? "desc" : "asc");
+    setMaxGradeSortOrder(null);
+    setMarketCapSortOrder(null);
+    setVolumeSortOrder(null);
+    setUSD1YRSortOrder(null)
+    setBTC1YRSortOrder(null);
+    setBTC1YrPriceSortOrder(null);
+    setInPriceChangeSortOrder(null);
+    setThreeMonthsChangeSortOrder(null);
+    setAvgGainPredSortOrder(null);
   };
+  
+  const handleAvgFutureGain = () => {
+    setAvgGainPredSortOrder(avgGainPredSortOrder === "asc" ? "desc" : "asc");
+    setFuturePredSortOrder(null);
+    setMaxGradeSortOrder(null);
+    setMarketCapSortOrder(null);
+    setVolumeSortOrder(null);
+    setUSD1YRSortOrder(null)
+    setBTC1YRSortOrder(null);
+    setBTC1YrPriceSortOrder(null);
+    setInPriceChangeSortOrder(null);
+    setThreeMonthsChangeSortOrder(null);
+  };
+
+    const sortedCoins = coinData
+    ? coinData.slice().sort((a, b) => {
+      const marketCapA = parseInt(a.marketCap.replace(/,/g, ''));
+      const marketCapB = parseInt(b.marketCap.replace(/,/g, ''));
+      const volumeA = parseInt(a.volume.replace(/,/g, ''));
+      const volumeB = parseInt(b.volume.replace(/,/g, ''));
+      const oneYearA = parseFloat(a.oneYearPercentChange.replace(/,/g, ''));
+      const oneYearB = parseFloat(b.oneYearPercentChange.replace(/,/g, '')); 
+      const btcOneYearA = parseFloat(a.oneYearBTCPercentChange.replace(/,/g, ''));
+      const btcOneYearB = parseFloat(b.oneYearBTCPercentChange.replace(/,/g, ''));   
+      const btcOneYearPriceA = parseFloat(a.oneYearBTCPriceChange.replace(/,/g, ''));
+      const btcOneYearPriceB = parseFloat(b.oneYearBTCPriceChange.replace(/,/g, ''));   
+      const inceptionPriceChangeA = parseFloat(a.inceptionPriceChange.replace(/,/g, ''));
+      const inceptionPriceChangeB = parseFloat(b.inceptionPriceChange.replace(/,/g, '')); 
+      const ninetyDaysPercentChangeA = parseFloat(a.ninetyDaysPercentChange.replace(/,/g, ''));
+      const ninetyDaysPercentChangeB = parseFloat(b.ninetyDaysPercentChange.replace(/,/g, ''));     
+      const maxGradeA = a.maxChartGrade;
+      const maxGradeB = b.maxChartGrade;
+      let gainPredictionA = 0;
+      let gainPredictionB = 0;
+      let avgGainPredictionA = 0;
+      let avgGainPredictionB = 0;
+
+      console.log("A gainPrediction: "+a.prediction);
+      console.log("B gainPrediction: "+b.prediction);
+
+      if( parseFloat(a.prediction) > 0 && parseFloat(b.prediction) > 0  ){
+         gainPredictionA = parseFloat(a.gainPrediction.replace(/,/g, ''));
+         gainPredictionB = parseFloat(b.gainPrediction.replace(/,/g, ''));
+         avgGainPredictionA = parseFloat(a.avgGainPrediction.replace(/,/g, ''));
+         avgGainPredictionB = parseFloat(b.avgGainPrediction.replace(/,/g, ''));
+      }    
+      
+      if (marketCapSortOrder === "asc") {
+        return marketCapA - marketCapB;
+      } else if (marketCapSortOrder === "desc") {
+        return marketCapB - marketCapA;
+      } else if (volumeSortOrder === "asc") {
+        return volumeA - volumeB;
+      } else if (volumeSortOrder === "desc") {
+        return volumeB - volumeA;
+      } else if (USD1YRSortOrder === "asc") {
+          return oneYearA - oneYearB;
+      } else if (USD1YRSortOrder === "desc") {
+          return oneYearB - oneYearA;
+      } else if (BTC1YRSortOrder === "asc") {
+            return btcOneYearA - btcOneYearB;
+      } else if (BTC1YRSortOrder === "desc") {
+            return btcOneYearB - btcOneYearA;
+      } else if (BTC1YrPriceSortOrder === "asc") {
+            return btcOneYearPriceA - btcOneYearPriceB;
+      } else if (BTC1YrPriceSortOrder === "desc") {
+            return btcOneYearPriceB - btcOneYearPriceA;
+      } else if (inPriceChangeSortOrder === "asc") {
+            return inceptionPriceChangeA - inceptionPriceChangeB;
+      } else if (inPriceChangeSortOrder === "desc") {
+            return inceptionPriceChangeB - inceptionPriceChangeA;
+      } else if (threeMonthsChangeSortOrder === "asc") {
+            return ninetyDaysPercentChangeA - ninetyDaysPercentChangeB;
+      } else if (threeMonthsChangeSortOrder === "desc") {
+            return ninetyDaysPercentChangeB - ninetyDaysPercentChangeA;
+      } else if (maxGradeSortOrder === "asc") {
+            return maxGradeA.localeCompare(maxGradeB);
+      } else if (maxGradeSortOrder === "desc") {
+            return maxGradeB.localeCompare(maxGradeA);
+      } else if (futurePredSortOrder === "asc") {
+            return gainPredictionA - gainPredictionB;
+      } else if (futurePredSortOrder === "desc") {
+            return gainPredictionB - gainPredictionA;
+      } else if (avgGainPredSortOrder === "asc") {
+            return avgGainPredictionA - avgGainPredictionB;
+      } else if (avgGainPredSortOrder === "desc") {
+            return avgGainPredictionB - avgGainPredictionA;
+      } else {
+            return 0;
+      }
+    }) : [];
   
   const handleInputChange = (event, coinId, totalScore, newGainPrediction, newAvgGainPrediction) => {
     
     setInputValue(event);
 
-    console.log("inputValue: " + Object.values(inputValue));
+    console.log("newGainPrediction: "+parseFloat(newGainPrediction));
+    console.log("newAvgGainPrediction: "+parseFloat(newAvgGainPrediction));
+
+    console.log("Object.values in input change"+Object.values(coinData.find(coin => coin.id === coinId))[3])
 
 
-    console.log("coinData inputValue: " + coinData);
-    const updatedCoinData = Object.values(coinData).map((coin) => {
-      console.log("coin input: " + coin.id);
-      console.log("inputValue: " + inputValue);
+        // Check if the new input value is the opposite of the previous input value
+        if (inputValue !== !Object.values(coinData.find(coin => coin.id === coinId))[3]) {
+          let newGainPredictionScore = 0;
+          let newAvgGainPredictionScore = 0;
+    
+          // Calculate new rating with updated scores
+          if (parseFloat(newGainPrediction) > 0.02) {
+            newGainPredictionScore = 2;
+          } 
+          if (parseFloat(newAvgGainPrediction) > 0.02 && parseFloat(newAvgGainPrediction) !== null) {
+            newAvgGainPredictionScore = 1;
+          } 
+          
+          const rating = totalScore - newGainPredictionScore - newAvgGainPredictionScore;
 
-      if (Object.values(coin)[0] === coinId) {
-        return {
-          ...coin,
-          prediction: inputValue,
-        };
-      }
-      return coin;
-    });
 
-    setCoinData(updatedCoinData);
+          console.log("totalScore: "+totalScore);
+          console.log("newGainPredictionScore: "+newGainPredictionScore);
+          console.log("newAvgGainPredictionScore: "+newAvgGainPredictionScore);
+          console.log("rating: "+rating);
+    
+          const updatedCoinData = Object.values(coinData).map((coin) => {
+            if (Object.values(coin)[0] === coinId) {
+              return {
+                ...coin,
+                rating: rating,
+                gainPrediction: 0,
+                avgGainPrediction: 0,
+              };
+            }
+            return coin;
+          });
+    
+          setCoinData(updatedCoinData);
+
+        } else {
+
+          console.log("inputValue: " + Object.values(inputValue));
+
+
+          console.log("coinData inputValue: " + coinData);
+          const updatedCoinData = Object.values(coinData).map((coin) => {
+            console.log("coin input: " + coin.id);
+            console.log("inputValue: " + inputValue);
+      
+            if (Object.values(coin)[0] === coinId) {
+              return {
+                ...coin,
+                prediction: inputValue,
+              };
+            }
+            return coin;
+          });
+      
+          setCoinData(updatedCoinData);
+
+        }
+        
   };
 
 //   console.log("oneYearPercentChange: " + oneYearPercentChange);
@@ -65,14 +314,24 @@ function Analysis() {
     oneYearPercentChange,
     totalScore
   ) => {
-    let newGainPredictionScore = 0;
-    let newAvgGainPredictionScore = 0;
 
-    const newGainPrediction = parseFloat(
+     let newGainPredictionScore = 0;
+    let newAvgGainPredictionScore = 0;
+    let newGainPrediction  = null
+    let newAvgGainPrediction = null;
+    let total = null;
+
+    if (inputValue === !inputValue) {
+       inputValue = 0;
+       newGainPrediction = parseFloat(
+        (inputValue - current_price) / current_price
+      );   
+    } else {
+      newGainPrediction = parseFloat(
         (inputValue - current_price) / current_price
       );
-      let newAvgGainPrediction = null;
 
+    }
       
     console.log("newGainPrediction: " + newGainPrediction);
 
@@ -82,77 +341,36 @@ function Analysis() {
       newAvgGainPrediction = parseFloat(
         (newGainPrediction + parseFloat(oneYearPercentChange) / 100) / 2
       );
-    }
-    
-    if (newGainPrediction > 0.02) {
+    }  
+      
+    if (inputValue === !inputValue) {
+      newGainPredictionScore = 0;
+      newAvgGainPredictionScore = 0;
+
+      console.log("input is empty");
+
+      console.log("gainPrediction: " + gainPrediction);
+      console.log("avgGainPrediction: " + avgGainPrediction);    
+
+    } else {
+
+      console.log("input is not empty");
+
+      if (newGainPrediction > 0.02) {
         newGainPredictionScore = 2;
       } 
       if (newAvgGainPrediction > 0.02 && newAvgGainPrediction !== null) {
         newAvgGainPredictionScore = 1;
       } 
 
-
-    if (!inputValue) { // check if input is empty
-
-      console.log("input is empty");
-
-      console.log("newGainPrediction: " + newGainPrediction);
-      console.log("newAvgGainPrediction: " + newAvgGainPrediction);   
-      
-      if (newGainPrediction <= 0.02) {
-        newGainPredictionScore = -2;
-      }
-      if (newAvgGainPrediction <= 0.02) {
-        newAvgGainPredictionScore = -1;
-      }  
-
-      console.log("old total: " + totalScore);
-      console.log("newGainPrediction: " + newGainPredictionScore);
-      console.log("newAvgGainPrediction: " + newAvgGainPredictionScore);  
-     
-
-      let total = totalScore + newGainPredictionScore + newAvgGainPredictionScore;
-
-    console.log("inputValue new total: " + total);
-    
-    setTotalScore(total);
-    setGainPrediction(0); // reset the gain prediction
-    setAvgGainPrediction(0); // reset the average gain prediction
-
-
-    const updatedCoinData = Object.values(coinData).map((coin) => {
-        console.log("coin: " + coin.id);
-
-        if (Object.values(coin)[0] === coinId) {
-            return {
-            ...coin,
-            gainPrediction: gainPrediction,
-              avgGainPrediction: avgGainPrediction,              
-              prediction: inputValue,
-              rating: total
-            };
-        }
-        return coin;
-        });  
-        
-        setCoinData(updatedCoinData);
-
-        return;        
-
-    } else {
-
-
-      console.log("input is not empty");
-
-
-      let total = totalScore + newGainPredictionScore + newAvgGainPredictionScore;
+     total = totalScore + newGainPredictionScore + newAvgGainPredictionScore;
 
     console.log("new total: " + total);
 
-    setTotalScore(total);
-
     console.log("newGainPredictionScore: " + newGainPredictionScore);
-    console.log("newAvgGainPredictionScore: " + newAvgGainPredictionScore);    
+    console.log("newAvgGainPredictionScore: " + newAvgGainPredictionScore);  
+
+    }
 
     const updatedCoinData = Object.values(coinData).map((coin) => {
       console.log("coin: " + coin.id);
@@ -176,8 +394,6 @@ function Analysis() {
 
     setCoinData(updatedCoinData);
 
-    }
-
     
   };
 
@@ -200,71 +416,8 @@ function Analysis() {
         let coinNameAnalysis = value.coinName;
         let coinIdAnalysis = value.coinId;
 
-        console.log("coinNameAnalysis: " + coinNameAnalysis);
-
-        if (coinNameAnalysis.includes(" ")) {
-          coinNameAnalysis = coinNameAnalysis.replace(/ /g, "-"); // replace all spaces with dashes
-        }
-        if (coinNameAnalysis.includes("travala")) {
-          coinNameAnalysis = coinNameAnalysis.replace(
-            "travala",
-            "concierge-io"
-          );
-        }
-        if (coinNameAnalysis.includes("vectorspace-ai")) {
-          coinNameAnalysis = coinNameAnalysis.replace(
-            "vectorspace-ai",
-            "vectorspace"
-          );
-        }
-        if (coinNameAnalysis.includes("solve")) {
-          coinNameAnalysis = coinNameAnalysis.replace("solve", "solve-care");
-        }
-        if (coinNameAnalysis.includes("retreeb")) {
-          coinNameAnalysis = coinNameAnalysis.replace("retreeb", "treeb");
-        }
-        if (coinNameAnalysis.includes("floki-inu")) {
-          coinNameAnalysis = coinNameAnalysis.replace("floki-inu", "floki");
-        }
-        if (coinNameAnalysis.includes("rich-quack")) {
-          coinNameAnalysis = coinNameAnalysis.replace(
-            "rich-quack",
-            "richquack"
-          );
-        }
-        if (coinNameAnalysis.includes("xrp")) {
-          coinNameAnalysis = coinNameAnalysis.replace("xrp", "ripple");
-        }
-        if (coinNameAnalysis.includes("quant")) {
-          coinNameAnalysis = coinNameAnalysis.replace("quant", "quant-network");
-        }
-        if (coinNameAnalysis.includes("polygon")) {
-          coinNameAnalysis = coinNameAnalysis.replace(
-            "polygon",
-            "matic-network"
-          );
-        }
-        if (coinNameAnalysis.includes("binance-coin")) {
-          coinNameAnalysis = coinNameAnalysis.replace(
-            "binance-coin",
-            "binancecoin"
-          );
-        }
-        if (coinNameAnalysis.includes("avalanche")) {
-          coinNameAnalysis = coinNameAnalysis.replace(
-            "avalanche",
-            "avalanche-2"
-          );
-        }
-        if (coinNameAnalysis.includes("cronos")) {
-          coinNameAnalysis = coinNameAnalysis.replace(
-            "cronos",
-            "crypto-com-chain"
-          );
-        }
-        if (coinNameAnalysis.includes("egold")) {
-          coinNameAnalysis = coinNameAnalysis.replace("egold", "elrond-erd-2");
-        }
+        console.log("coinNameAnalysis: " + coinNameAnalysis);   
+        
         allAnalysisCoins.push({
           coinName: coinNameAnalysis,
           coinId: coinIdAnalysis,
@@ -355,7 +508,7 @@ function Analysis() {
           }
         });
 
-        const historicalData = await Promise.all(historicalDataPromises);
+        const historicalData = await Promise.all(historicalDataPromises);      
 
         let now = new Date();
         const ninetyDaysAgo = new Date(now - 90 * 24 * 60 * 60 * 1000);
@@ -377,8 +530,19 @@ function Analysis() {
           let maxGradeScore = 0;
           let twitterScore = 0;
           let gitScore = 0;
+          let highPercentScore = 0;
 
           const market_chart_prices = historicalData[index].prices;
+
+          const highestPrice = market_chart_prices.reduce((prev, curr) => (prev[1] > curr[1] ? prev : curr));
+          setHighestPrice(highestPrice[1]);
+  
+          console.log(value.id+" highest price: "+highestPrice[1])         
+
+          let HighPrice = highestPrice[1];
+
+          let highestPricePercentage = parseFloat((value.current_price - HighPrice) /  HighPrice);
+
 
           let ninetyDaysAgoPrice = null;
           for (let i = 0; i < market_chart_prices.length; i++) {
@@ -418,6 +582,8 @@ function Analysis() {
           );
           // const yearAgoBtcPrice = getYearAgoBtcPrice.data.Data.Data[0].close;
 
+ 
+
           let getYearAgoBtcPriceValues = getYearAgoBtcPrice.data.Data.Data;
 
           let yearAgoBtcPrice = null;
@@ -427,6 +593,9 @@ function Analysis() {
           } else {
             yearAgoBtcPrice = null;
           }
+
+
+          console.log("yearAgoBtcPrice: "+yearAgoBtcPrice);
 
           let oneYearBTCPercentChange = null;
           let oneYearBTCPriceChange = null;
@@ -451,6 +620,12 @@ function Analysis() {
               btcPercentScore = 2;
             }
           }
+
+          console.log("currentBtcPrice: "+currentBtcPrice);
+          console.log("yearAgoBtcPrice: "+yearAgoBtcPrice);
+          console.log("oneYearBTCPercentChange: "+oneYearBTCPercentChange);
+
+
 
           console.log("prices: " + market_chart_prices);
           console.log("earliestTimestamp: " + market_chart_prices[0][0]);
@@ -585,8 +760,10 @@ function Analysis() {
 
           if (inceptionPriceChange > 0.3) {
             inceptionPercentScore = 2;
+            console.log("inceptionPercentScore: " + inceptionPercentScore);
           } else {
             inceptionPercentScore = 0;
+            console.log("inceptionPercentScore: " + inceptionPercentScore);
           }
 
           let maxChartGrade = null;
@@ -597,26 +774,30 @@ function Analysis() {
             console.log(value.id+" A : "+parseFloat(inceptionPriceChange))
             maxChartGrade = "A";
             maxGradeScore = 2;
+            console.log("maxGradeScore: " + maxGradeScore);
           } else if (parseFloat(inceptionPriceChange) >= 1.0 && parseFloat(inceptionPriceChange) < 2.0) {
             console.log(value.id+" B : "+parseFloat(inceptionPriceChange))
             maxChartGrade = "B";
             maxGradeScore = 2;
-          } else if (parseFloat(inceptionPriceChange) < 1.0 && parseFloat(inceptionPriceChange) > 0) {
+            console.log("maxGradeScore: " + maxGradeScore);
+          } else if (parseFloat(inceptionPriceChange) < 1.0 && parseFloat(inceptionPriceChange) > 0.24) {
             console.log(value.id+" C : "+parseFloat(inceptionPriceChange))
             maxChartGrade = "C";
             maxGradeScore = 1;
+            console.log("maxGradeScore: " + maxGradeScore);
           } else {
             console.log(value.id+" D : "+parseFloat(inceptionPriceChange))
             maxChartGrade = "D";
             maxGradeScore = 0;
+            console.log("maxGradeScore: " + maxGradeScore);
           }
 
-          let oneYearPercentChange =
-            value.price_change_percentage_1y_in_currency;
+          let oneYearPercentChange = value.price_change_percentage_1y_in_currency;
 
           if (oneYearPercentChange === null) {
             oneYearPercentChange = "N/A";
             oneYearPercentScore = 0;
+            console.log("oneYearPercentScore: " + oneYearPercentScore);
           } else {
             oneYearPercentChange =
               value.price_change_percentage_1y_in_currency.toLocaleString(
@@ -625,16 +806,19 @@ function Analysis() {
               ) + "%";
             if (oneYearPercentChange > 2.0) {
               oneYearPercentScore = 2;
+              console.log("oneYearPercentScore: " + oneYearPercentScore);
             }
           }
 
           let ninetyDaysPercentChange =
             (value.current_price - ninetyDaysAgoPrice) / ninetyDaysAgoPrice;
 
-          if (ninetyDaysPercentChange > 18.0) {
+          if (ninetyDaysPercentChange > 0.14) {
             threeMonthsPercentScore = 1;
+            console.log("threeMonthsPercentScore: " + threeMonthsPercentScore);
           } else {
             threeMonthsPercentScore = 0;
+            console.log("threeMonthsPercentScore: " + threeMonthsPercentScore);
           }
 
           let getCoinData = await api.get(
@@ -655,29 +839,48 @@ function Analysis() {
 
             if (twitterFollowers > 25000) {
               twitterScore = 1;
+              console.log("twitterScore: " + twitterScore);
             }
           } else {
             twitterFollowers = "N/A";
             twitterScore = 0;
+            console.log("twitterScore: " + twitterScore);
           }
 
-          if (sourceCode !== null) {
+          if (sourceCode !== null && sourceCode.length !== 0) {
             gitRepository = sourceCode[0].URL;
             gitScore = 1;
+            console.log("gitScore: " + gitScore);
           } else {
             gitRepository = "N/A";
             gitScore = 0;
+            console.log("gitScore: " + gitScore);
           }
 
           if (website === null) {
             website = "N/A";
           }
 
-          console.log("value.total_volume: " + value.total_volume);
+          
 
           if (value.total_volume > 250000) {
             volumeScore = 1;
-          }         
+            console.log("value.total_volume: " + value.total_volume);
+            console.log("volumeScore: " + volumeScore);
+          }    
+          
+          console.log(value.id+" highestPricePercentage: "+highestPricePercentage)
+
+          if(highestPricePercentage <= -0.95 ){          
+            highPercentScore = 2;
+              console.log(value.id+" highest price score: "+highPercentScore)
+          } else if(highestPricePercentage >= -0.80 && highestPricePercentage > -0.95){
+            highPercentScore = 1;
+            console.log(value.id+" highest price score: "+highPercentScore)
+          }
+
+          console.log(value.id+" highest price score: "+highPercentScore)
+          
 
 
           console.log("value.id: " + value.id);
@@ -686,6 +889,7 @@ function Analysis() {
           oneYearPercentScore +
           btcChangeScore +
           btcPercentScore +
+          highPercentScore +
           inceptionPercentScore +
           threeMonthsPercentScore +
           maxGradeScore +
@@ -722,6 +926,10 @@ function Analysis() {
             maxChartGrade: maxChartGrade,
             gainPrediction: null,
             avgGainPrediction: null,
+            highestPricePercentage: highestPricePercentage.toLocaleString(
+              undefined,
+              { style: "percent" }
+            ),
             twitterFollowers: twitterFollowers.toLocaleString("en-US"),
             gitRepository: gitRepository,
             website: website,
@@ -729,9 +937,7 @@ function Analysis() {
             rating: total,
           });
 
-          setCoinData(coinData);        
-                     
-
+          setCoinData(coinData);           
 
 
         }
@@ -746,19 +952,38 @@ function Analysis() {
     } 
   };
 
-  const sortedCoins = coinData
-    ? coinData.slice().sort((a, b) => {
-        if (marketCapSortOrder === "asc") {
-          return a.marketCap - b.marketCap;
-        } else if (marketCapSortOrder === "desc") {
-          return b.marketCap - a.marketCap;
-        } else if (volumeSortOrder === "asc") {
-          return a.volume - b.volume;
-        } else if (volumeSortOrder === "desc") {
-          return b.volume - a.volume;
-        }
-      })
-    : [];
+
+  const removeAllCoinsHandler = async () => {
+
+    const portfolios = await api.get("http://localhost:3006/portfolios");
+
+    for (let i = 0; i < portfolios.data.length; i++) {
+
+      const portfolio = await api.get(
+        `http://localhost:3006/portfolios/${portfolios.data[i].id}`
+      );
+  
+      // set the analysis array to an empty array
+      portfolio.data.analysis = [];
+  
+      // update the portfolio with the new analysis array
+      await api.patch(
+        `http://localhost:3006/portfolios/${portfolios.data[i].id}`,
+        { analysis: portfolio.data.analysis }
+      );
+  
+      const updatedPortfolio = await api.get(
+        `http://localhost:3006/portfolios/${portfolios.data[i].id}`
+      );
+  
+      // set the analysisCoins state to the updated analysis array
+      setAnalysisCoins(updatedPortfolio.data.analysis);
+    }
+  
+    // call the function to fetch the updated analysis coins
+    GetAnalysisCoins();
+
+  }
 
   const removeCoinHandler = async (coinName) => {
     // your logic to delete the analysis coin from the API
@@ -815,8 +1040,6 @@ function Analysis() {
   };
 
   if (isLoading) return <div>Loading...</div>;
-
-  console.log("noCoins: "+noCoins)
   if (noCoins) return <div>Add some coins to analyze!</div>;
 
   return (
@@ -856,102 +1079,126 @@ function Analysis() {
                   <i className="arrow icon"></i>
                 )}
               </div>
-              <div
-                className="headerCell"
-                align="left"
-                onClick={handleSortByVolume}
-              >
+              <div className="headerCell" align="left">
                 Price{" "}
-                {/* {volumeSortOrder === "asc" ? (
-                                    <i className="arrow up icon"></i>
-                                ) : volumeSortOrder === "desc" ? (
-                                    <i className="arrow down icon"></i>
-                                ) : (
-                                    <i className="arrow icon"></i>
-                                )} */}
               </div>
-              <div className="headerCell" align="left">
+              <div 
+              className="headerCell" 
+              align="left"
+              onClick={handleSortByUSD1YR}
+              >
                 USD 1YR % Change{" "}
-                {/* {yearAgoSortOrder === "asc" ? (
+                {USD1YRSortOrder === "asc" ? (
                                     <i className="arrow up icon"></i>
-                                ) : yearAgoSortOrder === "desc" ? (
+                                ) : USD1YRSortOrder === "desc" ? (
                                     <i className="arrow down icon"></i>
                                 ) : (
                                     <i className="arrow icon"></i>
-                                )} */}
+                                )}
               </div>
-              <div className="headerCell" align="left">
+              <div 
+              className="headerCell" 
+              align="left"
+              onClick={handleSortByBTC1YR}
+              >
                 BTC 1YR % Change{" "}
-                {/* {yearAgoSortOrder === "asc" ? (
+                {BTC1YRSortOrder === "asc" ? (
                                     <i className="arrow up icon"></i>
-                                ) : yearAgoSortOrder === "desc" ? (
+                                ) : BTC1YRSortOrder === "desc" ? (
                                     <i className="arrow down icon"></i>
                                 ) : (
                                     <i className="arrow icon"></i>
-                                )} */}
+                                )} 
               </div>
-              <div className="headerCell" align="left">
+              <div 
+              className="headerCell" 
+              align="left"
+              onClick={handleSortByBTC1YrPrice}
+              >
                 BTC 1YR Change{" "}
-                {/* {yearAgoSortOrder === "asc" ? (
+                {BTC1YrPriceSortOrder === "asc" ? (
                                     <i className="arrow up icon"></i>
-                                ) : yearAgoSortOrder === "desc" ? (
+                                ) : BTC1YrPriceSortOrder === "desc" ? (
                                     <i className="arrow down icon"></i>
                                 ) : (
                                     <i className="arrow icon"></i>
-                                )} */}
+                                )} 
               </div>
-              <div className="headerCell" align="left">
+              <div 
+              className="headerCell" 
+              align="left"
+              onClick={handleSortByInPriceChange}
+              >
                 Inception % Change{" "}
-                {/* {yearAgoSortOrder === "asc" ? (
+                {inPriceChangeSortOrder === "asc" ? (
                                     <i className="arrow up icon"></i>
-                                ) : yearAgoSortOrder === "desc" ? (
+                                ) : inPriceChangeSortOrder === "desc" ? (
                                     <i className="arrow down icon"></i>
                                 ) : (
                                     <i className="arrow icon"></i>
-                                )} */}
+                                )} 
               </div>
-              <div className="headerCell" align="left">
+              <div 
+              className="headerCell"
+              align="left"
+              onClick={handleSortByThreeMonthChange}
+              >
                 3 Months % Change{" "}
-                {/* {yearAgoSortOrder === "asc" ? (
+                {threeMonthsChangeSortOrder === "asc" ? (
                                     <i className="arrow up icon"></i>
-                                ) : yearAgoSortOrder === "desc" ? (
+                                ) : threeMonthsChangeSortOrder === "desc" ? (
                                     <i className="arrow down icon"></i>
                                 ) : (
                                     <i className="arrow icon"></i>
-                                )} */}
+                                )} 
               </div>
-              <div className="headerCell" align="left">
+              <div 
+              className="headerCell"
+              align="left"
+              onClick={handleSortByMaxGrade}
+              >
                 Max Chart Grade{" "}
-                {/* {yearAgoSortOrder === "asc" ? (
+                 {maxGradeSortOrder === "asc" ? (
                                     <i className="arrow up icon"></i>
-                                ) : yearAgoSortOrder === "desc" ? (
+                                ) : maxGradeSortOrder === "desc" ? (
                                     <i className="arrow down icon"></i>
                                 ) : (
                                     <i className="arrow icon"></i>
-                                )} */}
+                                )} 
               </div>
               <div className="headerCell" align="left">
                 Price Prediction{" "}
-                {/* {yearAgoSortOrder === "asc" ? (
-                                    <i className="arrow up icon"></i>
-                                ) : yearAgoSortOrder === "desc" ? (
-                                    <i className="arrow down icon"></i>
-                                ) : (
-                                    <i className="arrow icon"></i>
-                                )} */}
               </div>
-              <div className="headerCell" align="left">
+              <div 
+              className="headerCell" 
+              align="left"
+              onClick={handleSortFutureGain}
+              >
                 Future Gain Prediction{" "}
-                {/* {yearAgoSortOrder === "asc" ? (
+                { futurePredSortOrder === "asc" ? (
                                     <i className="arrow up icon"></i>
-                                ) : yearAgoSortOrder === "desc" ? (
+                                ) :  futurePredSortOrder === "desc" ? (
                                     <i className="arrow down icon"></i>
                                 ) : (
                                     <i className="arrow icon"></i>
-                                )} */}
+                                )} 
+              </div>
+              <div 
+              className="headerCell" 
+              align="left"
+              onClick={handleAvgFutureGain}
+              >
+                Avg. Gain Prediction{" "}
+                {avgGainPredSortOrder === "asc" ? (
+                                    <i className="arrow up icon"></i>
+                                ) : avgGainPredSortOrder === "desc" ? (
+                                    <i className="arrow down icon"></i>
+                                ) : (
+                                    <i className="arrow icon"></i>
+                                )} 
               </div>
               <div className="headerCell" align="left">
-                Avg. Gain Prediction{" "}
+                % from ATH{" "}
                 {/* {yearAgoSortOrder === "asc" ? (
                                     <i className="arrow up icon"></i>
                                 ) : yearAgoSortOrder === "desc" ? (
@@ -991,6 +1238,7 @@ function Analysis() {
                                     <i className="arrow icon"></i>
                                 )} */}
               </div>
+              
             </div>
             {sortedCoins.map((coin) => (
               <div key={coin.id}>
@@ -998,7 +1246,7 @@ function Analysis() {
                   {coin.website !== "N/A" ? (
                     <a href={coin.website}>{coin.name}</a>
                   ) : (
-                    "N/A"
+                    <div>{coin.name}</div>
                   )}
                 </div>
                 <div className="item rowCell" align="left">
@@ -1043,6 +1291,9 @@ function Analysis() {
                   {coin.avgGainPrediction || "-"}
                 </div>
                 <div className="item rowCell" align="left">
+                  {coin.highestPricePercentage || "-"}
+                </div>
+                <div className="item rowCell" align="left">
                   {coin.twitterFollowers}
                 </div>
                 <div className="item rowCell" align="left">
@@ -1067,6 +1318,8 @@ function Analysis() {
                         coin.rating
                       )
                     }
+                    
+                    disabled={coin.prediction === inputValue ? false : !inputValue}
                   >
                     Update Rating
                   </button>
@@ -1081,6 +1334,12 @@ function Analysis() {
             ))}
           </div>
         </div>
+        <button
+              className="ui red basic button"
+              onClick={() => removeAllCoinsHandler()}
+          >
+              Delete All
+        </button>
       </div>
     </div>
   );

@@ -135,6 +135,10 @@ const PortfolioCoinList = (props) => {
           const coinNameData = await api.get(`https://data-api.cryptocompare.com/asset/v1/data/by/symbol?asset_symbol=${coinId}&api_key=de528b65cdbb62a301a3bbd68201919b928595d750ce18281f45ad59ee77bdfa`);
       
           let coinName = coinNameData.data.Data.NAME.toLowerCase();
+
+          console.log("matchingCoin: "+coinName);
+
+
           if (coinName.includes(" ")) {
               coinName = coinName.replace(/ /g, "-"); // replace all spaces with dashes
           }
@@ -179,6 +183,18 @@ const PortfolioCoinList = (props) => {
           }
           if (coinName.includes("egold")) {
             coinName = coinName.replace("egold", "elrond-erd-2");
+          }
+          if (coinName.includes("haven-protocol")) {
+            coinName = coinName.replace("haven-protocol", "haven");
+          }
+          if (coinName.includes("firo")) {
+            coinName = coinName.replace("firo", "zcoin");
+          }
+          if (coinName.includes("stacks")) {
+            coinName = coinName.replace("stacks", "blockstack");
+          }
+          if (coinName.includes("conflux-network")) {
+            coinName = coinName.replace("conflux-network", "conflux-token");  
           }
         
           
