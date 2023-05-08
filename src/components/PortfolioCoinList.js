@@ -50,14 +50,17 @@ const PortfolioCoinList = (props) => {
               if (coinName.includes(" ")) {
                 coinName = coinName.replace(/ /g, "-"); // replace all spaces with dashes
               }
-              if (coinName.includes(" ")) {
-                coinName = coinName.replace(/ /g, "-"); // replace all spaces with dashes
+              if (coinName.includes(".")) {
+                coinName = coinName.replace(".", "-"); // replace all spaces with dashes
               }
               if (coinName.charAt(0) === '-') {
                 coinName = coinName.substring(1); // remove first character if it is a dash
               }
               if (coinName.includes("travala")) {
                 coinName = coinName.replace("travala", "concierge-io");
+              }
+              if (coinName.includes("juno")) {
+                coinName = coinName.replace("juno", "juno-network");
               }
               if (coinName.includes("vectorspace-ai")) {
                 coinName = coinName.replace("vectorspace-ai", "vectorspace");
@@ -104,6 +107,32 @@ const PortfolioCoinList = (props) => {
               if (coinName.includes("conflux-network")) {
                 coinName = coinName.replace("conflux-network", "conflux-token");  
               }
+              if (coinName.includes("babydoge")) {
+                coinName = coinName.replace("babydoge", "baby-doge-coin");  
+              }
+              if (coinName.includes("iotex-network")) {
+                coinName = coinName.replace("iotex-network", "iotex");  
+              }
+              if (coinName.includes("hello")) {
+                coinName = coinName.replace("hello", "hello-labs");  
+              }
+              if (coinName.includes("lukso")) {
+                coinName = coinName.replace("lukso", "lukso-token");  
+              }
+              if (coinName.includes("oasis-labs")) {
+                coinName = coinName.replace("oasis-labs", "oasis-network");  
+              }
+              if (coinName.includes("flux")) {
+                coinName = coinName.replace("flux", "zelcash");  
+              }
+              if (coinName.includes("spool-dao")) {
+                coinName = coinName.replace("spool-dao", "spool-dao-token");  
+              }
+
+
+
+              
+              
 
               
               return { coinName: coinName, coinId: coinId };

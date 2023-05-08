@@ -6,11 +6,12 @@
 }
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #f5f7fa;
+  color: #2e384d;
+  font-size: 15px;
 }
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
@@ -120,11 +121,11 @@ code {
   padding: 0;
 }
 .headerCell {
-  width: 5.55%;
+  width: 5.25%;
   padding: 10px;
 }
 .rowCell {
-  width: 5.55%;
+  width: 5.25%;
   float: left;
   padding: 5px 0;
 }
@@ -161,6 +162,7 @@ button.ui.red.basic.button {
     display: block;
   }
 }
+
 .portfolio-list i.icon {
   float: right;
 }
@@ -209,4 +211,58 @@ button:hover {
 }
 .news-feed div {
   padding: 2.5px 0;
+}
+
+/* Added new CSS */
+
+/* Container styles */
+.analysis-main {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 30px 15px;
+}
+
+.coin-analysis {
+  background-color: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.coin-analysis .coin-table-header {
+  font-weight: bold;
+}
+.coin-analysis .headerCell:hover {
+  background-color: #e9ecef;
+}
+.coin-analysis .ui.relaxed.divided.list .item {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0 10px 5px;
+  border-top: 1px solid #dee2e6;
+}
+.coin-analysis .ui.relaxed.divided.list .item:hover {
+  background-color: #f8f9fa;
+}
+.coin-analysis .ui.relaxed.divided.list .item:last-child {
+  border-bottom: none;
+}
+.coin-analysis .ui.relaxed.divided.list .item .coin-name {
+  flex-basis: 10%;
+  font-weight: bold;
+}
+.coin-analysis .ui.relaxed.divided.list .item .coin-name img {
+  width: 30px;
+  height: 30px;
+  margin-right: 10px;
+}
+.coin-analysis .ui.relaxed.divided.list .item .coin-price {
+  flex-basis: 10%;
+}
+.coin-analysis .ui.relaxed.divided.list .item .coin-change {
+  flex-basis: 15%;
+}
+.coin-analysis .ui.relaxed.divided.list .item .coin-volume {
+  flex-basis: 15%;
 }
