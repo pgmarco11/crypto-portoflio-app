@@ -2,10 +2,10 @@ import React, { useState, useEffect, useMemo } from 'react';
 import PortfolioCoin from './PortfolioCoin';
 import api from '../api/portfolios';
 
-
 const PortfolioCoinList = (props) => {
 
     const PortfolioCoins = props.coingeckoIds;
+
 
     console.log("props.coingeckoIds: "+props.coingeckoIds);
 
@@ -129,11 +129,6 @@ const PortfolioCoinList = (props) => {
                 coinName = coinName.replace("spool-dao", "spool-dao-token");  
               }
 
-
-
-              
-              
-
               
               return { coinName: coinName, coinId: coinId };
 
@@ -152,40 +147,37 @@ const PortfolioCoinList = (props) => {
         }
       };
 
+       
+
 
       console.log("PortfolioCoins: "+PortfolioCoins);
       console.log("props.id: "+props.id);
-
-
      console.log("PORTFOLIO coin: "+props.id)
      
   if(PortfolioCoins !== undefined){
 
-    return ( 
-        <div  className="ui container coin-portfolio">
-            <div className="ui relaxed divided list"> 
-                <div className="coin-table-header">                 
-                    <div className="headerCell" align="left">Coin</div>
-                    <div className="headerCell" align="left">Market Cap</div>
-                    <div className="headerCell" align="left">Price</div>
-                    <div className="headerCell" align="left">24-Hour Change</div>
-                    <div className="headerCell" align="left">7-Day Change</div>
-                    <div className="headerCell" align="left">30-Day Change</div>
-                    
-
-                </div> 
-                   
-                {
+    return (
+      <div className="ui container coin-portfolio">
+        <div className="ui relaxed divided list">
+          <div className="coin-table-header">
+          <div className="headerCell" align="left">Coin</div>
+            <div className="headerCell" align="left" >Market Cap</div>
+            <div className="headerCell" align="left" >Price</div>
+            <div className="headerCell" align="left">24-Hour Change</div>
+            <div className="headerCell" align="left">7-Day Change</div>
+            <div className="headerCell" align="left">30-Day Change</div>   
+          </div>
+          
+              {
                   PortfolioCoins.map((coin, index) => (
                     
-                    <PortfolioCoin CoinId={coin} key={coin} PortfolioId={props.id} CoinRefresh={props.coinRefresh} />
+                    <PortfolioCoin coinId={coin} key={coin} PortfolioId={props.id} CoinRefresh={props.coinRefresh} />
                     
-                ))}              
-            
-                <button className="ui button blue right" onClick={addAllCoinsToAnalysis}>Add All Coins to Analysis</button>
-
-            </div>
+                ))}   
+          
+          <button className="ui button blue right" onClick={addAllCoinsToAnalysis}>Add All Coins to Analysis</button>
         </div>
+      </div>
     );
 
   } else {

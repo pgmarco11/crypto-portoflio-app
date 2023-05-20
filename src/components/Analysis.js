@@ -324,14 +324,20 @@ function Analysis() {
       let avgGainPredictionA = 0;
       let avgGainPredictionB = 0;
 
-      if (a.gainPrediction !== '-' && parseFloat(a.prediction) >= 0 ) {
+      if (a.gainPrediction !== '-' && a.gainPrediction  !== null && a.gainPrediction > 0 ) {
         gainPredictionA = parseFloat(a.gainPrediction.replace(/,/g, ''));
         avgGainPredictionA = parseFloat(a.avgGainPrediction.replace(/,/g, ''));
+      } else {
+        gainPredictionA = 0;
+        avgGainPredictionA = 0;
       }
       
-      if (b.gainPrediction !== '-' && parseFloat(b.prediction) >= 0  ) {
+      if (b.gainPrediction !== '-' && b.gainPrediction !== null && b.gainPrediction > 0 ) {
         gainPredictionB = parseFloat(b.gainPrediction.replace(/,/g, ''));
         avgGainPredictionB = parseFloat(b.avgGainPrediction.replace(/,/g, ''));
+      } else {
+        gainPredictionB = 0;
+        avgGainPredictionB = 0;
       }
   
       
@@ -480,14 +486,15 @@ function Analysis() {
     coinId,
     oneYearPercentChange,
     buysellrating,
-    buysell
+    buysell,
+    ninetyDaysPercentChange
   ) => {
 
      let newGainPredictionScore = 0;
     let newAvgGainPredictionScore = 0;
     let newGainPrediction  = null
     let newAvgGainPrediction = null;
-    let total = null;
+    let totalrating = null;
  
     if (inputValue === !inputValue) {
        inputValue = 0;
@@ -503,6 +510,7 @@ function Analysis() {
       
     console.log("newGainPrediction: " + newGainPrediction);
 
+
     if (oneYearPercentChange === 0) {
       newAvgGainPrediction = parseFloat((newGainPrediction + 0) / 2);
     } else {
@@ -516,7 +524,6 @@ function Analysis() {
       newAvgGainPredictionScore = 0;
 
       console.log("input is empty");
-
       console.log("gainPrediction: " + gainPrediction);
       console.log("avgGainPrediction: " + avgGainPrediction);    
 
@@ -525,9 +532,7 @@ function Analysis() {
       console.log("before buysellrating: " + buysellrating);
       console.log("before buysell: " + buysell);
       console.log("newGainPrediction: " + newGainPrediction);
-      console.log("newAvgGainPrediction: " + newAvgGainPrediction);  
-  
-
+      console.log("newAvgGainPrediction: " + newAvgGainPrediction);
       console.log("input is not empty");
 
       if ( newGainPrediction > 0.0300 ) {
@@ -537,21 +542,32 @@ function Analysis() {
         newAvgGainPredictionScore = 1;
       } 
 
-     total = buysellrating + newGainPredictionScore + newAvgGainPredictionScore;
+     totalrating = buysellrating + newGainPredictionScore + newAvgGainPredictionScore;
 
-     console.log("new buysellrating: " + total);
+     console.log("buysell: " + buysell);
+     console.log("new buysellrating: " + totalrating);
+     console.log("ninetyDaysPercentChange: " + parseInt(ninetyDaysPercentChange));
+
  
-      if(buysell === 'BUY' && total > 3 ){  
+      if(buysell === 'BUY' && totalrating > 2 && parseInt(ninetyDaysPercentChange) < 40){  
       
         buysell = "BUY"; 
 
-      } else if(buysell === 'SELL' && total < 4 ){  
+      }  else if(buysell === null && totalrating > 3 && parseInt(ninetyDaysPercentChange) < 40){  
+
+        buysell = "BUY"; 
+
+      } else if(buysell === 'SELL' && totalrating > 3 && parseInt(ninetyDaysPercentChange) > 50){  
       
         buysell = "SELL"; 
 
-      } else if(buysell === null && total > 4 ){  
-
+      } else if(buysell === 'HODL' && totalrating > 2 && parseInt(ninetyDaysPercentChange) < 40){  
+      
         buysell = "BUY"; 
+
+      } else if(buysell === 'HODL' && totalrating > 3  && parseInt(ninetyDaysPercentChange) > 50){  
+    
+      buysell = "SELL"; 
 
       } else {
 
@@ -560,7 +576,6 @@ function Analysis() {
       }
 
    console.log("after buysell: " + buysell);
-
     console.log("newGainPredictionScore: " + newGainPredictionScore);
     console.log("newAvgGainPredictionScore: " + newAvgGainPredictionScore);  
 
@@ -579,7 +594,7 @@ function Analysis() {
             style: "percent",
           }),
           prediction: inputValue,
-          buysellrating: total,
+          buysellrating: totalrating,
           buysell: buysell
         };
       }
@@ -735,7 +750,6 @@ function Analysis() {
           console.log(value.id+" highest price: "+highestPrice[1])         
 
           let HighPrice = highestPrice[1];
-
           let highestPricePercentage = parseFloat((value.current_price - HighPrice) /  HighPrice);
 
 
@@ -780,7 +794,6 @@ function Analysis() {
  
 
           let getYearAgoBtcPriceValues = getYearAgoBtcPrice.data.Data.Data;
-
           let yearAgoBtcPrice = null;
 
           if (getYearAgoBtcPriceValues !== undefined) {
@@ -788,7 +801,6 @@ function Analysis() {
           } else {
             yearAgoBtcPrice = null;
           }
-
 
           console.log("yearAgoBtcPrice: "+yearAgoBtcPrice);
 
@@ -819,9 +831,6 @@ function Analysis() {
           console.log("currentBtcPrice: "+currentBtcPrice);
           console.log("yearAgoBtcPrice: "+yearAgoBtcPrice);
           console.log("oneYearBTCPercentChange: "+oneYearBTCPercentChange);
-
-
-
           console.log("prices: " + market_chart_prices);
           console.log("earliestTimestamp: " + market_chart_prices[0][0]);
 
@@ -883,7 +892,6 @@ function Analysis() {
           
           let coinDataPass = startDateCoinData?.data?.market_data?.current_price?.usd;
 
-
           console.log(
             value.id + " first coinDataPass is stopping here for: " + coinDataPass
           );
@@ -939,6 +947,10 @@ function Analysis() {
 
             if (coinDataPass === undefined) {
 
+              const todaysDate = new Date();
+              const currentMonth = todaysDate.getMonth();
+              const currentYearNow = todaysDate.getFullYear();
+
               startmonth = earliestDate.getMonth() + 12;
 
               console.log(" 3rd startmonth: " + startmonth);
@@ -956,8 +968,20 @@ function Analysis() {
               } else if (startmonth > 12) {
                 startmonth = startmonth - 12;
                 startyear = earliestDate.getFullYear() + 1;
-                console.log("startmonth 3: " + startmonth);
-              }
+                console.log("startmonth 3: " + startmonth);          
+
+                if(startyear === currentYearNow + 1){     
+
+                  startyear = currentYearNow;
+                  startmonth = currentMonth + 1;
+
+                  console.log("1 Working for Future Year: " + startyear);
+                  console.log("1 Month: " + currentMonth);                  
+                  console.log("1 Year: " + currentYearNow);
+
+                }
+
+            }
 
               startday = startday.length < 2 ? "0" + startday : startday;
               startmonth =
@@ -994,9 +1018,12 @@ function Analysis() {
             
             coinDataPass = startDateCoinData?.data?.market_data?.current_price?.usd;
 
-            if (coinDataPass === undefined) {              
 
-              console.log("last startmonth: " + startmonth);
+            if (coinDataPass === undefined) {         
+              
+              const todaysDate = new Date();
+              const currentMonth = todaysDate.getMonth();
+              const currentYearNow = todaysDate.getFullYear();
 
               if ([2, 4, 6, 9, 10, 11].includes(startmonth)) {
                 console.log("startmonth 1: " + startmonth);
@@ -1011,8 +1038,22 @@ function Analysis() {
               } else if (startmonth >= 12) {
                 startmonth = startmonth - 11;
                 startyear = earliestDate.getFullYear() + 1;
+
                 console.log("startmonth 3: " + startmonth);
-              }
+                console.log("Year: " + currentYearNow);
+
+                if(startyear === currentYearNow + 1){     
+
+                  startyear = currentYearNow;
+                  startmonth = currentMonth + 1;
+
+                  console.log("2 Working for Future Year: " + startyear);
+                  console.log("2 Month: " + currentMonth);    
+                  console.log("2 Year: " + currentYearNow);
+
+                }
+
+            }
 
               startday = startday.length < 2 ? "0" + startday : startday;
               startmonth =
@@ -1020,8 +1061,11 @@ function Analysis() {
                   ? "0" + startmonth
                   : startmonth;
 
+                  console.log("final year: " + startday);
               console.log("final startmonth: " + startmonth);
               console.log("final year: " + startyear);
+
+
 
               let inceptionDate = startday + "-" + startmonth + "-" + startyear;    
               
@@ -1043,7 +1087,7 @@ function Analysis() {
                 startDateCoinData = JSON.parse(localStorage.getItem(cacheKey));                     
                 coincache[cacheKey] = JSON.stringify(startDateCoinData);            
               
-              } else {
+              } else if(inceptionDate !== undefined) {
                 // Fetch data from API
                 startDateCoinData = await axios.get(
                   `https://api.coingecko.com/api/v3/coins/${value.id}/history?date=${inceptionDate}`
@@ -1157,6 +1201,7 @@ function Analysis() {
               console.log("twitterScore: " + twitterScore);
             }
           } else {
+
             twitterFollowers = 0;
             twitterScore = 0;
             console.log("twitterScore: " + twitterScore);
@@ -1175,8 +1220,7 @@ function Analysis() {
           if (website === null) {
             website = "N/A";
           }
-
-          
+         
 
           if (value.total_volume > 250000) {
             volumeScore = 1;
@@ -1185,11 +1229,7 @@ function Analysis() {
           }    
           
           console.log(value.id+" highestPricePercentage: "+highestPricePercentage)
-
-          
-
-          console.log(value.id+" highest price score: "+highPercentScore)
-          
+          console.log(value.id+" highest price score: "+highPercentScore)          
 
 
           console.log("value.id: " + value.id);
@@ -1210,7 +1250,6 @@ function Analysis() {
           let buyrating = 0;
           let sellrating = 0;
           let buysell = null;
-
 
           if(total > 3 ){
 
@@ -1247,33 +1286,27 @@ function Analysis() {
 
             if(totalbuyrating > totalsellrating) {
 
-              buysellrating = totalbuyrating;
+                buysellrating = totalbuyrating;             
 
-              if(buysellrating > 2){
-                buysell = "BUY";
-              } else {
-                buysell = "HODL";  
-              }  
+                if(buysellrating > 2 && ninetyDaysPercentChange < 0.40){
+                  buysell = "BUY";
+                }  else {
+                  buysell = "HODL";  
+                }                 
+              
 
             } else if(totalsellrating > totalbuyrating) {
 
-              buysellrating = totalsellrating;
+                buysellrating = totalsellrating;
 
-              if(buysellrating >= 2){
-                buysell = "SELL";
-              } else {
-                buysell = "HODL";  
-              }  
+                if(buysellrating > 3 && ninetyDaysPercentChange > 0.50){
+                  buysell = "SELL";
+                } else {
+                  buysell = "HODL";  
+                }  
 
             } 
 
-
-
-
-
-
-
-          
           setTotalScore(total);
 
           console.log("buysellrating: " + buysellrating);
@@ -1668,7 +1701,7 @@ function Analysis() {
               
               sortedCoins.map((coin) => (
               
-              <div key={console.log("coin.gainPrediction: "+coin.gainPrediction)}>
+              <div key={coin.id}>
                 <div className="item rowCell" align="left">
                   {coin.website !== "N/A" ? (
                     <a href={coin.website}>{coin.name}</a>
@@ -1748,7 +1781,15 @@ function Analysis() {
                   {coin.rating}
                 </div>
                 <div className="item rowCell" align="left"
-                style={{fontWeight: coin.buysell === "BUY" || coin.buysell === "SELL" ? 'bold' : 'normal'}}>
+                style={{                  
+                fontWeight: coin.buysell === "BUY" || coin.buysell === "SELL" ? 'bold' :
+                            coin.buysell === "BUY" && parseInt(coin.ninetyDaysPercentChange.replace(/,/g, ""))  < 40 ? 
+                                'bold' :
+                                'normal', 
+                color: coin.buysell === "BUY" && parseInt(coin.ninetyDaysPercentChange.replace(/,/g, "")) < 40 ?
+                                'red' :
+                                'inherit'              
+                  }}>
                   {coin.buysell}
                 </div>
                 <div className="item rowCell" align="left">
@@ -1761,7 +1802,8 @@ function Analysis() {
                         coin.id,
                         coin.oneYearPercentChange,
                         coin.buysellrating,
-                        coin.buysell
+                        coin.buysell,
+                        coin.ninetyDaysPercentChange
                       )
                     }
                     
