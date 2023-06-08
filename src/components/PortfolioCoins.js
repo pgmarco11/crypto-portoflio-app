@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Link } from "react-router-dom"
 import axios from 'axios';
 import api from '../api/portfolios';
-import coin from "../images/bitcoin.png";
 import debounce from 'lodash.debounce';
 import Spinner from './Spinner';
 import PortfolioCoinList from './PortfolioCoinList';
@@ -46,8 +45,6 @@ const PortfolioCoins = (props) => {
             });
     }, [portfolioId]); // run this effect only when the portfolioId changes
 
-    console.log("filter coin: "+coinData);
-
     const filteredCoinData = useMemo(() => coinData.filter(
         coin => (coin.FullName+coin.Symbol.toUpperCase()+coin.Symbol.toLowerCase()+coin.CoinName.toLowerCase()).includes(searchValue)), 
         [coinData, searchValue]);
@@ -78,7 +75,7 @@ const PortfolioCoins = (props) => {
         return <p>Loading...</p>
     };
 
-    const CoinRefresh = async (coinId) => {
+    const CoinRefresh = async () => {
         await api.get(`http://localhost:3006/portfolios/${portfolioId}`)
         .then(response => {
             setPortfolioCoins([]);

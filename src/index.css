@@ -121,11 +121,11 @@ code {
   padding: 0;
 }
 .headerCell {
-  width: 5.25%;
+  width: 5.26%;
   padding: 10px;
 }
 .rowCell {
-  width: 5.25%;
+  width: 5.26%;
   float: left;
   padding: 5px 0;
 }
@@ -136,12 +136,14 @@ code {
 .coin-analysis .rowCell a {
   font-size: .93rem;
 }
+
 .coin-portfolio .headerCell {
-  width: 14.2%;
-  padding: 10px;
+  width: 12.5%;
+  padding: 5px 10px;
 }
+
 .coin-portfolio .rowCell {
-  width: 14.2%;
+  width: 12.5%;
   margin: 5px 0;
   float: left;
 }
@@ -151,11 +153,16 @@ code {
   margin-top: -5px;
 }
 button.ui.red.basic.button {
-  padding: 4px 1px;
+  padding: 4px 3px;
     font-size: .83em;
     font-weight: bold;
     color: #000 !important;
 }
+.item.btn-group {
+  position: relative;
+  left: -55px;
+}
+
 
 
 @media (max-width: 767px) {
@@ -234,15 +241,17 @@ button:hover {
 .coin-analysis .coin-table-header {
   font-weight: bold;
 }
-.coin-analysis .headerCell:hover {
+.coin-analysis .headerCell:hover, .active {
   background-color: #e9ecef;
 }
+
+
 .coin-analysis .ui.relaxed.divided.list .item {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 0 10px 5px;
+  padding: 10px 0;
   border-top: 1px solid #dee2e6;
 }
 .coin-analysis .ui.relaxed.divided.list .item:hover {

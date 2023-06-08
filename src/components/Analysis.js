@@ -615,6 +615,7 @@ function Analysis() {
     const portfolios = await api.get("http://localhost:3006/portfolios");
 
     let allAnalysisCoins = [];
+    
     for (let i = 0; i < portfolios.data.length; i++) {
       const response = await api.get(
         `http://localhost:3006/portfolios/${portfolios.data[i].id}`
@@ -730,6 +731,9 @@ function Analysis() {
         let coinData = [];
 
         for (let [index, value] of Object.entries(marketChartData.data)) {
+
+          console.log("value: "+value);
+          
           let volumeScore = 0;
           let oneYearPercentScore = 0;
           let btcChangeScore = 0;
@@ -839,6 +843,10 @@ function Analysis() {
           let startyear = earliestDate.getFullYear();
           let startday = earliestDate.getDate();
           let startmonth = earliestDate.getMonth() + 2;
+
+          
+          console.log("includes startmonth no parse: " + startmonth);
+
           if ([2, 4, 6, 9, 10, 11].includes(startmonth)) {
             if (startday >= 30) {
               startday = 28;
@@ -951,9 +959,9 @@ function Analysis() {
               const currentMonth = todaysDate.getMonth();
               const currentYearNow = todaysDate.getFullYear();
 
-              startmonth = earliestDate.getMonth() + 12;
+              startmonth = parseInt(earliestDate.getMonth() + 12);
 
-              console.log(" 3rd startmonth: " + startmonth);
+              console.log(" includes 3rd startmonth: " + startmonth);
  
               if ([2, 4, 6, 9, 10, 11].includes(startmonth)) {
                 console.log("startmonth 1: " + startmonth);
@@ -968,12 +976,11 @@ function Analysis() {
               } else if (startmonth > 12) {
                 startmonth = startmonth - 12;
                 startyear = earliestDate.getFullYear() + 1;
-                console.log("startmonth 3: " + startmonth);          
-
+             
                 if(startyear === currentYearNow + 1){     
 
                   startyear = currentYearNow;
-                  startmonth = currentMonth + 1;
+                  startmonth = currentMonth;
 
                   console.log("1 Working for Future Year: " + startyear);
                   console.log("1 Month: " + currentMonth);                  
@@ -988,8 +995,6 @@ function Analysis() {
                 startmonth.toString().length < 2
                   ? "0" + startmonth
                   : startmonth;
-
-              console.log("3rd startmonth: " + startmonth);
 
               let inceptionDate = startday + "-" + startmonth + "-" + startyear;      
 
@@ -1019,11 +1024,18 @@ function Analysis() {
             coinDataPass = startDateCoinData?.data?.market_data?.current_price?.usd;
 
 
+
+
             if (coinDataPass === undefined) {         
               
               const todaysDate = new Date();
               const currentMonth = todaysDate.getMonth();
               const currentYearNow = todaysDate.getFullYear();
+
+              startmonth = parseInt(startmonth);
+              
+              console.log(" includes startmonth: " + startmonth);
+
 
               if ([2, 4, 6, 9, 10, 11].includes(startmonth)) {
                 console.log("startmonth 1: " + startmonth);
@@ -1036,7 +1048,7 @@ function Analysis() {
                   startday = 1;
                 }
               } else if (startmonth >= 12) {
-                startmonth = startmonth - 11;
+                startmonth = startmonth - 12;
                 startyear = earliestDate.getFullYear() + 1;
 
                 console.log("startmonth 3: " + startmonth);
@@ -1056,10 +1068,7 @@ function Analysis() {
             }
 
               startday = startday.length < 2 ? "0" + startday : startday;
-              startmonth =
-                startmonth.toString().length < 2
-                  ? "0" + startmonth
-                  : startmonth;
+              startmonth = startmonth.toString().length < 2 ? "0" + startmonth : startmonth;
 
                   console.log("final year: " + startday);
               console.log("final startmonth: " + startmonth);
@@ -1107,7 +1116,7 @@ function Analysis() {
             localStorage.setItem(cacheKey, JSON.stringify(startDateCoinData));
           }
      
-          console.log("startDateCoinData.data.market_data.current_price.usd: "+startDateCoinData)
+          console.log("startDateCoinData.data.market_data.current_price.usd: ", startDateCoinData)
 
           let inceptionPriceChange =
             (value.current_price -
@@ -1167,10 +1176,27 @@ function Analysis() {
               }
           }
 
-          let ninetyDaysPercentChange =
+          let ninetyDaysPercentChange = null;
+
+          if(ninetyDaysAgoPrice !== null){
+
+            ninetyDaysPercentChange =
             (value.current_price - ninetyDaysAgoPrice) / ninetyDaysAgoPrice;
 
-            console.log("ninetyDaysPercentChange: " + ninetyDaysPercentChange);
+          } else {
+
+            ninetyDaysPercentChange =
+            (value.current_price - startDateCoinData.data.market_data.current_price.usd) / startDateCoinData.data.market_data.current_price.usd;
+
+          }
+
+            console.log(value.id+" value.current_price: " + value.current_price);
+            console.log(value.id+" ninetyDaysAgoPrice: " + ninetyDaysAgoPrice);
+            console.log(value.id+" ninetyDaysPercentChange: " + ninetyDaysPercentChange);
+
+
+
+            
 
           if (ninetyDaysPercentChange > 0.14) {
             threeMonthsPercentScore = 1;
@@ -1701,7 +1727,7 @@ function Analysis() {
               
               sortedCoins.map((coin) => (
               
-              <div key={coin.id}>
+              <div className="coin-table-row" key={coin.id}>
                 <div className="item rowCell" align="left">
                   {coin.website !== "N/A" ? (
                     <a href={coin.website}>{coin.name}</a>
@@ -1717,7 +1743,7 @@ function Analysis() {
                   {coin.volume}
                 </div>
                 <div className="item rowCell" align="left">
-                  ${coin.current_price}
+                  {coin.current_price.toLocaleString('en-US', {style: 'currency', currency: 'USD', minimumFractionDigits: 10})}
                 </div>
                 <div className="item rowCell" align="left"
                 style={{fontWeight: coin.oneYearPercentChange && parseInt(coin.oneYearPercentChange.replace(/,/g, "")) > 2 ? 'bold' : 'normal'}}>
@@ -1748,7 +1774,7 @@ function Analysis() {
                   <input
                     type="text"
                     onChange={
-                        (e) => handleInputChange(e.target.value, coin.id, coin.buysellrating, coin.gainPrediction, coin.avgGainPrediction)
+                        (e) => handleInputChange(e.target.value, coin?.id, coin?.buysellrating, coin?.gainPrediction, coin?.avgGainPrediction)
                     }
                   />
                 </div>
