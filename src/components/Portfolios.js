@@ -84,7 +84,6 @@ useEffect(() => {
                 <div className="ui relaxed divided list">
                     <div className="item">
                     <Routes>  
-
                     <Route
                         path="*"
                         exact
