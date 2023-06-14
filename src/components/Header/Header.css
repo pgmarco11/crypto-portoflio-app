@@ -40,23 +40,87 @@ nav {
     align-items: center;
 }
 
+.menu-list li:hover > ul {
+    display: block;
+  }
+
 .menu-list li a {
     text-decoration: none;
     color: #fff;
     font-weight: 300;
     padding: 5px 10px;
-    margin-left: 20px;
+    margin: 0 auto 0 20px;
 }
 .menu-list li a:hover {
     background-color: #fff;
-    color:#000;
+    color:rgba(0,0,0,.9);
     transition: all 0.5s ease-in-out;
 }
 .menu-list li a.active {
     background-color: #fff;
-    color:#000;
+    color:rgba(0,0,0,.9);
     transition: all 0.5s ease-in-out;
 }
+/* Portfolio drop down list */
+
+.app-header {
+    padding: 20px;
+  }
+  
+  .Nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .logo {
+    font-size: 24px;
+  }
+  
+  .menu-icon {
+    font-size: 24px;
+    cursor: pointer;
+  }
+  
+  .menu-list {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+  } 
+ 
+  .menu-list li {
+    margin: 0 25px;
+  }
+
+  .menu-list li ul {
+    display: none;
+    list-style-type: none;
+    position: absolute;
+    padding: 10px;
+    margin: 2px auto 0 auto;
+    border-top: 1px solid gold;
+    background-color: #181818;
+  }
+  
+  .menu-list li:hover ul {
+    display: block;
+  }
+  
+    .menu-list li ul li {
+        display:flex;
+        justify-content: space-evenly;
+        margin: 0 auto;
+    }
+  
+    .menu-list li ul li a {
+        text-decoration: none;
+        color: #fff;
+        margin: 0 auto;
+    }
+
+/* **************************** */
 
 @media screen and (max-width:800px){
 

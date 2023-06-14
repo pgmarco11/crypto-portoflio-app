@@ -1,14 +1,14 @@
 import { Link } from "react-router-dom"
 import NewsFeed from './NewsFeed';
 import CurrencyConverter from './CurrencyConverter';
-import ShowPortfolios from './showPortfolios';
+import Portfolios from './Portfolios';
 
 function Home() {
     return(
         <div> 
             <div className="home-main"> 
                 <div className="app-main">  
-                    <ShowPortfolios /> 
+                    <Portfolios /> 
                     <CurrencyConverter />                          
                 </div>   
             </div>

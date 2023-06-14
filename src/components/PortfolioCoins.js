@@ -13,6 +13,13 @@ const PortfolioCoins = (props) => {
     const [portfolioCoins, setPortfolioCoins] = useState([]); // add this state variable to store the portfolio's coins data
     const [searchValue, setSearchValue] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [portfolioValue, setPortfolioValue] = useState(0);
+
+    // Function to receive data from the child component
+    const handlePortoflioValue = (data) => {
+      // Use the data received from the child component
+      setPortfolioValue(data);
+    };
 
     console.log("PortfolioCoins prop 1: "+props.portfolioName);
     console.log("PortfolioCoins prop 2: "+props.portfolioId);
@@ -90,41 +97,49 @@ const PortfolioCoins = (props) => {
 
 
     return (
-    
-        
-    <div className="coin-add-ui">
-        
-
-        <div className="search-container">
-            <input type="text" placeholder="Search for coins" onChange={handleSearch} />
+    <div>
+        <div className="portfolioValue">
+        <span className="left">Total:&nbsp;</span><div className="left">{portfolioValue.toLocaleString('en-US', {style: 'currency', currency: 'USD', minimumFractionDigits: 2})}</div>
+        <br/>
         </div>
+
+            <div className="ui coin-table">
                 
-       
+                    <div className="coin-add-ui">
+                            
 
-        <div>
-            <select onChange={(e) => setSelectedCoinId(e.target.value)}> 
-                
-                    <option value="" disabled selected>Coin List</option>
-                    {filteredCoinData.map(
-                                coin => (
-                                    <option value={coin.Symbol} key={coin.Id}>
-                                        {coin.FullName}
-                                    </option>
-                    ))}
+                        <div className="search-container">
+                            <input type="text" placeholder="Search for coins" onChange={handleSearch} />
+                        </div>                            
+                        
 
-            
-            </select>
+                        <div>
+                                <select onChange={(e) => setSelectedCoinId(e.target.value)}> 
+                                    
+                                        <option value="" disabled selected>Coin List</option>
+                                        {filteredCoinData.map(
+                                                    coin => (
+                                                        <option value={coin.Symbol} key={coin.Id}>
+                                                            {coin.FullName}
+                                                        </option>
+                                        ))}
 
-        <button className="ui button blue right"
-        onClick={() => addCoinToPortfolio(selectedCoinId, portfolioId)}>
-                        Add to Portfolio
-        </button>
-        
-            <PortfolioCoinList id={portfolioId} coingeckoIds={portfolioCoins} coinRefresh={CoinRefresh} />
+                                
+                                </select>
 
-        </div> 
-    
-    </div>     
+                            <button className="ui button blue right"
+                            onClick={() => addCoinToPortfolio(selectedCoinId, portfolioId)}>
+                                            Add to Portfolio
+                            </button>
+                            
+                            <PortfolioCoinList id={portfolioId} coingeckoIds={portfolioCoins} coinRefresh={CoinRefresh} sendValueToCoin={handlePortoflioValue}/>
+
+                        </div> 
+                        
+                    </div>
+
+            </div> 
+    </div>    
     );
 
 };

@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 import api from '../api/portfolios';
 
@@ -10,10 +12,11 @@ const PortfolioCoinList = (props) => {
     const [sortOrder, setSortOrder] = useState("desc"); // or "desc" for descending order
     const [sortBy, setSortBy] = useState("MKTCAP"); // default sorting attribute
     const [inputValues, setInputValues] = useState({}); 
+   
 
     const handleSort = (attribute) => {
       if (attribute === sortBy) {
-        // If the same attribute is clicked again, reverse the sort order
+        // If the same attribute is clicked again, reverse the sort order 
         setSortOrder((prevSortOrder) => (prevSortOrder === "asc" ? "desc" : "asc"));
       } else {
         // If a different attribute is clicked, set it as the new sorting attribute
@@ -33,10 +36,9 @@ const PortfolioCoinList = (props) => {
       try {
         const response = await api.get(`http://localhost:3006/portfolios/${props.id}`);
         const portfolio = response.data;
-        const totalValue = inputValues[coinId] * coinPrice; // Use the input value for the coin ID
-    
+            
         const portfolioValues = [...portfolio.values]; // Create a copy of the portfolio values array
-    
+   
         const existingIndex = portfolioValues.findIndex((item) => item.coinId === coinId);
         if (existingIndex !== -1) {
           // If the coinId already exists in the portfolio, update the amount
@@ -50,6 +52,8 @@ const PortfolioCoinList = (props) => {
         await api.patch(`http://localhost:3006/portfolios/${props.id}`, { values: portfolioValues });
     
         console.log(response.data);
+
+        fetchData();
       } catch (error) {
         console.error(error);
       }
@@ -59,151 +63,129 @@ const PortfolioCoinList = (props) => {
     console.log("portfolioCoins: "+portfolioCoins);
     console.log("props.id: "+props.id);
     
-    const coinDataArray = [];
+    const portfolioTotalValue = []; 
+
+    const fetchData = async () => {
+      try {
+        const coinList = portfolioCoins.join(',');
+        const response = await axios.get(
+          `https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${coinList}&tsyms=USD&extraParams=cryptocompare&api_key=de528b65cdbb62a301a3bbd68201919b928595d750ce18281f45ad59ee77bdfa`
+        );
     
-    const fetchData = async () => {      
-            
+        const coinDataArray = [];
+    
         for (let coin of portfolioCoins) {
-             
-          try {
-            const response = await axios.get(
-              `https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${coin}&tsyms=USD&extraParams=cryptocompare&api_key=de528b65cdbb62a301a3bbd68201919b928595d750ce18281f45ad59ee77bdfa`
-            );
+          console.log("coin: "+coin);
+          const coinData = response.data.RAW[coin].USD;
+          const change24Hours = coinData?.CHANGEPCT24HOUR / 100;
+          const price = parseFloat(coinData?.PRICE);
+          const imagePath = "https://www.cryptocompare.com/" + coinData.IMAGEURL;
+    
+    
+          let coinChange7DaysData = await axios.get(
+            `https://min-api.cryptocompare.com/data/v2/histoday?fsym=${coin}&tsym=USD&limit=7&api_key=de528b65cdbb62a301a3bbd68201919b928595d750ce18281f45ad59ee77bdfa`
+          );
+    
+          let coinChange30DaysData = await axios.get(
+            `https://min-api.cryptocompare.com/data/v2/histoday?fsym=${coin}&tsym=USD&limit=30&api_key=de528b65cdbb62a301a3bbd68201919b928595d750ce18281f45ad59ee77bdfa`
+          );
+    
+          let coinChange7DaysDataValues =
+            coinChange7DaysData?.data?.Data?.Data || [];
+          let coinChange30DaysDataValues =
+            coinChange30DaysData?.data?.Data?.Data || [];
+          let coinChange7DayPercent = null;
+          let coinChange30DayPercent = null;
+    
+          if (coinChange7DaysDataValues && coinChange7DaysDataValues.length > 0) {
+            const coinChange7Days = coinChange7DaysDataValues[0].close;
+            coinChange7DayPercent = (price - coinChange7Days) / coinChange7Days;
 
-            const portfolioData = await api.get(`http://localhost:3006/portfolios/${props.id}`);
-            const portfolio = portfolioData.data;
+            console.log(coin+" coinChange7DaysDataValues: "+coinChange7DaysDataValues[0].close);
 
-       
-            const data = response.data.RAW[coin].USD;
-
-            const change24Hours = data?.CHANGEPCT24HOUR / 100;
-            const price = parseFloat(data?.PRICE); 
-            const imagePath = "https://www.cryptocompare.com/"+data.IMAGEURL;    
-
-            
-
-            let coinChange7DaysData = await axios.get(
-              `https://min-api.cryptocompare.com/data/v2/histoday?fsym=${coin}&tsym=USD&limit=7&api_key=de528b65cdbb62a301a3bbd68201919b928595d750ce18281f45ad59ee77bdfa`
-            );
-          
-            let coinChange30DaysData = await axios.get(
-              `https://min-api.cryptocompare.com/data/v2/histoday?fsym=${coin}&tsym=USD&limit=30&api_key=de528b65cdbb62a301a3bbd68201919b928595d750ce18281f45ad59ee77bdfa`
-            );
-
-            let coinChange7DaysDataValues = coinChange7DaysData?.data?.Data?.Data || [];
-            let coinChange30DaysDataValues = coinChange30DaysData?.data?.Data?.Data || [];   
-
-            let coinChange7DayPercent = null;
-            let coinChange30DayPercent = null;
-
-            console.log(coin + " coinChange7DayPercent: ", coinChange7DayPercent);            
-            
-
-            if (coinChange7DaysDataValues && coinChange7DaysDataValues.length > 0) {
-              const coinChange7Days = coinChange7DaysDataValues[0].close;
-              coinChange7DayPercent = (price - coinChange7Days) / coinChange7Days;       
-            }  else {
-
-
-              await get7DayChange(coin, price)
-                .then((result) => {
-                  coinChange7DayPercent = result;
-                  console.log(coin + " new coinChange7DayPercent: ", coinChange7DayPercent);
-                })
-                .catch((error) => {
-                  console.error(error);
-                });
-
-       
-            }  
-        
-            if (coinChange30DaysDataValues && coinChange30DaysDataValues.length > 0) {
-              const coinChange30Days = coinChange30DaysDataValues[0].close;
-              coinChange30DayPercent = (price - coinChange30Days) / coinChange30Days;  
-
-              console.log(coin + " coinChange30DayPercent: ", coinChange30DayPercent);
-
-              if(coinChange30DayPercent === Infinity){
-
-                await get30DayChange(coin, price)
-                .then((result) => {
-                  coinChange30DayPercent = result;
-                  console.log(coin + " new coinChange30DayPercent: ", coinChange30DayPercent);
-                })
-                .catch((error) => {
-                  console.error(error);
-                });
-
-       
-
-              }
-              
-              
-            } else {
-
-              await get30DayChange(coin, price)
-                .then((result) => {
-                  coinChange30DayPercent = result;
-                  console.log(coin + " new coinChange30DayPercent: ", coinChange30DayPercent);
-                })
-                .catch((error) => {
-                  console.error(error);
-                });
-
-           
+            if (coinChange7Days === 0 ) {
+              console.log(coin+" get7DayChange")
+              const result = await get7DayChange(coin, price);
+              coinChange7DayPercent = result;
             }
+          } else {
+            const result = await get7DayChange(coin, price);
+            coinChange7DayPercent = result;
+          }
+    
+          if (coinChange30DaysDataValues && coinChange30DaysDataValues.length > 0) {
 
+            console.log(coin+" coinChange30DaysDataValues: "+coinChange30DaysDataValues[0].close);
 
-            let marketCap = parseInt(data?.MKTCAP);
+            const coinChange30Days = coinChange30DaysDataValues[0].close;
+            coinChange30DayPercent = (price - coinChange30Days) / coinChange30Days;
 
-            
-            console.log(coin+" before new MarketCap: "+marketCap);
+            console.log(coin+" coinChange30Days: "+coinChange30Days);
+            console.log(coin+" coinChange30DayPercent: "+coinChange30DayPercent);
+    
+            if (coinChange30Days === 0 ) {
+              console.log(coin+" get30DayChange")
+              const result = await get30DayChange(coin, price);
+              coinChange30DayPercent = result;
+            }
+          } else {
+            console.log(coin+" get30DayChange")
+            const result = await get30DayChange(coin, price);
+            coinChange30DayPercent = result;
+          }
+    
+          let marketCap = parseInt(coinData?.MKTCAP);
+
+          console.log(coin+" marketCap: "+marketCap)
+    
+          if (marketCap === 0) {
+            const result = await getMarketCap(coin);
+            console.log("marketCap result: "+result)
+            marketCap = result;
+          }
+    
+          const portfolioData = await api.get(
+            `http://localhost:3006/portfolios/${props.id}`
+          );
+          const portfolio = portfolioData.data;
+    
+          const amountValue = portfolio?.values?.find(
+            (value) => value.coinId === coin
+          )?.amount;
+          const totalValue = amountValue * price;
+          const value = isNaN(totalValue) ? 0 : totalValue;
+          portfolioTotalValue.push(value);
+    
+          coinDataArray.push({
+            key: coinData.FROMSYMBOL,
+            FROMSYMBOL: coinData.FROMSYMBOL,
+            IMGURL: imagePath,
+            MKTCAP: marketCap,
+            PRICE: price,
+            VALUE: value,
+            CHANGEPCT24HOUR: change24Hours,
+            change7Days: coinChange7DayPercent,
+            change30Days: coinChange30DayPercent,
+            amount: amountValue
+          });
+        }
+    
+        setCoinData(coinDataArray);
         
-            if (marketCap === 0 ) {
-              
-              await getMarketCap(coin)
-                .then((result) => {
-                  marketCap = result;
-                  console.log(coin + " new MarketCap: ", marketCap);
-                })
-                .catch((error) => {
-                  console.error(error);
-                });
-                  
-            } 
-
-            
-
-            const amountValue = portfolio?.values?.find((value) => value.coinId === coin)?.amount;
-
-            console.log("amountValue: "+amountValue)           
-
-
-            coinDataArray.push({ 
-              key: data.FROMSYMBOL,
-              FROMSYMBOL: data.FROMSYMBOL, 
-              IMGURL: imagePath,
-              MKTCAP: marketCap,
-              PRICE: price,
-              CHANGEPCT24HOUR: change24Hours,
-              change7Days: coinChange7DayPercent,
-              change30Days: coinChange30DayPercent,
-              amount: amountValue
-            });
-            
-
-            } catch (error) {
-                  console.error(error);
-            }              
-        
-      }  
-
-      setCoinData(coinDataArray);  
-
-      };    
+        let portfolioValue = 0;
+    
+        for (let v = 0; v < portfolioTotalValue.length; v++) {
+          portfolioValue = portfolioValue + portfolioTotalValue[v];
+        }
+    
+        props.sendValueToCoin(portfolioValue);
+      } catch (error) {
+        console.error(error);
+      }
+    };    
       
      useEffect(() => { 
-
+      setCoinData([]);
       if (portfolioCoins.length > 0) {
         fetchData();
       }
@@ -214,35 +196,23 @@ const PortfolioCoinList = (props) => {
     async function getMarketCap(coinId) {
       try {
   
-        const response = await axios.get(`https://data.messari.io/api/v1/assets/${coinId}/metrics`);
-  
+        const response = await axios.get(`https://data.messari.io/api/v1/assets/${coinId}/metrics`);  
         let marketCap = response.data.data.marketcap.current_marketcap_usd;
 
-        console.log(coinId+" getMarketCap function for new market cap: "+marketCap)
+        console.log(coinId+" marketCap: "+marketCap)
 
         if(marketCap === null){
-
           return '-';
-
         } else {
-
           return parseInt(marketCap);
-
         }       
-        
-        
+                
       } catch (error) {
         console.error(error);
       }
     }  
    
     async function get7DayChange(coinId, priceNow) {
-
-      console.log("get7DayChange coinId: "+coinId)
-      
-      console.log("get7DayChange priceNow: ", priceNow)
-
-
     try { 
             // Get historical price data for the asset
             const response = await axios.get(`https://data.messari.io/api/v1/assets/${coinId}/metrics/price/time-series`, {
@@ -262,28 +232,18 @@ const PortfolioCoinList = (props) => {
               const priceData = response.data.data.values; 
               const sevenDaysAgo = new Date();
 
-              if(priceData !== null) {
-
-                  console.log("priceData: "+priceData);            
+              if(priceData !== null) {       
             
                   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 8);
-
-                  console.log("sevenDaysAgo: "+sevenDaysAgo);
-                
+                       
                   const filteredData = priceData.filter(
                     (item) => item[0] >= sevenDaysAgo.getTime()
                   );      
             
-                  const timestamps = filteredData.map((item) => item[0]); 
-
-                  console.log("timestamps: "+timestamps);            
+                  const timestamps = filteredData.map((item) => item[0]);          
 
                   const sevenDaysAgoPrice = priceData.filter(row => row[0] === timestamps[0]).map(row => row[3]);
-
-                  console.log("sevenDaysAgoPrice: "+sevenDaysAgoPrice);    
-
-                  console.log("priceNow: ", priceNow);
-            
+                
                 if(timestamps[0] !== undefined && timestamps){
             
                   const new7DayChangePercentage = ((priceNow - sevenDaysAgoPrice) / sevenDaysAgoPrice);
@@ -312,11 +272,6 @@ const PortfolioCoinList = (props) => {
   
     async function get30DayChange(coinId, priceNow) {
 
-
-      console.log("get30DayChange coinId: "+coinId)
-      console.log("get30DayChange coinData: ", coinData) 
-       
-
       try {
 
             // Get historical price data for the asset
@@ -324,7 +279,7 @@ const PortfolioCoinList = (props) => {
                 params: {
                   interval: '1d',
                   format: 'json',
-                  timestamp_start: Date.now() - 30 * 24 * 60 * 60 * 1000, // Get data from 7 days ago to now
+                  timestamp_start: Date.now() - 30 * 24 * 60 * 60 * 1000, 
                 },
             });
 
@@ -335,26 +290,28 @@ const PortfolioCoinList = (props) => {
           if(response.data.data.values){
                 
               const priceData = response.data.data.values; 
-              const thirtyDaysAgo = new Date();
-          
+              const thirtyDaysAgo = new Date();          
               thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 31);
 
-              if(priceData !== null) {
+             if(priceData !== null) {
 
                 const filteredData = priceData.filter(
 
                   (item) => item[0] >= thirtyDaysAgo.getTime()
                 );      
-
          
                 const timestamps = filteredData.map((item) => item[0]); 
                 const thirtyDaysAgoPrice = priceData.filter(row => row[0] === timestamps[0]).map(row => row[3]);
 
-                console.log(coinId+" thirtyDaysAgoPrice: "+thirtyDaysAgoPrice)
-          
+                console.log("30 day priceNow: "+priceNow);
+
+                console.log("30 day thirtyDaysAgoPrice: "+thirtyDaysAgoPrice);
+            
                 if(timestamps[0] !== undefined && timestamps){
             
                   const new30DayChangePercentage = ((priceNow - thirtyDaysAgoPrice) / thirtyDaysAgoPrice);
+
+                  console.log("30 day new30DayChangePercentage: "+new30DayChangePercentage);
             
                   return new30DayChangePercentage;
             
@@ -396,19 +353,14 @@ const PortfolioCoinList = (props) => {
           );
 
           const responses = await Promise.all(promises);
-
-          console.log("responses: "+responses);
-
           const analysisItems = responses.map((response) => {
            
             let coinName = response.data.Data.NAME.toLowerCase();
             let coinSymbol = response.data.Data.SYMBOL;
             let coinId = null;
 
-            // Find the coinId from the props array using the coinName
-             
+            // Find the coinId from the props array using the coinName             
               const matchingCoin = portfolioCoins.find((coin) => coin === coinSymbol);
-
               console.log("matchingCoin: "+matchingCoin);
 
               if (matchingCoin) {
@@ -498,7 +450,12 @@ const PortfolioCoinList = (props) => {
               if (coinName.includes("bob-token")) {
                 coinId = coinId.replace("BOBT", "BOB");  
               } 
-
+              if (coinName.includes("volt-inu")) {
+                coinName = coinName.replace("volt-inu", "volt-inu-2");  
+              } 
+              if (coinName.includes("theta-network")) {
+                coinName = coinName.replace("theta-network", "theta-token");  
+              }           
               
               return { coinName: coinName, coinId: coinId };
 
@@ -509,8 +466,11 @@ const PortfolioCoinList = (props) => {
           await api.patch(`http://localhost:3006/portfolios/${props.id}`, { analysis: portfolio.analysis });
           console.log(response.data);
 
-          
-          props.coinRefresh();
+          // Show success toast
+        toast.success('All Coins added to analysis!', {
+          position: toast.POSITION.TOP_CENTER
+        });          
+
 
         } catch (error) {
           console.error(error);
@@ -527,9 +487,6 @@ const PortfolioCoinList = (props) => {
           const coinNameData = await axios.get(`https://data-api.cryptocompare.com/asset/v1/data/by/symbol?asset_symbol=${coinId}&api_key=de528b65cdbb62a301a3bbd68201919b928595d750ce18281f45ad59ee77bdfa`);
       
           let coinName = coinNameData.data.Data.NAME.toLowerCase();
-
-          console.log("matchingCoin: "+coinName);
-
 
           if (coinName.includes(" ")) {
               coinName = coinName.replace(/ /g, "-"); // replace all spaces with dashes
@@ -617,17 +574,23 @@ const PortfolioCoinList = (props) => {
           }  
           if (coinName.includes("bob-token")) {
             coinId = coinId.replace("BOBT", "BOB");  
-          } 
+          }
+          if (coinName.includes("volt-inu")) {
+            coinName = coinName.replace("volt-inu", "volt-inu-2");  
+          }   
+          if (coinName.includes("theta-network")) {
+            coinName = coinName.replace("theta-network", "theta-token");
+          }   
 
-          
           const analysisItem = { coinName: coinName, coinId: coinId };
           portfolio.analysis.push(analysisItem);
             
-          await api.patch(`http://localhost:3006/portfolios/${props.id}`, { analysis: portfolio.analysis } );
-      
-          console.log(response.data);
-                
-    
+          await api.patch(`http://localhost:3006/portfolios/${props.id}`, { analysis: portfolio.analysis } );  
+          
+            // Show success toast
+          toast.success('Coin added to analysis!', {
+            position: toast.POSITION.TOP_CENTER
+          });
           
       } catch (error) {
 
@@ -644,19 +607,20 @@ const PortfolioCoinList = (props) => {
           const portfolio = response.data;
           // find the index of the coin in the portfolio's coins array
           const coinIndex = portfolio.coins.indexOf(coinId);
-
+          const coinValue = portfolio.values.findIndex(value => value.coinId === coinId);
+          
           if (coinIndex === -1) {
           throw new Error(`Coin with id ${coinId} not found in portfolio with id ${props.id}`);
           }
           // remove the coin from the portfolio's coins array
           portfolio.coins.splice(coinIndex, 1);
+          portfolio.values.splice(coinValue, 1);
 
           // update the portfolio with the new coins array
-          await api.patch(`http://localhost:3006/portfolios/${props.id}`, { coins: portfolio.coins });       
+          await api.patch(`http://localhost:3006/portfolios/${props.id}`, { coins: portfolio.coins, values: portfolio.values });       
 
-          props.coinRefresh();  
+          props.coinRefresh(); 
           
-          fetchData();
 
         } catch (error) {
           console.error(error);
@@ -675,7 +639,6 @@ const PortfolioCoinList = (props) => {
       return 0;
     }
   });
-
    
 if(portfolioCoins !== undefined){
 
@@ -711,6 +674,12 @@ return (
                     >                   
                     Price</div>
                     <div 
+                    className={`headerCell ${sortBy === "VALUE" ? "active" : ""}`}
+                    align="left" 
+                    onClick={() => handleSort("VALUE")}
+                    >                   
+                    Value</div>
+                    <div 
                     className={`headerCell ${sortBy === "CHANGEPCT24HOUR" ? "active" : ""}`}
                     align="left"
                     onClick={() => handleSort("CHANGEPCT24HOUR")}
@@ -732,8 +701,6 @@ return (
 
         {sortedCoins.map((coin, index) => {
 
-          console.log("inputValues[coin.key]:"+inputValues[coin.key]);
-
                     return (
               <div className="coin-table-row" key={coin.key}>
                     <div className="item rowCell image">
@@ -748,7 +715,8 @@ return (
                           onChange={(event) => handleAmountChange(event, coin.key)}
                         />
                     </div>
-                    <div className="item rowCell price">{coin?.PRICE?.toLocaleString('en-US', {style: 'currency', currency: 'USD', minimumFractionDigits: 11})}</div>
+                    <div className="item rowCell price">{coin?.PRICE?.toLocaleString('en-US', {style: 'currency', currency: 'USD', minimumFractionDigits: 8})}</div>
+                    <div className="item rowCell price">{coin?.VALUE?.toLocaleString('en-US', {style: 'currency', currency: 'USD', minimumFractionDigits: 2})}</div>
                     <div className="item rowCell price">{coin?.CHANGEPCT24HOUR?.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 2 })}</div>
                     <div className="item rowCell price">{coin?.change7Days?.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 2 })}</div>
                     <div className="item rowCell price">{coin?.change30Days?.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 2 })}</div>
@@ -779,7 +747,7 @@ return (
 
             
           })}
-
+          <ToastContainer className="custom-toast-container" />
           <button className="ui button blue right" onClick={addAllCoinsToAnalysis}>Add All Coins to Analysis</button>
       </div>
     </div>

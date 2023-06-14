@@ -70,6 +70,13 @@ code {
 {
   width: 100%;
 }
+.custom-toast-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  top: 0;
+}
 .portfolios { 
   background-color: rgb(200, 200, 200);
   padding:15px;
@@ -100,6 +107,10 @@ code {
 }
 .coindata {
   padding: 0 8px;
+}
+.portfolioValue {
+  font-size: 1.15em;
+  margin-bottom: 10px;
 }
 .search-container input {
   background-color: #f0f0f0;
@@ -138,12 +149,12 @@ code {
 }
 
 .coin-portfolio .headerCell {
-  width: 12.5%;
+  width: 10.9%;
   padding: 5px 10px;
 }
 
 .coin-portfolio .rowCell {
-  width: 12.5%;
+  width: 10.9%;
   margin: 5px 0;
   float: left;
 }
@@ -231,13 +242,14 @@ button:hover {
   margin: 0 auto;
   padding: 30px 15px;
 }
-
+.coin-table-row {
+  min-height: 64px;
+}
 .coin-analysis {
   background-color: #fff;
   border-radius: 8px;
   overflow: hidden;
 }
-
 .coin-analysis .coin-table-header {
   font-weight: bold;
 }

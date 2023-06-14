@@ -9,6 +9,7 @@ function Analysis() {
   const [isLoading, setIsLoading] = useState(false);
   const [noCoins, setNoCoins] = useState(false);
   const [coinData, setCoinData] = useState([]);
+  const [nameSortOrder, setNameSortOrder] = useState(null);
   const [marketCapSortOrder, setMarketCapSortOrder] = useState(null);
   const [volumeSortOrder, setVolumeSortOrder] = useState(null);
   const [USD1YRSortOrder, setUSD1YRSortOrder] = useState(null);
@@ -30,6 +31,24 @@ function Analysis() {
   const [totalScore, setTotalScore] = useState(0);
   const [highestPrice, setHighestPrice] = useState(null);
   const [inputDisabled, setInputDisabled] = useState(false);
+
+  const handleSortByName = () => {
+    setNameSortOrder(nameSortOrder === "asc" ? "desc" : "asc");
+    setMarketCapSortOrder(null);
+    setVolumeSortOrder(null);
+    setUSD1YRSortOrder(null);
+    setBTC1YRSortOrder(null);
+    setBTC1YrPriceSortOrder(null);
+    setInPriceChangeSortOrder(null);
+    setMaxGradeSortOrder(null);
+    setFuturePredSortOrder(null);
+    setAvgGainPredSortOrder(null);
+    setAllTimeHighSortOrder(null);
+    setBuySellSortOrder(null)
+    setCoinRatingSortOrder(null)
+    setGitSourceSortOrder(null)
+    setTwitterSortOrder(null)
+  };
 
   const handleSortByMarketCap = () => {
     setMarketCapSortOrder(marketCapSortOrder === "asc" ? "desc" : "asc");
@@ -319,6 +338,8 @@ function Analysis() {
       const buysellB =  b.buysell;  
       const maxGradeA = a.maxChartGrade;
       const maxGradeB = b.maxChartGrade;
+      const nameA = a.name;
+      const nameB = b.name;
       let gainPredictionA = 0;
       let gainPredictionB = 0;
       let avgGainPredictionA = 0;
@@ -401,6 +422,10 @@ function Analysis() {
             return buysellA.localeCompare(buysellB);
       } else if (buySellSortOrder === "desc") {
             return buysellB.localeCompare(buysellA);
+      } else if (nameSortOrder === "asc") {
+            return nameA.localeCompare(nameB);
+      } else if (nameSortOrder === "desc") {
+            return nameB.localeCompare(nameA);
       } else {
             return 0;
       }
@@ -793,27 +818,51 @@ function Analysis() {
           let getYearAgoBtcPrice = await axios.get(
             `https://min-api.cryptocompare.com/data/v2/histoday?fsym=${coinId}&tsym=BTC&limit=365&api_key=de528b65cdbb62a301a3bbd68201919b928595d750ce18281f45ad59ee77bdfa`
           );
-          // const yearAgoBtcPrice = getYearAgoBtcPrice.data.Data.Data[0].close;
+         
 
  
 
           let getYearAgoBtcPriceValues = getYearAgoBtcPrice.data.Data.Data;
           let yearAgoBtcPrice = null;
 
+          console.log(coinId+" getYearAgoBtcPriceValues: "+getYearAgoBtcPriceValues);
+
           if (getYearAgoBtcPriceValues !== undefined) {
             yearAgoBtcPrice = getYearAgoBtcPrice.data.Data.Data[0].close;
-          } else {
-            yearAgoBtcPrice = null;
-          }
+          } else {  
+            const endDate = new Date().toISOString().split('T')[0]; // Today's date
+            const startDate = new Date(); // Current date/time
+            startDate.setDate(startDate.getDate() - 365); // Subtract 365 days
+            const startDateFormatted = startDate.toISOString().split('T')[0]; // Formatted start date
+           
+              const response = await axios.get(
+                `https://data.messari.io/api/v1/assets/${coinId}/metrics/price/time-series?start=${startDateFormatted}&end=${endDate}`
+              );
 
-          console.log("yearAgoBtcPrice: "+yearAgoBtcPrice);
+              // Assuming the API response contains an array of price data points, retrieve the first entry 
+              console.log(coinId+" response.data.data.values: "+response.data.data.values);           
+
+               if(response.data.data.values !== null ) {
+                const priceData = response.data.data.values[0];                
+                yearAgoBtcPrice = priceData[1];
+               } else {
+                yearAgoBtcPrice = 0;
+               }              
+              
+              console.log(coinId+" new yearAgoBtcPrice: "+yearAgoBtcPrice);
+
+          }
+          
+          console.log(coinId+" currentBtcPrice: "+currentBtcPrice);
+          console.log(coinId+" yearAgoBtcPrice: "+yearAgoBtcPrice);
 
           let oneYearBTCPercentChange = null;
           let oneYearBTCPriceChange = null;
 
           if (yearAgoBtcPrice === null || yearAgoBtcPrice === 0) {
             oneYearBTCPercentChange = 0;
-            oneYearBTCPriceChange = currentBtcPrice - 0;
+            oneYearBTCPriceChange = parseFloat(currentBtcPrice) - 0;
+            oneYearBTCPriceChange = oneYearBTCPriceChange.toFixed(10);
             if (oneYearBTCPriceChange > 0.0000001) {
               btcChangeScore = 1;
             } else {
@@ -823,20 +872,18 @@ function Analysis() {
           } else {
             oneYearBTCPercentChange =
               (currentBtcPrice - yearAgoBtcPrice) / yearAgoBtcPrice;
-            oneYearBTCPriceChange = currentBtcPrice - yearAgoBtcPrice;
+            oneYearBTCPriceChange = parseFloat(currentBtcPrice) - parseFloat(yearAgoBtcPrice);
+            oneYearBTCPriceChange = oneYearBTCPriceChange.toFixed(10);
             if (oneYearBTCPriceChange > 0.0000001) {
               btcChangeScore = 1;
             }
-            if (oneYearBTCPercentChange > 2.0) {
+            if (oneYearBTCPercentChange > 0.2) {
               btcPercentScore = 2;
             }
           }
-
-          console.log("currentBtcPrice: "+currentBtcPrice);
-          console.log("yearAgoBtcPrice: "+yearAgoBtcPrice);
-          console.log("oneYearBTCPercentChange: "+oneYearBTCPercentChange);
-          console.log("prices: " + market_chart_prices);
-          console.log("earliestTimestamp: " + market_chart_prices[0][0]);
+          console.log(coinId+" oneYearBTCPriceChange: "+oneYearBTCPriceChange);
+          console.log(coinId+" oneYearBTCPercentChange: "+oneYearBTCPercentChange);       
+            
 
           const earliestTimestamp = market_chart_prices[2][0]; // timestamp of the first recorded price
           const earliestDate = new Date(earliestTimestamp); // convert timestamp to Date object
@@ -1157,18 +1204,16 @@ function Analysis() {
             console.log("maxGradeScore: " + maxGradeScore);
           }
 
-          let oneYearPercentChange = value.price_change_percentage_1y_in_currency;
+          let oneYearPercentChange = value.price_change_percentage_1y_in_currency / 100;
 
-          console.log("value.price_change_percentage_1y_in_currency: "+value.price_change_percentage_1y_in_currency);
+          console.log(coinId+" oneYearPercentChange: " + oneYearPercentChange);
 
           if (oneYearPercentChange === null) {
             oneYearPercentChange = 0;
             oneYearPercentScore = 0;
             console.log("oneYearPercentScore: " + oneYearPercentScore);
-          } else {
-              oneYearPercentChange = value.price_change_percentage_1y_in_currency;
-
-              if (oneYearPercentChange > 2.0) {
+          } else {  
+              if (oneYearPercentChange > .2) {
                 oneYearPercentScore = 2;
                 console.log("oneYearPercentScore: " + oneYearPercentScore);
               } else {
@@ -1212,35 +1257,44 @@ function Analysis() {
 
           let twitter = getCoinData.data.Data.TWITTER_ACCOUNTS;
           let twitterArray = [];
+          let twitterURL = null;
           let twitterFollowers = null;
           let sourceCode = getCoinData.data.Data.CODE_REPOSITORIES;
           let gitRepository = null;
           let website = getCoinData.data.Data.WEBSITE_URL;
 
+          
+
           if (twitter !== null) {
             twitter = Object.values(twitter);
             twitterArray = twitter.map((account) => account.FOLLOWERS);
-            twitterFollowers = twitterArray.reduce((acc, val) => acc + val);
+            
+            twitterURL = twitter.map(
+              (accounts) => accounts.URL            
+            );  
+
+            if(twitterURL.length > 1){
+              console.log(coinId+" twitter URL[0]: " + twitterURL[0]); 
+              twitterURL = twitterURL[0];
+            }
+            twitterFollowers = twitterArray.reduce((acc, val) => acc + val);            
 
             if (twitterFollowers > 25000) {
-              twitterScore = 1;
-              console.log("twitterScore: " + twitterScore);
+              twitterScore = 1;              
             }
           } else {
-
             twitterFollowers = 0;
-            twitterScore = 0;
-            console.log("twitterScore: " + twitterScore);
+            twitterScore = 0;          
           }
 
-          if (sourceCode !== null && sourceCode.length !== 0) {
+          if (sourceCode !== null && sourceCode !== undefined && sourceCode.length !== 0) {
             gitRepository = sourceCode[0].URL;
             gitScore = 1;
-            console.log("gitScore: " + gitScore);
+            
           } else {
             gitRepository = "N/A";
             gitScore = 0;
-            console.log("gitScore: " + gitScore);
+          
           }
 
           if (website === null) {
@@ -1250,12 +1304,7 @@ function Analysis() {
 
           if (value.total_volume > 250000) {
             volumeScore = 1;
-            console.log("value.total_volume: " + value.total_volume);
-            console.log("volumeScore: " + volumeScore);
           }    
-          
-          console.log(value.id+" highestPricePercentage: "+highestPricePercentage)
-          console.log(value.id+" highest price score: "+highPercentScore)          
 
 
           console.log("value.id: " + value.id);
@@ -1306,10 +1355,6 @@ function Analysis() {
 
             let totalsellrating = sellrating + sellHighPercentScore;
 
-            console.log(value.id+" totalbuyrating: "+totalbuyrating);
-            console.log(value.id+" totalsellrating: "+totalsellrating);
-
-
             if(totalbuyrating > totalsellrating) {
 
                 buysellrating = totalbuyrating;             
@@ -1335,8 +1380,6 @@ function Analysis() {
 
           setTotalScore(total);
 
-          console.log("buysellrating: " + buysellrating);
-          console.log("total: " + total);
 
           coinData.push({
             id: value.id,
@@ -1373,6 +1416,7 @@ function Analysis() {
               { style: "percent" }
             ),
             twitterFollowers: twitterFollowers,
+            twitterURL: twitterURL,
             gitRepository: gitRepository,
             website: website,
             prediction: inputValue,
@@ -1503,8 +1547,19 @@ function Analysis() {
         <div className="ui coin-analysis">
           <div className="ui relaxed divided list">
             <div className="coin-table-header">
-              <div className="headerCell" align="left">
-                Coin
+              <div 
+              className="headerCell" 
+              align="left"
+              onClick={handleSortByName}
+              >
+                Coin{" "}
+                {nameSortOrder === "asc" ? (
+                  <i className="arrow up icon"></i>
+                ) : nameSortOrder === "desc" ? (
+                  <i className="arrow down icon"></i>
+                ) : (
+                  <i className="arrow icon"></i>
+                )}
               </div>
               <div
                 className="headerCell"
@@ -1537,6 +1592,7 @@ function Analysis() {
               <div className="headerCell" align="left"
               >              
                 Price{" "}
+                
               </div>
               <div 
               className="headerCell" 
@@ -1792,7 +1848,7 @@ function Analysis() {
                 </div>
                 <div className="item rowCell" align="left"
                 style={{fontWeight: coin.twitterFollowers > 25000 ? 'bold' : 'normal'}}>             
-                  {coin.twitterFollowers}
+                  <a href={coin.twitterURL} >{coin.twitterFollowers}</a>
                 </div>
                 <div className="item rowCell" align="left">
                   {coin.gitRepository !== "N/A" ? (
