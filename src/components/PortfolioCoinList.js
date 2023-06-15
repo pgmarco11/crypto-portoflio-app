@@ -11,7 +11,7 @@ const PortfolioCoinList = (props) => {
     const [coinData, setCoinData] = useState([]); 
     const [sortOrder, setSortOrder] = useState("desc"); // or "desc" for descending order
     const [sortBy, setSortBy] = useState("MKTCAP"); // default sorting attribute
-    const [inputValues, setInputValues] = useState({}); 
+    const [inputValues, setInputValues] = useState({});
    
 
     const handleSort = (attribute) => {
@@ -26,19 +26,25 @@ const PortfolioCoinList = (props) => {
     };    
 
     const handleAmountChange = (event, coinId) => {
+      const inputValue = event.target.value;
+      const newValue = inputValue !== '' && !isNaN(inputValue) ? parseFloat(inputValue) : 0;
+    
       setInputValues((prevInputValues) => ({
         ...prevInputValues,
-        [coinId]: parseFloat(event.target.value), // Update input value for the corresponding coin ID
+        [coinId]: newValue,
       }));
+    
+      console.log(inputValues);
     };
   
-    const updateAmtHandler = async (coinId, coinPrice) => {
+    const updateAmtHandler = async (coinId) => {
       try {
+        console.log('Update button clicked for coin ID:', coinId);
         const response = await api.get(`http://localhost:3006/portfolios/${props.id}`);
-        const portfolio = response.data;
-            
-        const portfolioValues = [...portfolio.values]; // Create a copy of the portfolio values array
-   
+        const portfolio = response.data;  
+       
+        const portfolioValues = [...portfolio.values]; // Create a copy of the portfolio values array        
+  
         const existingIndex = portfolioValues.findIndex((item) => item.coinId === coinId);
         if (existingIndex !== -1) {
           // If the coinId already exists in the portfolio, update the amount
@@ -48,17 +54,16 @@ const PortfolioCoinList = (props) => {
           const newPortfolioAmount = { coinId: coinId, amount: inputValues[coinId] };
           portfolioValues.push(newPortfolioAmount);
         }
-    
+  
         await api.patch(`http://localhost:3006/portfolios/${props.id}`, { values: portfolioValues });
-    
+  
         console.log(response.data);
-
+  
         fetchData();
       } catch (error) {
         console.error(error);
       }
     };
-    
 
     console.log("portfolioCoins: "+portfolioCoins);
     console.log("props.id: "+props.id);
@@ -711,7 +716,7 @@ return (
                     <div className="item rowCell" align="left">
                         <input
                           type="text"
-                          value={inputValues[coin.key] ? inputValues[coin.key] : coin.amount }
+                          value={inputValues[coin.key] !== undefined ? inputValues[coin.key] : coin.amount}
                           onChange={(event) => handleAmountChange(event, coin.key)}
                         />
                     </div>
@@ -724,7 +729,7 @@ return (
                       <div className="item btn-group">
                       <button
                           className="ui red basic button"
-                          onClick={() => updateAmtHandler(coin.key, coin.PRICE)}
+                          onClick={() => updateAmtHandler(coin.key)}
                         >
                           Update
                         </button>
