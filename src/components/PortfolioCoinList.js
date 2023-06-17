@@ -70,6 +70,8 @@ const PortfolioCoinList = (props) => {
     
     const portfolioTotalValue = []; 
 
+    
+
     const fetchData = async () => {
       try {
         const coinList = portfolioCoins.join(',');
@@ -81,6 +83,7 @@ const PortfolioCoinList = (props) => {
     
         for (let coin of portfolioCoins) {
           console.log("coin: "+coin);
+          console.log('https://min-api.cryptocompare.com/data/pricemultifull?fsyms='+coin+'&tsyms=USD&extraParams=cryptocompare&api_key=de528b65cdbb62a301a3bbd68201919b928595d750ce18281f45ad59ee77bdfa')
           const coinData = response.data.RAW[coin].USD;
           const change24Hours = coinData?.CHANGEPCT24HOUR / 100;
           const price = parseFloat(coinData?.PRICE);
@@ -341,6 +344,20 @@ const PortfolioCoinList = (props) => {
         console.error(error);
       }
     }  
+
+    const fetchCoinData = async (coin) => {
+      try {
+        const response = await axios.get(`https://data-api.cryptocompare.com/asset/v1/data/by/symbol?asset_symbol=${coin}&api_key=de528b65cdbb62a301a3bbd68201919b928595d750ce18281f45ad59ee77bdfa`);
+        return response;
+      } catch (error) {
+        if (error.response && error.response.status === 404) {
+          console.log(`Coin '${coin}' not found. Skipping...`);
+        } else {
+          console.error(`Error fetching coin '${coin}':`, error);
+        }
+        return null;
+      }
+    };
     
       const addAllCoinsToAnalysis = async () => {
       
@@ -349,20 +366,23 @@ const PortfolioCoinList = (props) => {
           const portfolio = response.data;
           if (!portfolio.analysis) {
             portfolio.analysis = [];
-          }          
-      
-          const promises = portfolio.coins.map((coin) =>
-            axios.get(
-              `https://data-api.cryptocompare.com/asset/v1/data/by/symbol?asset_symbol=${coin}&api_key=de528b65cdbb62a301a3bbd68201919b928595d750ce18281f45ad59ee77bdfa`
-            )
-          );
+          }
+
+          const portfolioCoins = portfolio.coins;
+
+          const promises = portfolioCoins.map((coin) => {
+            return fetchCoinData(coin);
+          });
 
           const responses = await Promise.all(promises);
           const analysisItems = responses.map((response) => {
-           
-            let coinName = response.data.Data.NAME.toLowerCase();
-            let coinSymbol = response.data.Data.SYMBOL;
-            let coinId = null;
+            if (response) {
+              let coinName = response.data.Data.NAME.toLowerCase();
+              let coinSymbol = response.data.Data.SYMBOL;
+              let coinId = null;
+
+            console.log("adding coinName: "+coinName)
+            console.log("adding coinSymbol: "+coinSymbol)
 
             // Find the coinId from the props array using the coinName             
               const matchingCoin = portfolioCoins.find((coin) => coin === coinSymbol);
@@ -370,6 +390,7 @@ const PortfolioCoinList = (props) => {
 
               if (matchingCoin) {
                 coinId = matchingCoin;
+                console.log("adding coinId: "+coinId)
               }
               if (coinName.includes(" ")) {
                 coinName = coinName.replace(/ /g, "-"); // replace all spaces with dashes
@@ -460,23 +481,27 @@ const PortfolioCoinList = (props) => {
               } 
               if (coinName.includes("theta-network")) {
                 coinName = coinName.replace("theta-network", "theta-token");  
-              }           
+              }
+              // if (coinName.includes("theta-network")) {
+              //   coinName = coinName.replace("theta-network", "ryoshis-vision");
+              // }           
               
               return { coinName: coinName, coinId: coinId };
-
+            } else {
+              return null; // Skip the coin with a 404 error
+            }
           });
 
-          portfolio.analysis.push(...analysisItems);
-      
+          const filteredAnalysisItems = analysisItems.filter((item) => item !== null);
+          portfolio.analysis.push(...filteredAnalysisItems);
+
           await api.patch(`http://localhost:3006/portfolios/${props.id}`, { analysis: portfolio.analysis });
           console.log(response.data);
 
           // Show success toast
-        toast.success('All Coins added to analysis!', {
-          position: toast.POSITION.TOP_CENTER
-        });          
-
-
+          toast.success('All Coins added to analysis!', {
+            position: toast.POSITION.TOP_CENTER
+          });
         } catch (error) {
           console.error(error);
         }
@@ -599,7 +624,13 @@ const PortfolioCoinList = (props) => {
           
       } catch (error) {
 
+        if (error.response && error.response.status === 404) {
+          // Coin not found, skip it
+          console.error('Coin not found:', coinId);
+        } else {
+          // Handle other errors
           console.error(error);
+        }
 
       }
 
