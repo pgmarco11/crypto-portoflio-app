@@ -34,9 +34,13 @@ const updatePortfolioHandler = async (portfolio) => {
 
 const addPortfolioHandler = async (portfolio) => {
 
+    const currentDate = new Date();
+    const unixTimestamp = Math.floor(currentDate.getTime() / 1000);
+
     const request = {
         id: uuid(),
         coins: [],
+        start_date: unixTimestamp,
         analysis: [],
         ...portfolio
     }       

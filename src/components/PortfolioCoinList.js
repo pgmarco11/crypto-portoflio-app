@@ -6,7 +6,9 @@ import api from '../api/portfolios';
 
 const PortfolioCoinList = (props) => {
 
-    let portfolioCoins = props.coingeckoIds;     
+    let portfolioCoins = props.portfolioCoins;
+
+    console.log("list portfolio child: ",portfolioCoins)
     
     const [coinData, setCoinData] = useState([]); 
     const [sortOrder, setSortOrder] = useState("desc"); // or "desc" for descending order
@@ -14,7 +16,7 @@ const PortfolioCoinList = (props) => {
     const [inputValues, setInputValues] = useState({});
    
 
-    const handleSort = (attribute) => {
+    async function handleSort(attribute) {
       if (attribute === sortBy) {
         // If the same attribute is clicked again, reverse the sort order 
         setSortOrder((prevSortOrder) => (prevSortOrder === "asc" ? "desc" : "asc"));
@@ -25,7 +27,7 @@ const PortfolioCoinList = (props) => {
       }
     };    
 
-    const handleAmountChange = (event, coinId) => {
+    async function handleAmountChange(event, coinId) {
       const inputValue = event.target.value;
       const newValue = inputValue !== '' && !isNaN(inputValue) ? parseFloat(inputValue) : 0;
     
@@ -37,7 +39,7 @@ const PortfolioCoinList = (props) => {
       console.log(inputValues);
     };
   
-    const updateAmtHandler = async (coinId) => {
+    async function updateAmtHandler(coinId) {
       try {
         console.log('Update button clicked for coin ID:', coinId);
         const response = await api.get(`http://localhost:3006/portfolios/${props.id}`);
@@ -72,7 +74,7 @@ const PortfolioCoinList = (props) => {
 
     
 
-    const fetchData = async () => {
+   async function fetchData() {
       try {
         const coinList = portfolioCoins.join(',');
         const response = await axios.get(
@@ -345,7 +347,7 @@ const PortfolioCoinList = (props) => {
       }
     }  
 
-    const fetchCoinData = async (coin) => {
+    async function fetchCoinData(coin) {
       try {
         const response = await axios.get(`https://data-api.cryptocompare.com/asset/v1/data/by/symbol?asset_symbol=${coin}&api_key=de528b65cdbb62a301a3bbd68201919b928595d750ce18281f45ad59ee77bdfa`);
         return response;
@@ -359,7 +361,7 @@ const PortfolioCoinList = (props) => {
       }
     };
     
-      const addAllCoinsToAnalysis = async () => {
+      async function addAllCoinsToAnalysis() {
       
         try {
           const response = await api.get(`http://localhost:3006/portfolios/${props.id}`);
@@ -392,6 +394,7 @@ const PortfolioCoinList = (props) => {
                 coinId = matchingCoin;
                 console.log("adding coinId: "+coinId)
               }
+
               if (coinName.includes(" ")) {
                 coinName = coinName.replace(/ /g, "-"); // replace all spaces with dashes
               }
@@ -401,6 +404,7 @@ const PortfolioCoinList = (props) => {
               if (coinName.charAt(0) === '-') {
                 coinName = coinName.substring(1); // remove first character if it is a dash
               }
+
               if (coinName.includes("travala")) {
                 coinName = coinName.replace("travala", "concierge-io");
               }
@@ -482,9 +486,46 @@ const PortfolioCoinList = (props) => {
               if (coinName.includes("theta-network")) {
                 coinName = coinName.replace("theta-network", "theta-token");  
               }
-              // if (coinName.includes("theta-network")) {
-              //   coinName = coinName.replace("theta-network", "ryoshis-vision");
-              // }           
+              if (coinName.includes("rocketpool")) {
+                coinName = coinName.replace("rocketpool", "rocket-pool");  
+              }  
+              if (coinName.includes("conzelcash-token")) {
+                coinName = coinName.replace("conzelcash-token", "conflux-token");  
+              }
+              if (coinName.includes("ethereumpow")) {
+                coinName = coinName.replace("ethereumpow", "ethereum-pow-iou");  
+              }
+              if (coinName === "terra") {
+                coinName = coinName.replace("terra", "terra-luna-2");  
+              }
+              if (coinName === "terra-classic") {
+                coinName = coinName.replace("terra-classic", "terra-luna");  
+              }
+              if (coinName.includes("flare")) {
+                coinName = coinName.replace("flare", "flare-networks");  
+              }
+              if (coinName.includes("horizen")) {
+                coinName = coinName.replace("horizen", "zencash");  
+              }
+              if (coinName.includes("fun-token")) {
+                coinName = coinName.replace("fun-token", "funfair");  
+              }
+              if (coinName.includes("guaranteed-entrance-token")) {
+                coinName = coinName.replace("guaranteed-entrance-token", "get-token");  
+              }
+              //constellation-labs
+              if (coinName.includes("constellation")) {
+                coinName = coinName.replace("constellation", "constellation-labs");  
+              }
+              if (coinName.includes("pancakeswap")) {
+                coinName = coinName.replace("pancakeswap", "pancakeswap-token");  
+              }
+              //worldwide-asset-exchange
+              if (coinName.includes("worldwide-asset-exchange")) {
+                coinName = coinName.replace("worldwide-asset-exchange", "wax");  
+              }
+
+              
               
               return { coinName: coinName, coinId: coinId };
             } else {
@@ -508,18 +549,19 @@ const PortfolioCoinList = (props) => {
     };
 
 
-    const addcoinIdToAnalysis = async (coinId) => {
+    async function addcoinIdToAnalysis(coinId) {
 
       try {
           const response = await api.get(`http://localhost:3006/portfolios/${props.id}`);
-          const portfolio = response.data;            
-        
-          const coinNameData = await axios.get(`https://data-api.cryptocompare.com/asset/v1/data/by/symbol?asset_symbol=${coinId}&api_key=de528b65cdbb62a301a3bbd68201919b928595d750ce18281f45ad59ee77bdfa`);
+          const portfolio = response.data;    
+
+          
+          const coinNameData = await axios.get(`https://data-api.cryptocompare.com/asset/v1/data/by/symbol?asset_symbol=${coinId}&api_key=${process.env.REACT_APP_CRYPTOCOMPARE_API_KEY}`);
       
           let coinName = coinNameData.data.Data.NAME.toLowerCase();
 
           if (coinName.includes(" ")) {
-              coinName = coinName.replace(/ /g, "-"); // replace all spaces with dashes
+            coinName = coinName.replace(/ /g, "-"); // replace all spaces with dashes
           }
           if (coinName.includes(".")) {
             coinName = coinName.replace(".", "-"); // replace all spaces with dashes
@@ -611,6 +653,50 @@ const PortfolioCoinList = (props) => {
           if (coinName.includes("theta-network")) {
             coinName = coinName.replace("theta-network", "theta-token");
           }   
+          if (coinName.includes("rocketpool")) {
+            coinName = coinName.replace("rocketpool", "rocket-pool");  
+          }
+          if (coinName.includes("conzelcash-token")) {
+            coinName = coinName.replace("conzelcash-token", "conflux-token");  
+          }
+          if (coinName.includes("ethereumpow")) {
+            coinName = coinName.replace("ethereumpow", "ethereum-pow-iou");  
+          }
+          if (coinName === "terra") {
+            coinName = coinName.replace("terra", "terra-luna-2");  
+          }
+          if (coinName === "terra-classic") {
+            coinName = coinName.replace("terra-classic", "terra-luna");  
+          }
+          if (coinName.includes("flare")) {
+            coinName = coinName.replace("flare", "flare-networks");         
+          }
+          if (coinName.includes("horizen")) {
+            coinName = coinName.replace("horizen", "zencash");  
+          }
+          if (coinName.includes("fun-token")) {
+            coinName = coinName.replace("fun-token", "funfair");  
+          }
+          if (coinName.includes("guaranteed-entrance-token")) {
+            coinName = coinName.replace("guaranteed-entrance-token", "get-token");  
+          }
+          if (coinName.includes("constellation")) {
+            coinName = coinName.replace("constellation", "constellation-labs");  
+          }
+          if (coinName.includes("pancakeswap")) {
+            coinName = coinName.replace("pancakeswap", "pancakeswap-token");  
+          }
+          if (coinName.includes("worldwide-asset-exchange")) {
+            coinName = coinName.replace("worldwide-asset-exchange", "wax");  
+          }
+
+          
+          
+         
+          console.log("coinlist coinId: "+coinId)
+          console.log("coinlist coinName: "+coinName)          
+
+
 
           const analysisItem = { coinName: coinName, coinId: coinId };
           portfolio.analysis.push(analysisItem);
@@ -624,9 +710,12 @@ const PortfolioCoinList = (props) => {
           
       } catch (error) {
 
+
+
         if (error.response && error.response.status === 404) {
           // Coin not found, skip it
           console.error('Coin not found:', coinId);
+
         } else {
           // Handle other errors
           console.error(error);
@@ -637,20 +726,31 @@ const PortfolioCoinList = (props) => {
     }; 
 
 
-    const removeCoinHandler = async (coinId) => {        // your logic to delete the coin from the API
+    async function removeCoinHandler(coinId) {        
+      // your logic to delete the coin from the API
       try { 
           const response = await api.get(`http://localhost:3006/portfolios/${props.id}`);
           const portfolio = response.data;
           // find the index of the coin in the portfolio's coins array
+          console.log("removing coinId: "+coinId);
+          console.log("removing from portfolio.values: ",portfolio.values);
+
           const coinIndex = portfolio.coins.indexOf(coinId);
-          const coinValue = portfolio.values.findIndex(value => value.coinId === coinId);
+
+          if(portfolio.values !== undefined){
+   
+            const coinValue = portfolio.values.findIndex(value => value.coinId === coinId);
+            portfolio.values.splice(coinValue, 1);
+
+          }
           
           if (coinIndex === -1) {
           throw new Error(`Coin with id ${coinId} not found in portfolio with id ${props.id}`);
           }
+          
           // remove the coin from the portfolio's coins array
           portfolio.coins.splice(coinIndex, 1);
-          portfolio.values.splice(coinValue, 1);
+          
 
           // update the portfolio with the new coins array
           await api.patch(`http://localhost:3006/portfolios/${props.id}`, { coins: portfolio.coins, values: portfolio.values });       
@@ -733,56 +833,57 @@ return (
                     onClick={() => handleSort("change30Days")}
                     >
                     30-Day Change</div>  
-        </div> 
-
-        {sortedCoins.map((coin, index) => {
-
-                    return (
-              <div className="coin-table-row" key={coin.key}>
-                    <div className="item rowCell image">
-                    {coin.IMGURL && <img src={coin?.IMGURL} alt={coin?.FROMSYMBOL} />}
-                    {coin?.FROMSYMBOL}
-                    </div>
-                    <div className="item rowCell marketcap">{coin?.MKTCAP?.toLocaleString('en-US')}</div>
-                    <div className="item rowCell" align="left">
-                        <input
-                          type="text"
-                          value={inputValues[coin.key] !== undefined ? inputValues[coin.key] : coin.amount}
-                          onChange={(event) => handleAmountChange(event, coin.key)}
-                        />
-                    </div>
-                    <div className="item rowCell price">{coin?.PRICE?.toLocaleString('en-US', {style: 'currency', currency: 'USD', minimumFractionDigits: 8})}</div>
-                    <div className="item rowCell price">{coin?.VALUE?.toLocaleString('en-US', {style: 'currency', currency: 'USD', minimumFractionDigits: 2})}</div>
-                    <div className="item rowCell price">{coin?.CHANGEPCT24HOUR?.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 2 })}</div>
-                    <div className="item rowCell price">{coin?.change7Days?.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 2 })}</div>
-                    <div className="item rowCell price">{coin?.change30Days?.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 2 })}</div>
-                    <div className="item rowCell button grey">
-                      <div className="item btn-group">
-                      <button
-                          className="ui red basic button"
-                          onClick={() => updateAmtHandler(coin.key)}
-                        >
-                          Update
-                        </button>
-                        <button
-                          className="ui red basic button"
-                          onClick={() => removeCoinHandler(coin.key)}
-                        >
-                          Delete
-                        </button>
-                        <button
-                          className="ui basic button blue"
-                          onClick={() => addcoinIdToAnalysis(coin.key)}
-                        >
-                          Add to Analysis
-                        </button>
+        </div>       
+      
+        {         
+          sortedCoins.length === 0 ? (
+            <h3>Loading...</h3>
+          ) : (
+          sortedCoins.map((coin, index) => (                      
+                <div className="coin-table-row" key={coin.key}>
+                      <div className="item rowCell image">
+                      {coin.IMGURL && <img src={coin?.IMGURL} alt={coin?.FROMSYMBOL} />}
+                      {coin?.FROMSYMBOL}
                       </div>
-                    </div>
-              </div>
-            );
-
-            
-          })}
+                      <div className="item rowCell marketcap">{coin?.MKTCAP?.toLocaleString('en-US')}</div>
+                      <div className="item rowCell" align="left">
+                          <input
+                            type="text"
+                            value={inputValues[coin.key] !== undefined ? inputValues[coin.key] : coin.amount}
+                            onChange={(event) => handleAmountChange(event, coin.key)}
+                          />
+                      </div>
+                      <div className="item rowCell price">{coin?.PRICE?.toLocaleString('en-US', {style: 'currency', currency: 'USD', minimumFractionDigits: 8})}</div>
+                      <div className="item rowCell price">{coin?.VALUE?.toLocaleString('en-US', {style: 'currency', currency: 'USD', minimumFractionDigits: 2})}</div>
+                      <div className="item rowCell price">{coin?.CHANGEPCT24HOUR?.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 2 })}</div>
+                      <div className="item rowCell price">{coin?.change7Days?.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 2 })}</div>
+                      <div className="item rowCell price">{coin?.change30Days?.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 2 })}</div>
+                      <div className="item rowCell button grey">
+                        <div className="item btn-group">
+                        <button
+                            className="ui red basic button"
+                            onClick={() => updateAmtHandler(coin.key)}
+                          >
+                            Update
+                          </button>
+                          <button
+                            className="ui red basic button"
+                            onClick={() => removeCoinHandler(coin.key)}
+                          >
+                            Delete
+                          </button>
+                          <button
+                            className="ui basic button blue"
+                            onClick={() => addcoinIdToAnalysis(coin.key)}
+                          >
+                            Add to Analysis
+                          </button>
+                        </div>
+                      </div>
+                </div>
+        ))
+        )
+      }
           <ToastContainer className="custom-toast-container" />
           <button className="ui button blue right" onClick={addAllCoinsToAnalysis}>Add All Coins to Analysis</button>
       </div>
@@ -800,7 +901,9 @@ return (
                     <div className="headerCell" align="left">24-Hour Change</div>
                     <div className="headerCell" align="left">7-Day Change</div>
                     <div className="headerCell" align="left">30-Day Change</div>               
-                </div>             
+                </div>
+
+                <h3>Loading...</h3>             
 
                 <button className="ui button blue right" onClick={addAllCoinsToAnalysis}>Add All Coins to Analysis</button>
         </div>
