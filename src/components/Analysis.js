@@ -653,8 +653,6 @@ function Analysis() {
 
   async function GetAnalysisCoins() {
 
-    try {
-
           const portfolios = await api.get("http://localhost:3006/portfolios");
 
           let allAnalysisCoins = [];
@@ -891,10 +889,14 @@ function Analysis() {
                     );
 
                     // Assuming the API response contains an array of price data points, retrieve the first entry 
-                    console.log(coinId+" response.data.data.values: ",response.data.data.values[0]);           
+                    console.log(coinId+" response.data.data.values: ",response.data.data.values);           
 
                     if(response.data.data.values !== null ) {
-                      const priceData = response.data.data.values[0];                
+                      const priceData = response.data.data.values[0]; 
+
+                      console.log(coinId+" not null - response.data.data.values: ",response.data.data.values[0]);    
+                      console.log(coinId+" not null - response.data.data.values priceData: ",priceData[4]);    
+
                       yearAgoBtcPrice = priceData[4];
                     } else {
                       yearAgoBtcPrice = 0;
@@ -1438,8 +1440,6 @@ function Analysis() {
 
                 setTotalScore(total);
 
-              
-
 
                 coinData.push({
                   id: value.id,
@@ -1485,7 +1485,8 @@ function Analysis() {
                   buysell: buysell
                 });
 
-                setCoinData(coinData);           
+                setCoinData(coinData);  
+                setIsLoading(false);         
 
 
               }
@@ -1494,22 +1495,12 @@ function Analysis() {
 
         } else {
 
-            setIsLoading(false);
+            setIsLoading(true);
             console.log("Error retrieving coin data");       
 
       } 
     }
 
-  } catch (error) {
-    if (error.response && error.response.status === 404) {
-      console.log("API returned a 404 response. Error code:", error.response.status);
-      // You can also access other information from the error.response object if needed.
-      setIsLoading(false);
-      
-     } else {
-      console.log("An error occurred:", error.message);
-    }
-  }
 
 };
 
