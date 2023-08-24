@@ -875,18 +875,27 @@ function Analysis() {
                   const endDate = new Date().toISOString().split('T')[0]; // Today's date
                   const startDate = new Date(); // Current date/time
                   startDate.setDate(startDate.getDate() - 365); // Subtract 365 days
-                  const startDateFormatted = startDate.toISOString().split('T')[0]; // Formatted start date
-                
+                  const startDateFormatted = startDate.toISOString().split('T')[0]; // Formatted start date                
+                    
                     const response = await axios.get(
-                      `https://data.messari.io/api/v1/assets/${coinId}/metrics/price/time-series?start=${startDateFormatted}&end=${endDate}`
+                      `https://data.messari.io/api/v1/assets/${coinId}/metrics/price/time-series`,
+                      {
+                        params: {
+                          start: startDateFormatted,
+                          end: endDate,
+                          format: 'json',
+                          interval: '1d',
+                          market: 'btc', // Specify 'btc' to get BTC price data
+                        },
+                      }
                     );
 
                     // Assuming the API response contains an array of price data points, retrieve the first entry 
-                    console.log(coinId+" response.data.data.values: "+response.data.data.values);           
+                    console.log(coinId+" response.data.data.values: ",response.data.data.values[0]);           
 
                     if(response.data.data.values !== null ) {
                       const priceData = response.data.data.values[0];                
-                      yearAgoBtcPrice = priceData[1];
+                      yearAgoBtcPrice = priceData[4];
                     } else {
                       yearAgoBtcPrice = 0;
                     }              
