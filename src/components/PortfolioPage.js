@@ -209,7 +209,7 @@ const PortfolioPage = (props) => {
 
   }
     
-  const finalGrandTotal = grandTotal ? grandTotal : 'Loading....';
+  const finalGrandTotal = grandTotal ? '$'+grandTotal.toFixed(2) : 'Loading....';
   const finalValue24HoursAgo = totalValue24HoursAgo ? totalValue24HoursAgo : 'Loading...';
   const finalValue21DaysAgo = totalValue21DaysAgo ? totalValue21DaysAgo : 'Loading...'; 
 
