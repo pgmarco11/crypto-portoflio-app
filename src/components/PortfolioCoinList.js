@@ -26,23 +26,33 @@ const PortfolioCoinList = (props) => {
    
 
     async function handleAmountChange(event, coinId) {
+
       const inputValue = event.target.value;
 
-    // Remove non-numeric characters except periods and decimals
-    const sanitizedValue = inputValue.replace(/[^0-9.]/g, '');
+      if (inputValue === '') {
 
-    const newValue = sanitizedValue !== '' && !isNaN(sanitizedValue) ? parseFloat(sanitizedValue) : 0;    
+        setInputValues((prevInputValues) => ({
+          ...prevInputValues,
+          [coinId]: ''
+        }));
+      } else {  
+  
+      const newValue = !isNaN(inputValue) ? inputValue : 0;    
+  
+      setInputValues((prevInputValues) => ({
+        ...prevInputValues,
+        [coinId]: newValue,
+      }));
 
-    setInputValues((prevInputValues) => ({
-      ...prevInputValues,
-      [coinId]: newValue,
-    }));
+      }
     
       console.log(inputValues);
     };
   
     async function updateAmtHandler(coinId) {
       try {
+
+
         console.log('Update button clicked for coin ID:', coinId);        
 
         const response = await api.get(`http://localhost:3006/portfolios/${props.id}`);
@@ -204,7 +214,7 @@ const PortfolioCoinList = (props) => {
           }                
     
           coinDataArray.push({
-            key: coinData.FROMSYMBOL,
+            key: coin,
             FROMSYMBOL: coinData.FROMSYMBOL,
             IMGURL: imagePath,
             MKTCAP: marketCap,
@@ -799,31 +809,39 @@ const PortfolioCoinList = (props) => {
     async function removeCoinHandler(coinId) {        
       // your logic to delete the coin from the API
       try { 
+
           const response = await api.get(`http://localhost:3006/portfolios/${props.id}`);
           const portfolio = response.data;
           // find the index of the coin in the portfolio's coins array
           console.log("removing coinId: "+coinId);
           console.log("removing from portfolio.values: ",portfolio.values);
 
-          const coinIndex = portfolio.coins.indexOf(coinId);
+          console.log("portfolio.coins : ",portfolio.coins)
 
-          if(portfolio.values !== undefined){
-   
-            const coinValue = portfolio.values.findIndex(value => value.coinId === coinId);
-            portfolio.values.splice(coinValue, 1);
+          if(coinId !== undefined){
 
-          }
-          
-          if (coinIndex === -1) {
-          throw new Error(`Coin with id ${coinId} not found in portfolio with id ${props.id}`);
-          }
-          
-          // remove the coin from the portfolio's coins array
-          portfolio.coins.splice(coinIndex, 1);
-          
+            const coinIndex = portfolio.coins.indexOf(coinId);            
 
-          // update the portfolio with the new coins array
-          await api.patch(`http://localhost:3006/portfolios/${props.id}`, { coins: portfolio.coins, values: portfolio.values });       
+            if(portfolio.values !== undefined){   
+              const coinValue = portfolio.values.findIndex(value => value.coinId === coinId);
+              portfolio.values.splice(coinValue, 1);  
+            }
+            
+            if (coinIndex === -1) {
+            throw new Error(`Coin with id ${coinId} not found in portfolio with id ${props.id}`);
+            }
+
+            // remove the coin from the portfolio's coins array
+            portfolio.coins.splice(coinIndex, 1);
+
+            // update the portfolio with the new coins array
+            await api.patch(`http://localhost:3006/portfolios/${props.id}`, { coins: portfolio.coins, values: portfolio.values });       
+
+          } else {
+
+            throw new Error(`Coin with id ${coinId} not found in portfolio with id ${props.id}`);
+
+          }           
 
           props.coinRefresh(); 
           
@@ -836,8 +854,21 @@ const PortfolioCoinList = (props) => {
   const sortedCoins = coinData.slice().sort((a, b) => {
     const aValue = a[sortBy];
     const bValue = b[sortBy];
+
+
+     // Check if both values are strings before performing alphabetical sorting
+  if (typeof aValue === 'string' && typeof bValue === 'string') {
+    // Perform alphabetical sorting
+    return sortOrder === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+  } else {
+
+    // If one or both values are not strings, maintain the existing order
     return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
+
+  }  
+    
   });
+
    
 if(props.portfolioCoins !== undefined){
 
@@ -896,9 +927,11 @@ return (
                     onClick={() => handleSort("change30Days")}
                     >
                     30-Day Change</div>  
-        </div>       
+        </div>   
+            
       
-        {         
+        {                
+
           sortedCoins.length === 0 ? (
             <h3>Loading...</h3>
           ) : (

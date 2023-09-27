@@ -3,10 +3,17 @@ import { React } from "react";
 function CoinTableRow({ coin, handleCoinPrediction, removeCoinHandler, handleInputChange, coinInputValues  }) {
 
   // Handle input change
-  async function handleChange(event, coin) {  
+  async function handleChange(event, coin) { 
     const newValue = event.target.value;
     handleInputChange(newValue, coin);
   };
+
+  console.log("handleCoinPrediction coinInputValues : ", coinInputValues)
+  console.log("handleCoinPrediction coinInputValues coin: ", coin)
+  console.log("handleCoinPrediction coinInputValues coin id: ", coin.id)
+  console.log("handleCoinPrediction coinInputValues coinInputValues id: ", coinInputValues[coin.id])
+
+
   
 
   return (
@@ -71,7 +78,9 @@ function CoinTableRow({ coin, handleCoinPrediction, removeCoinHandler, handleInp
                 </div>
                 <div className="item rowCell" align="left">
                 <input
-                    type="text"               
+                    type="number"
+                    step="any" // Allows decimal input
+                    style={{ width: '80px' }}               
                     value={coinInputValues[coin.id] !== '' && !coinInputValues[coin.id] ? coin.prediction : coinInputValues[coin.id]  } 
                     onChange={(e) => handleChange(e,coin.id)}
                   />

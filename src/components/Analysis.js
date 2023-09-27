@@ -114,6 +114,8 @@ function Analysis() {
     ninetyDaysPercentChange
   ) {
 
+  console.log("handleCoinPrediction input value : ",predictionPrice)
+
   let newGainPredictionScore = 0;
   let newAvgGainPredictionScore = 0;
   let newGainPrediction = null;
@@ -989,29 +991,22 @@ function Analysis() {
   
   async function handleInputChange(e, coinId) {    
 
-    console.log("coinId: "+coinId)     
+    console.log("coinId: " + coinId);
 
-    if(e === ''){
-
-        setCoinInputValues((prevInputValues) => ({
-          ...prevInputValues,
-          [coinId]: ''
-        }));
-      }
-
-    else {
-
-      const sanitizedValue = e.replace(/[^0-9.]/g, '');
-      const newValue = sanitizedValue !== '' && !isNaN(sanitizedValue) ? parseFloat(sanitizedValue) : 0;   
-
+    if (e === '') {
       setCoinInputValues((prevInputValues) => ({
         ...prevInputValues,
-        [coinId]: newValue,
+        [coinId]: ''
       }));
+    } else {  
 
-    }
+    const newValue = !isNaN(e) ? e : 0;    
 
-    
+    setCoinInputValues((prevInputValues) => ({
+      ...prevInputValues,
+      [coinId]: newValue,
+    }));
+    }    
 
   };
 
