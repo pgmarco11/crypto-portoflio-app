@@ -62,10 +62,19 @@ const PortfolioPage = (props) => {
 
   // Function to calculate the total USD amount for a portfolio
   async function calculatePortfolioValue(portfolio) {
+
     let totalValue = 0;
+
     for (const value of portfolio.values) {
+
       const coinValue = await fetchAndCacheCoinValue(value.coinId, value.amount);
+
+     if(isNaN(coinValue) === false){
+
       totalValue += coinValue;
+
+     } 
+
     }
     return totalValue;
   }
@@ -146,6 +155,7 @@ const PortfolioPage = (props) => {
                   portfolio,
                   'https://min-api.cryptocompare.com/data/v2/histoday?fsym='
                 );
+                console.log("portfolioValue : ",portfolioValue)
 
                 grandTotal += portfolioValue;
                 totalValue24HoursAgo += portfolioValue24HoursAgo;
@@ -153,6 +163,8 @@ const PortfolioPage = (props) => {
             }  
         }      
     }
+
+
 
     setGrandTotal(grandTotal);
     setTotalValue24HoursAgo(percent24Hours(grandTotal, totalValue24HoursAgo));
@@ -197,9 +209,9 @@ const PortfolioPage = (props) => {
 
   }
     
-  const finalGrandTotal = grandTotal ? '$'+grandTotal.toFixed(2) : 'Loading....';
-  const finalValue24HoursAgo = totalValue24HoursAgo ? totalValue24HoursAgo.toLocaleString(undefined, { style: "percent" } ) : 'Loading...';
-  const finalValue21DaysAgo = totalValue21DaysAgo ? totalValue21DaysAgo.toLocaleString(undefined, { style: "percent" } ) : 'Loading...'; 
+  const finalGrandTotal = grandTotal ? grandTotal : 'Loading....';
+  const finalValue24HoursAgo = totalValue24HoursAgo ? totalValue24HoursAgo : 'Loading...';
+  const finalValue21DaysAgo = totalValue21DaysAgo ? totalValue21DaysAgo : 'Loading...'; 
 
 
   return (
@@ -212,11 +224,11 @@ const PortfolioPage = (props) => {
           </li>
           <li>
             <span className="sub-header">24 Hours Portfolio Change:&nbsp;&nbsp;</span>
-            {finalValue24HoursAgo}
+            {finalValue24HoursAgo.toLocaleString(undefined, { style: "percent" } ) }
           </li>
           <li>
             <span className="sub-header">21 Days Portfolio Change:&nbsp;&nbsp;</span>
-            {finalValue21DaysAgo}
+            {finalValue21DaysAgo.toLocaleString(undefined, { style: "percent" } )}
           </li>
         </ul>
       </div>
