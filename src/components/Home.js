@@ -9,11 +9,12 @@ function Home() {
             <div className="home-main"> 
                 <div className="app-main">  
                     <Portfolios /> 
-                    <CurrencyConverter />                          
+                                       
                 </div>   
             </div>
             <div className="app-news">                        
                         <NewsFeed /> 
+                        <CurrencyConverter />       
             </div> 
         </div> 
     )

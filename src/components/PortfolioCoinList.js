@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
@@ -6,90 +6,118 @@ import api from '../api/portfolios';
 
 const PortfolioCoinList = (props) => {
 
-    let portfolioCoins = props.portfolioCoins;
+  const [coinData, setCoinData] = useState([]);
+  const [sortOrder, setSortOrder] = useState("desc");
+  const [sortBy, setSortBy] = useState("MKTCAP");
+  const [inputValues, setInputValues] = useState({});
 
-    console.log("list portfolio child: ",portfolioCoins)
-    
-    const [coinData, setCoinData] = useState([]); 
-    const [sortOrder, setSortOrder] = useState("desc"); // or "desc" for descending order
-    const [sortBy, setSortBy] = useState("MKTCAP"); // default sorting attribute
-    const [inputValues, setInputValues] = useState({});
+  useEffect(() => {
+    if(props.portfolioCoins.length > 0){
+        fetchData();
+    }    
+      
+  }, [props.portfolioCoins]); 
+
+  const handleSort = (attribute) => {
+    // Update sort order and attribute
+    setSortOrder((prevSortOrder) => (prevSortOrder === "asc" ? "desc" : "asc"));
+    setSortBy(attribute);
+  };
    
-
-    async function handleSort(attribute) {
-      if (attribute === sortBy) {
-        // If the same attribute is clicked again, reverse the sort order 
-        setSortOrder((prevSortOrder) => (prevSortOrder === "asc" ? "desc" : "asc"));
-      } else {
-        // If a different attribute is clicked, set it as the new sorting attribute
-        setSortBy(attribute);
-        setSortOrder("asc"); // default to ascending order for the new attribute
-      }
-    };    
 
     async function handleAmountChange(event, coinId) {
       const inputValue = event.target.value;
-      const newValue = inputValue !== '' && !isNaN(inputValue) ? parseFloat(inputValue) : 0;
-    
-      setInputValues((prevInputValues) => ({
-        ...prevInputValues,
-        [coinId]: newValue,
-      }));
+
+    // Remove non-numeric characters except periods and decimals
+    const sanitizedValue = inputValue.replace(/[^0-9.]/g, '');
+
+    const newValue = sanitizedValue !== '' && !isNaN(sanitizedValue) ? parseFloat(sanitizedValue) : 0;    
+
+    setInputValues((prevInputValues) => ({
+      ...prevInputValues,
+      [coinId]: newValue,
+    }));
     
       console.log(inputValues);
     };
   
     async function updateAmtHandler(coinId) {
       try {
-        console.log('Update button clicked for coin ID:', coinId);
+        console.log('Update button clicked for coin ID:', coinId);        
+
         const response = await api.get(`http://localhost:3006/portfolios/${props.id}`);
         const portfolio = response.data;  
-       
-        const portfolioValues = [...portfolio.values]; // Create a copy of the portfolio values array        
+
+        console.log('Update button before clicked for portfolio:', portfolio);
+        console.log('Update button before clicked for portfolio.values:', portfolio.values);
+
+        let portfolioValues = 0;
+
+        portfolioValues = [...portfolio.values]; // Create a copy of the portfolio values array    
+        
+        console.log("Update button before patch setting portfolioValues",portfolioValues); 
   
         const existingIndex = portfolioValues.findIndex((item) => item.coinId === coinId);
+
         if (existingIndex !== -1) {
-          // If the coinId already exists in the portfolio, update the amount
-          portfolioValues[existingIndex].amount = inputValues[coinId];
+
+          // If the coinId already exists in the portfolio, update the amount and patch api
+          portfolioValues[existingIndex].amount = inputValues[coinId];          
+
         } else {
+
           // If the coinId doesn't exist, create a new portfolio amount object
           const newPortfolioAmount = { coinId: coinId, amount: inputValues[coinId] };
           portfolioValues.push(newPortfolioAmount);
-        }
-  
-        await api.patch(`http://localhost:3006/portfolios/${props.id}`, { values: portfolioValues });
-  
-        console.log(response.data);
-  
+
+        }  
+
+        await api.patch(`http://localhost:3006/portfolios/${props.id}`, { values: portfolioValues });      
+        
+        console.log('Update button after clicked for portfolio:', portfolio);
+        console.log('Update button after clicked for portfolio.values:', portfolio.values);
+
         fetchData();
+        
       } catch (error) {
         console.error(error);
       }
     };
 
-    console.log("portfolioCoins: "+portfolioCoins);
+    console.log("portfolioCoins: "+props.portfolioCoins);
     console.log("props.id: "+props.id);
     
-    const portfolioTotalValue = []; 
+    let portfolioTotalValue = [];     
 
-    
+    const fetchData = useCallback(async () => {
 
-   async function fetchData() {
+      portfolioTotalValue = [];
+
       try {
-        const coinList = portfolioCoins.join(',');
+        const coinList = props.portfolioCoins.join(',');
+
         const response = await axios.get(
           `https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${coinList}&tsyms=USD&extraParams=cryptocompare&api_key=de528b65cdbb62a301a3bbd68201919b928595d750ce18281f45ad59ee77bdfa`
         );
     
         const coinDataArray = [];
     
-        for (let coin of portfolioCoins) {
+        for (let coin of props.portfolioCoins) {
           console.log("coin: "+coin);
-          console.log('https://min-api.cryptocompare.com/data/pricemultifull?fsyms='+coin+'&tsyms=USD&extraParams=cryptocompare&api_key=de528b65cdbb62a301a3bbd68201919b928595d750ce18281f45ad59ee77bdfa')
-          const coinData = response.data.RAW[coin].USD;
+          console.log(coin+" ccoindata response.data:",response.data)
+          console.log(coin+" coindata response.data.RAW[coin]:",response.data.RAW[coin])
+          
+
+          if(response.data.RAW[coin] !== undefined){
+
+            const coinData = response.data.RAW[coin].USD;
+
+         
           const change24Hours = coinData?.CHANGEPCT24HOUR / 100;
           const price = parseFloat(coinData?.PRICE);
           const imagePath = "https://www.cryptocompare.com/" + coinData.IMAGEURL;
+
+       
     
     
           let coinChange7DaysData = await axios.get(
@@ -162,9 +190,18 @@ const PortfolioCoinList = (props) => {
           const amountValue = portfolio?.values?.find(
             (value) => value.coinId === coin
           )?.amount;
-          const totalValue = amountValue * price;
-          const value = isNaN(totalValue) ? 0 : totalValue;
-          portfolioTotalValue.push(value);
+
+          let value = 0;
+
+          if(amountValue !== 0){
+            const totalValue = amountValue * price;
+            value = isNaN(totalValue) ? 0 : totalValue;
+            console.log("update button before fetchData total value data:",totalValue)  
+          }
+
+          if (value !== 0 ){
+            portfolioTotalValue.push(value);    
+          }                
     
           coinDataArray.push({
             key: coinData.FROMSYMBOL,
@@ -181,26 +218,47 @@ const PortfolioCoinList = (props) => {
         }
     
         setCoinData(coinDataArray);
+
+      }
         
-        let portfolioValue = 0;
+
+      console.log("Update button before loop then fetching data again for total portfolioTotalValue",portfolioTotalValue); 
+
+      let portfolioValue = 0;        
+        
+        
+      console.log("Update button before loop then fetching data again for portfolioValue",portfolioValue); 
     
-        for (let v = 0; v < portfolioTotalValue.length; v++) {
-          portfolioValue = portfolioValue + portfolioTotalValue[v];
-        }
+
+        for (let v = 0; v < portfolioTotalValue.length; v++) {     
+            
+            console.log("Update button loop then fetching data again for portfolioValues",portfolioValue); 
+
+            console.log("Update button loop then fetching data again for portfolioTotalValue",portfolioTotalValue);               
+
+            portfolioValue = portfolioValue + portfolioTotalValue[v];
+        }   
     
-        props.sendValueToCoin(portfolioValue);
+
+         
+
+            if(portfolioValue !== 0) {
+
+              console.log("Update button then fetching data again for portfolioValues",portfolioValue);  
+
+              props.sendValueToCoin(portfolioValue);  
+            }
+      
+          
+          
+          
+        
+ 
+
       } catch (error) {
         console.error(error);
       }
-    };    
-      
-     useEffect(() => { 
-      setCoinData([]);
-      if (portfolioCoins.length > 0) {
-        fetchData();
-      }
-    
-    }, [portfolioCoins]);
+    }, [props.portfolioCoins]);
 
 
     async function getMarketCap(coinId) {
@@ -232,6 +290,8 @@ const PortfolioCoinList = (props) => {
                 timestamp_start: Date.now() - 7 * 24 * 60 * 60 * 1000, // Get data from 7 days ago to now
               },
             });
+
+            console.log("get7DayChange.status: ",response.status); 
 
             if (response.status === 404) {
               return 'N/A';
@@ -293,6 +353,8 @@ const PortfolioCoinList = (props) => {
                 },
             });
 
+            console.log("get30DayChange.status: ",response.status); 
+
             if (response.status === 404) {
               return 'N/A';
             }
@@ -339,12 +401,12 @@ const PortfolioCoinList = (props) => {
       
           }
                     
-      } catch (error) {
-        if (error.response && error.response.status === 404) {
-          return 'N/A';
+        } catch (error) {
+          if (error.response && error.response.status === 404) {
+            return 'N/A';
+          }
+          console.error(error);
         }
-        console.error(error);
-      }
     }  
 
     async function fetchCoinData(coin) {
@@ -524,6 +586,11 @@ const PortfolioCoinList = (props) => {
               if (coinName.includes("worldwide-asset-exchange")) {
                 coinName = coinName.replace("worldwide-asset-exchange", "wax");  
               }
+              //render-token
+              if (coinName.includes("render")) {
+                coinName = coinName.replace("render", "render-token");  
+              }
+
 
               
               
@@ -689,7 +756,10 @@ const PortfolioCoinList = (props) => {
           if (coinName.includes("worldwide-asset-exchange")) {
             coinName = coinName.replace("worldwide-asset-exchange", "wax");  
           }
-
+          if (coinName.includes("render")) {
+            coinName = coinName.replace("render", "render-token");  
+          }
+  
           
           
          
@@ -766,17 +836,10 @@ const PortfolioCoinList = (props) => {
   const sortedCoins = coinData.slice().sort((a, b) => {
     const aValue = a[sortBy];
     const bValue = b[sortBy];
-  
-    if (aValue < bValue) {
-      return sortOrder === "asc" ? -1 : 1;
-    } else if (aValue > bValue) {
-      return sortOrder === "asc" ? 1 : -1;
-    } else {
-      return 0;
-    }
+    return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
   });
    
-if(portfolioCoins !== undefined){
+if(props.portfolioCoins !== undefined){
 
 return (
 
@@ -848,12 +911,14 @@ return (
                       <div className="item rowCell marketcap">{coin?.MKTCAP?.toLocaleString('en-US')}</div>
                       <div className="item rowCell" align="left">
                           <input
-                            type="text"
+                            type="number"
+                            step="any" // Allows decimal input
+                            style={{ width: '110px' }} 
                             value={inputValues[coin.key] !== undefined ? inputValues[coin.key] : coin.amount}
                             onChange={(event) => handleAmountChange(event, coin.key)}
                           />
                       </div>
-                      <div className="item rowCell price">{coin?.PRICE?.toLocaleString('en-US', {style: 'currency', currency: 'USD', minimumFractionDigits: 8})}</div>
+                      <div className="item rowCell price">{coin?.PRICE?.toLocaleString('en-US', {style: 'currency', currency: 'USD', minimumFractionDigits: 5})}</div>
                       <div className="item rowCell price">{coin?.VALUE?.toLocaleString('en-US', {style: 'currency', currency: 'USD', minimumFractionDigits: 2})}</div>
                       <div className="item rowCell price">{coin?.CHANGEPCT24HOUR?.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 2 })}</div>
                       <div className="item rowCell price">{coin?.change7Days?.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 2 })}</div>

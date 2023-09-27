@@ -123,6 +123,9 @@ span {
   font-size: 1.15em;
   margin-bottom: 10px;
 }
+.portfolioValue .recharts-responsive-container{
+  margin: 0 auto;
+}
 .search-container input {
   background-color: #f0f0f0;
 }
@@ -232,17 +235,43 @@ button:hover {
   box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
   border-radius: 10px;
 }
+
 .news-feed {
   background-color: rgb(204,204,231);
+}
+
+.news-feed {
   padding: 15px;
-  margin: 5px 15px 0 auto;
+  margin: 5px auto 12px 15px;
   box-shadow: 0 3px 10px rgb(0 0 0 / 20%);
   max-width: 300px;
   flex-direction: column;
   border-radius: 8px;
+  float: left;
 }
 .news-feed div {
   padding: 2.5px 0;
+}
+.currency-converter {
+    padding: 0;
+    margin: 0 auto 30px 15px;
+    max-width: 299px;
+    flex-direction: column;
+    border-radius: 8px;
+    float: left;
+    clear: both;
+}
+.currency-converter input {
+    margin-left: 2px;
+    width: 100%;
+}
+
+
+select.currrency-options {
+  display: block;
+  position: relative;
+  right: 0;
+  border-left: 1px solid #000;
 }
 
 /* Added new CSS */
@@ -255,6 +284,9 @@ button:hover {
 }
 .coin-table-row {
   min-height: 64px;
+}
+.coin-table-row input[type="number"] {
+  border: 1px solid #000;
 }
 .coin-analysis {
   background-color: #fff;

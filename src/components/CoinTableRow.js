@@ -1,6 +1,14 @@
-import React from 'react';
+import { React } from "react";
 
-function CoinTableRow({ coin, handleInputChange, handleCoinPrediction, removeCoinHandler, inputValue }) {
+function CoinTableRow({ coin, handleCoinPrediction, removeCoinHandler, handleInputChange, coinInputValues  }) {
+
+  // Handle input change
+  async function handleChange(event, coin) {  
+    const newValue = event.target.value;
+    handleInputChange(newValue, coin);
+  };
+  
+
   return (
     <div className="coin-table-row" key={coin.id}>
        <div className="item rowCell" align="left">
@@ -11,59 +19,77 @@ function CoinTableRow({ coin, handleInputChange, handleCoinPrediction, removeCoi
                   )}
                 </div>
                 <div className="item rowCell" align="left">
-                  {coin.marketCap}
-                </div>
+                  {coin.marketCap.toLocaleString("en-US")}
+                 </div>
                 <div className="item rowCell" align="left"
-                style={{fontWeight: coin.volume && parseInt(coin.volume.replace(/,/g, "")) > 250000 ? 'bold' : 'normal'}}>
-                  {coin.volume}
+                style={{fontWeight: coin.volume && parseInt(coin.volume) > 250000 ? 'bold' : 'normal'}}>
+                  {coin.volume.toLocaleString("en-US")}
                 </div>
                 <div className="item rowCell" align="left">
                   {coin.current_price.toLocaleString('en-US', {style: 'currency', currency: 'USD', minimumFractionDigits: 8})}
                 </div>
                 <div className="item rowCell" align="left"
-                style={{fontWeight: coin.oneYearPercentChange && parseInt(coin.oneYearPercentChange.replace(/,/g, "")) > 2 ? 'bold' : 'normal'}}>
-                  {coin.oneYearPercentChange}                 
+                style={{fontWeight: coin.oneYearPercentChange && parseInt(coin.oneYearPercentChange) > 2 ? 'bold' : 'normal'}}>
+                  {coin.oneYearPercentChange.toLocaleString(
+                    undefined, {  minimumFractionDigits: 4, 
+                                  style: "percent" 
+                              }
+                    )}                 
                 </div>
                 <div className="item rowCell" align="left"
-                style={{fontWeight: coin.oneYearBTCPercentChange && parseInt(coin.oneYearBTCPercentChange.replace(/,/g, "")) > 2 ? 'bold' : 'normal'}}>
-                  {coin.oneYearBTCPercentChange}
+                style={{fontWeight: coin.oneYearBTCPercentChange && parseInt(coin.oneYearBTCPercentChange) > 2 ? 'bold' : 'normal'}}>
+                  {coin.oneYearBTCPercentChange.toLocaleString(
+                    undefined,
+                    { style: "percent" }
+                  )}
                 </div>
                 <div className="item rowCell" align="left"
                 style={{fontWeight: coin.oneYearBTCPriceChange && parseFloat(coin.oneYearBTCPriceChange) > 0.0000001 ? 'bold' : 'normal'}}>
-                  {coin.oneYearBTCPriceChange}
+                  {coin.oneYearBTCPriceChange.toLocaleString(
+                    "en-US",
+                    { minimumFractionDigits: 10 }
+                  )}
                   {/* oneYearBTCPercentChange > 2.0) */}
                 </div>
                 <div className="item rowCell" align="left"
-                style={{fontWeight: coin.inceptionPriceChange && parseInt(coin.inceptionPriceChange.replace(/,/g, "")) > 30 ? 'bold' : 'normal'}}>
-                  {coin.inceptionPriceChange}
+                style={{fontWeight: coin.inceptionPriceChange && parseInt(coin.inceptionPriceChange) > 30 ? 'bold' : 'normal'}}>
+                  {coin.inceptionPriceChange.toLocaleString(
+                    undefined,
+                    { style: "percent" }
+                  )}
                 </div>
                 <div className="item rowCell" align="left"
-                style={{fontWeight: coin.ninetyDaysPercentChange && parseInt(coin.ninetyDaysPercentChange.replace(/,/g, "")) > 14 ? 'bold' : 'normal'}}>
-                  {coin.ninetyDaysPercentChange}
+                style={{fontWeight: coin.ninetyDaysPercentChange && parseInt(coin.ninetyDaysPercentChange) > 14 ? 'bold' : 'normal'}}>
+                  {coin.ninetyDaysPercentChange.toLocaleString(
+                    undefined,
+                    { style: "percent" }
+                  )}
                 </div>
                 <div className="item rowCell" align="left"                
-                style={{fontWeight: coin.inceptionPriceChange && parseInt(coin.inceptionPriceChange.replace(/,/g, "")) > 30 ? 'bold' : 'normal'}}>
+                style={{fontWeight: coin.inceptionPriceChange && parseInt(coin.inceptionPriceChange) > 30 ? 'bold' : 'normal'}}>
                   {coin.maxChartGrade}
                 </div>
                 <div className="item rowCell" align="left">
-                  <input
-                    type="text"
-                    onChange={
-                        (e) => handleInputChange(e.target.value, coin?.id, coin?.buysellrating, coin?.gainPrediction, coin?.avgGainPrediction)
-                    }
+                <input
+                    type="text"               
+                    value={coinInputValues[coin.id] !== '' && !coinInputValues[coin.id] ? coin.prediction : coinInputValues[coin.id]  } 
+                    onChange={(e) => handleChange(e,coin.id)}
                   />
                 </div>
                 <div className="item rowCell" align="left"
-                 style={{fontWeight: coin.gainPrediction && parseInt(coin.gainPrediction.replace(/,/g, "")) > 3 ? 'bold' : 'normal'}}>
-                  {coin.gainPrediction || "-"}
+                 style={{fontWeight: coin.gainPrediction && parseInt(coin.gainPrediction) > 3 ? 'bold' : 'normal'}}>
+                  {coin.gainPrediction}
                 </div>
                 <div className="item rowCell" align="left"
-                 style={{fontWeight: coin.avgGainPrediction && parseInt(coin.avgGainPrediction.replace(/,/g, "")) > 3 ? 'bold' : 'normal'}}>
-                  {coin.avgGainPrediction || "-"}
+                 style={{fontWeight: coin.avgGainPrediction && parseInt(coin.avgGainPrediction) > 3 ? 'bold' : 'normal'}}>
+                  {coin.avgGainPrediction}
                 </div>
                 <div className="item rowCell" align="left"
                 >
-                  {coin.highestPricePercentage || "-"}
+                  {coin.highestPricePercentage.toLocaleString(
+                    undefined,
+                    { style: "percent" }
+                  ) || "-"}
                 </div>
                 <div className="item rowCell" align="left"
                 style={{fontWeight: coin.twitterFollowers > 25000 ? 'bold' : 'normal'}}>             
@@ -84,10 +110,10 @@ function CoinTableRow({ coin, handleInputChange, handleCoinPrediction, removeCoi
                 <div className="item rowCell" align="left"
                 style={{                  
                 fontWeight: coin.buysell === "BUY" || coin.buysell === "SELL" ? 'bold' :
-                            coin.buysell === "BUY" && parseInt(coin.ninetyDaysPercentChange.replace(/,/g, ""))  < 40 ? 
+                            coin.buysell === "BUY" && parseInt(coin.ninetyDaysPercentChange)  < 40 ? 
                                 'bold' :
                                 'normal', 
-                color: coin.buysell === "BUY" && parseInt(coin.ninetyDaysPercentChange.replace(/,/g, "")) < 40 ?
+                color: coin.buysell === "BUY" && parseInt(coin.ninetyDaysPercentChange) < 40 ?
                                 'red' :
                                 'inherit'              
                   }}>
@@ -98,7 +124,7 @@ function CoinTableRow({ coin, handleInputChange, handleCoinPrediction, removeCoi
                     className="ui red basic button"
                     onClick={() =>
                       handleCoinPrediction(
-                        inputValue,
+                        coinInputValues[coin.id],
                         coin.current_price,
                         coin.id,
                         coin.oneYearPercentChange,
@@ -108,7 +134,7 @@ function CoinTableRow({ coin, handleInputChange, handleCoinPrediction, removeCoi
                       )
                     }
                     
-                    disabled={coin.prediction === inputValue ? false : !inputValue}
+                    //disabled={coin.prediction === prediction ? false : !inputValue}
                   >
                     Update Rating
                   </button>

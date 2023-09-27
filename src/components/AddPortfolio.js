@@ -5,10 +5,17 @@ import { v4 as uuid } from 'uuid';
  
 
 class AddPortfolio extends React.Component{  
+
     state = {
         id: "",
-        name: "",
+        name: null,
+        coins: [],
+        values: [],
+        analysis: [],
+        start_date: null    
     }
+
+    
 
     add = (e) => {
         e.preventDefault() 
@@ -18,12 +25,20 @@ class AddPortfolio extends React.Component{
             return;
         }
         this.props.addPortfolioHandler(this.state);
-        this.setState({id: "", name: "" });
+        this.setState({
+        name: null, 
+        id: "", 
+        start_date: null,
+        coins: [],
+        values: [],
+        analysis: []
+        });
     }
     
 
 render() {   
 const {name} = this.state;
+const {DateTimestamp} = Date.now();
 return (
 
     <div className="ui portfolio-add">
@@ -41,9 +56,10 @@ return (
                 placeholder="My Portfolio"
                 value={name}
                 onChange={
-                    (e) => this.setState({
+                    (e) => this.setState({                    
+                    name: e.target.value,
                     id: uuid(), 
-                    name: e.target.value
+                    start_date: DateTimestamp
                     })}
             />
             <button     

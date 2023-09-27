@@ -59,7 +59,7 @@ const CurrencyConverter = () => {
                 <table>
                     <tbody>
                         <tr>
-                            <td>Primary Currency:</td>
+                            <td><h5>Primary:</h5></td>
                             <td>
                                 <input
                                     type="number"
@@ -82,7 +82,7 @@ const CurrencyConverter = () => {
                             </td>
                         </tr>
                         <tr>
-                            <td>Secondary Currency:</td>
+                            <td><h5>Secondary:</h5></td>
                             <td>
                                 <input
                                     name="currency-amount-2"

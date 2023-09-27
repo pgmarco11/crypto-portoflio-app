@@ -28,7 +28,7 @@ const NewsFeed = () => {
 
     if(articles !== null) {
 
-    const first8Articles = articles?.slice(0,8);
+    const first8Articles = articles?.slice(0,6);
     console.log("list articles");
     console.log(articles);
 
