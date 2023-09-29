@@ -2,6 +2,7 @@
 ## Getting Started with Create React App
 
 This project was created to manage a crypto portfolio and analyze different coins and tokens, it was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Works with its own API, https://github.com/pgmarco11/crypto-api/
 
 
 ## Available Scripts
