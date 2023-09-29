@@ -6,6 +6,7 @@ import api from '../api/portfolios';
 
 const PortfolioCoinList = (props) => {
 
+  const [isLoading, setIsLoading] = useState(true);
   const [coinData, setCoinData] = useState([]);
   const [sortOrder, setSortOrder] = useState("desc");
   const [sortBy, setSortBy] = useState("MKTCAP");
@@ -17,6 +18,13 @@ const PortfolioCoinList = (props) => {
     }    
       
   }, [props.portfolioCoins]); 
+
+  useEffect(() => {
+    // Simulate loading data (you can replace this with your actual data fetching logic)
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 7000); // Adjust the time as needed
+  }, []);
 
   const handleSort = (attribute) => {
     // Update sort order and attribute
@@ -123,11 +131,25 @@ const PortfolioCoinList = (props) => {
             const coinData = response.data.RAW[coin].USD;
 
          
-          const change24Hours = coinData?.CHANGEPCT24HOUR / 100;
-          const price = parseFloat(coinData?.PRICE);
-          const imagePath = "https://www.cryptocompare.com/" + coinData.IMAGEURL;
+          let change24Hours = null;
 
-       
+          if(coinData.CHANGEPCT24HOUR){
+
+            change24Hours = coinData?.CHANGEPCT24HOUR / 100;
+
+          } 
+
+          console.log(coin+" ccoindata change24Hours :",change24Hours)
+
+          let price = null;
+          if(coinData.PRICE){
+
+             price = parseFloat(coinData?.PRICE);
+
+          }
+
+      
+          const imagePath = "https://www.cryptocompare.com/" + coinData.IMAGEURL;       
     
     
           let coinChange7DaysData = await axios.get(
@@ -182,11 +204,11 @@ const PortfolioCoinList = (props) => {
             coinChange30DayPercent = result;
           }
     
-          let marketCap = parseInt(coinData?.MKTCAP);
+          let marketCap = coinData.MKTCAP ? coinData.MKTCAP : null;
 
           console.log(coin+" marketCap: "+marketCap)
     
-          if (marketCap === 0) {
+          if (marketCap === null) {
             const result = await getMarketCap(coin);
             console.log("marketCap result: "+result)
             marketCap = result;
@@ -280,7 +302,7 @@ const PortfolioCoinList = (props) => {
         console.log(coinId+" marketCap: "+marketCap)
 
         if(marketCap === null){
-          return '-';
+          return null;
         } else {
           return parseInt(marketCap);
         }       
@@ -930,11 +952,10 @@ return (
         </div>   
             
       
-        {                
-
-          sortedCoins.length === 0 ? (
-            <h3>Loading...</h3>
-          ) : (
+        {
+        sortedCoins.length !== 0 && isLoading ? (
+          <h3>Loading...</h3>
+        ) : (
           sortedCoins.map((coin, index) => (                      
                 <div className="coin-table-row" key={coin.key}>
                       <div className="item rowCell image">
@@ -999,10 +1020,8 @@ return (
                     <div className="headerCell" align="left">24-Hour Change</div>
                     <div className="headerCell" align="left">7-Day Change</div>
                     <div className="headerCell" align="left">30-Day Change</div>               
-                </div>
-
-                <h3>Loading...</h3>             
-
+                </div> 
+                <div></div>
                 <button className="ui button blue right" onClick={addAllCoinsToAnalysis}>Add All Coins to Analysis</button>
         </div>
       </div>
