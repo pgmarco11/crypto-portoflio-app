@@ -1,8 +1,8 @@
 # Digital Crypto Zone
 ## Getting Started with Create React App
 
-This project was created to manage a crypto portfolio and analyze different coins and tokens, it was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
-Works with its own API, https://github.com/pgmarco11/crypto-api/
+An app to keep track of your portfolio value, provide technical analysis of coins, and provide crypto news. It retrieves various API data to analysis coins, a work in progress.
+Works with the development API here: https://github.com/pgmarco11/crypto-portfolio-api
 
 
 ## Available Scripts
