@@ -8,100 +8,94 @@ function Analysis() {
   const [analysisCoins, setAnalysisCoins] = useState([]);
   const [coinInputValues, setCoinInputValues] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const [noCoins, setNoCoins] = useState(false);  
-  const [coinData, setCoinData] = useState([]); 
+  const [noCoins, setNoCoins] = useState(false);
+  const [coinData, setCoinData] = useState([]);
   const [sortOrder, setSortOrder] = useState("desc");
-  const [sortBy, setSortBy] = useState("MKTCAP"); 
+  const [sortBy, setSortBy] = useState("MKTCAP");
   const [totalScore, setTotalScore] = useState(0);
-  const [highestPrice, setHighestPrice] = useState(null); 
 
-    async function updateCoinDataForPrediction(coinId, totalrating, predictionPrice, newGainPrediction, newAvgGainPrediction, buysell){
-    
-        const updatedCoinData = Object.values(coinData).map((coin) => {
-          if (coin.id === coinId) {
-            // Found the coin with the matching coinId
-            const newGainPredictionFormatted = newGainPrediction.toLocaleString(undefined, {
-              style: "percent",
-            });
-            const newAvgGainPredictionFormatted = newAvgGainPrediction.toLocaleString(undefined, {
-              style: "percent",
-            });  
-    
-            return {
-              ...coin,
-              prediction: predictionPrice,
-              gainPrediction: newGainPredictionFormatted,
-              avgGainPrediction: newAvgGainPredictionFormatted,
-              buysell: buysell,
-              buysellrating: totalrating
-            };
-          }
-          return coin;
-        });
-    
-        setCoinData(updatedCoinData);  
+  const endDate = new Date().toISOString().split('T')[0]; //today
+  const yearDate = new Date();
+  yearDate.setDate(yearDate.getDate() - 365);
+  let yearDateFormatted = yearDate.toISOString().split('T')[0]; // Formatted start date
 
+  async function updateCoinDataForPrediction(coinId, totalrating, predictionPrice, newGainPrediction, newAvgGainPrediction, buysell) {
+    try {
+      const updatedCoinData = coinData.map((coin) => {
+        if (coin.id === coinId) {
+          const newGainPredictionFormatted = newGainPrediction ? newGainPrediction : null;
+          const newAvgGainPredictionFormatted = newAvgGainPrediction ? newAvgGainPrediction : null;
+          return {
+            ...coin,
+            prediction: predictionPrice,
+            gainPrediction: newGainPredictionFormatted,
+            avgGainPrediction: newAvgGainPredictionFormatted,
+            buysell: buysell,
+            buysellrating: totalrating
+          };
+        }
+        return coin;
+      });
+      setCoinData(updatedCoinData);
+    } catch (error) {
+      console.error("Error updating coin data for prediction:", error);
+    }
   }
 
-  async function updateCoinPrediction(coinId, predictionPrice, totalrating, newGainPrediction, newAvgGainPrediction, buysell){
-            
-      try {     
-
-        // Check if the new input value is the opposite of the prediction in API, if it is update or add to API
-        if (predictionPrice === Object.values(coinData.find(coin => coin.id === coinId))[11])  {
-          updateCoinDataForPrediction(coinId, totalrating, predictionPrice, newGainPrediction, newAvgGainPrediction, buysell); 
-        } else {
-            const apiUrl = `http://localhost:3006/portfolios`;
-            const response = await axios.get(apiUrl);
-            const portfolios = response.data;
-            let portfolioId = null;
-
-          // Find the portfolio containing the analysis for the specified coinId
-          const portfolio = portfolios.find((p) =>      
-            p.analysis.some((analysisItem) => analysisItem.coinName === coinId)      
-          );          
-
-          if (!portfolio) {
-
-            console.error(`No portfolio found for coinId: ${coinId}`);
-            return;    
-
-          } else {
-
-            portfolioId = portfolio.id;
-            const portfolioUrl = `http://localhost:3006/portfolios/${portfolioId}`;
-
-            const responsePortfolio = await axios.get(portfolioUrl);
-            const portfolioAnalysis = responsePortfolio.data;
-    
-            // Update the analysis array with the new prediction
-            const updatedAnalysis = portfolioAnalysis.analysis.map((analysisItem) => {
-              if (analysisItem.coinName === coinId) {
-                return {
-                  ...analysisItem,
-                  prediction: predictionPrice            
-                };
-              }
-              return analysisItem;
-            });
-
-            // Update the portfolio object with the updated coins and analysis
-            const updatedPortfolio = {
-              ...portfolio,
-              analysis: updatedAnalysis,
-            };  
-
-            // Make a PUT request to update the portfolio API with the modified data
-            await axios.put(apiUrl + `/${portfolioId}`, updatedPortfolio);
-            updateCoinDataForPrediction(coinId, totalrating, predictionPrice, newGainPrediction, newAvgGainPrediction, buysell);      
-
-          }
-      } 
-
-    } catch (error){
-        console.log(error);
+  async function updateCoinPrediction(coinId, predictionPrice, totalrating, newGainPrediction, newAvgGainPrediction, buysell) {
+    console.log("updateCoinPrediction coinId: ", coinId);
+    console.log("updateCoinPrediction predictionPrice: ", predictionPrice);
+    console.log("updateCoinPrediction totalrating: ", totalrating);
+    console.log("updateCoinPrediction newGainPrediction: ", newGainPrediction);
+    console.log("updateCoinPrediction newAvgGainPrediction: ", newAvgGainPrediction);
+    console.log("updateCoinPrediction buysell: ", buysell);
+    try {
+      const coinToUpdate = coinData.find(coin => coin.id === coinId);
+      if (!coinToUpdate) {
+        console.error(`Coin with id ${coinId} not found.`);
+        return;
+      }
+  
+      const apiUrl = `http://localhost:3006/portfolios`;
+      const response = await axios.get(apiUrl);
+      const portfolios = response.data;
+      console.log("Portfolios Data:", portfolios);
+  
+      const portfolio = portfolios.find(
+        (p) => p.analysis.some((analysisItem) => analysisItem.coinId.toLowerCase() === coinId.toLowerCase())
+      );
+      console.log("Matched Portfolio:", portfolio);
+  
+      if (!portfolio) {
+        console.error(`No portfolio found for coinId: ${coinId}`);
+        return;
+      }
+  
+      const portfolioId = portfolio.id;
+      const portfolioUrl = `http://localhost:3006/portfolios/${portfolioId}`;
+      const responsePortfolio = await axios.get(portfolioUrl);
+      const portfolioAnalysis = responsePortfolio.data;
+  
+      const updatedAnalysis = portfolioAnalysis.analysis.map((analysisItem) => {
+        if (analysisItem.coinName.toLowerCase() === coinId.toLowerCase()) {
+          return {
+            ...analysisItem,
+            prediction: predictionPrice
+          };
+        }
+        return analysisItem;
+      });
+  
+      const updatedPortfolio = {
+        ...portfolio,
+        analysis: updatedAnalysis,
+      };
+  
+      await axios.put(apiUrl + `/${portfolioId}`, updatedPortfolio);
+      updateCoinDataForPrediction(coinId, totalrating, predictionPrice, newGainPrediction, newAvgGainPrediction, buysell);
+    } catch (error) {
+      console.error("Error updating coin prediction:", error);
     }
-
   }
 
   async function handleCoinPrediction(
@@ -113,84 +107,80 @@ function Analysis() {
     buysell,
     ninetyDaysPercentChange
   ) {
-
-  console.log("handleCoinPrediction input value : ",predictionPrice)
-
-  let newGainPredictionScore = 0;
-  let newAvgGainPredictionScore = 0;
-  let newGainPrediction = null;
-  let newAvgGainPrediction = null;
-  let totalrating = null;
-
-  // Find the coin object in coinData with the matching coinId    
-  let coin = coinData.find((coin) => coin.id === coinId);
-
-    if (!predictionPrice) {
-      predictionPrice = parseFloat(coin.prediction);
-      newGainPrediction = parseFloat(
-        (predictionPrice - current_price) / current_price
-      );   
-    } else {
-      newGainPrediction = parseFloat(
-          (parseFloat(predictionPrice) - current_price) / current_price
-      );
-    }   
-
-    if (oneYearPercentChange === 0) {
-      newAvgGainPrediction = parseFloat((newGainPrediction + 0) / 2);
-    } else {
-      newAvgGainPrediction = parseFloat(
-        (newGainPrediction + parseFloat(oneYearPercentChange) / 100) / 2
-      );
-    } 
+    try {
+      console.log("handleCoinPrediction input value : ", predictionPrice);
+      let newGainPredictionScore = 0;
+      let newAvgGainPredictionScore = 0;
+      let newGainPrediction = null;
+      let newAvgGainPrediction = null;
+      let totalrating = null;
+  
+      // Find the coin object in coinData with the matching coinId    
+      let coin = coinData.find((coin) => coin.id === coinId);
+      console.log("Coin Data:", coinData);
+      console.log("Matched Coin:", coin);
       
-    if (!predictionPrice) {
-
-      newGainPredictionScore = 0;
-      newAvgGainPredictionScore = 0;  
-
-    } else {
-
-      if ( newGainPrediction > 0.0300 ) {
-        newGainPredictionScore = 2;
-      } 
-      if ( newAvgGainPrediction > 0.0300 ) {
-        newAvgGainPredictionScore = 1;
-      } 
-
-     totalrating = buysellrating + newGainPredictionScore + newAvgGainPredictionScore;
- 
-      if(buysell === 'BUY' && totalrating > 2 && parseInt(ninetyDaysPercentChange) < 40){  
-      
-        buysell = "BUY"; 
-
-      }  else if(buysell === null && totalrating > 3 && parseInt(ninetyDaysPercentChange) < 40){  
-
-        buysell = "BUY"; 
-
-      } else if(buysell === 'SELL' && totalrating < 4 && parseInt(ninetyDaysPercentChange) > 50){  
-      
-        buysell = "SELL"; 
-
-      } else if(buysell === 'HODL' && totalrating > 2 && parseInt(ninetyDaysPercentChange) < 40){  
-      
-        buysell = "BUY"; 
-
-      } else if(buysell === 'HODL' && totalrating > 4  && parseInt(ninetyDaysPercentChange) > 50){  
-    
-        buysell = "BUY"; 
-
+      if (!coin) {
+        console.error(`Coin with id ${coinId} not found in coinData.`);
+        return;
+      }
+  
+      if (!predictionPrice) {
+        predictionPrice = parseFloat(coin.prediction);
+        newGainPrediction = parseFloat(
+          (predictionPrice - current_price) / current_price
+        );
       } else {
-
-        buysell = "HODL"; 
-
-      }  
-
-    updateCoinPrediction(coinId, predictionPrice, totalrating, newGainPrediction, newAvgGainPrediction, buysell);          
- 
+        newGainPrediction = parseFloat(
+          (parseFloat(predictionPrice) - current_price) / current_price
+        );
+      }
+  
+      if (oneYearPercentChange === 0) {
+        newAvgGainPrediction = parseFloat((newGainPrediction + 0) / 2);
+      } else {
+        newAvgGainPrediction = parseFloat(
+          (newGainPrediction + parseFloat(oneYearPercentChange) / 100) / 2
+        );
+      }
+  
+      if (!predictionPrice) {
+        newGainPredictionScore = 0;
+        newAvgGainPredictionScore = 0;
+      } else {
+        if (newGainPrediction > 0.0300) {
+          newGainPredictionScore = 2;
+        }
+        if (newAvgGainPrediction > 0.0300) {
+          newAvgGainPredictionScore = 1;
+        }
+        totalrating = buysellrating + newGainPredictionScore + newAvgGainPredictionScore;
+        if (buysell === 'BUY' && totalrating > 2 && parseInt(ninetyDaysPercentChange) < 40) {
+          buysell = "BUY";
+        } else if (buysell === null && totalrating > 3 && parseInt(ninetyDaysPercentChange) < 40) {
+          buysell = "BUY";
+        } else if (buysell === 'SELL' && totalrating < 4 && parseInt(ninetyDaysPercentChange) > 50) {
+          buysell = "SELL";
+        } else if (buysell === 'HODL' && totalrating > 2 && parseInt(ninetyDaysPercentChange) < 40) {
+          buysell = "BUY";
+        } else if (buysell === 'HODL' && totalrating > 4 && parseInt(ninetyDaysPercentChange) > 50) {
+          buysell = "BUY";
+        } else {
+          buysell = "HODL";
+        }
+  
+        console.log("updateCoinPrediction coinId: ", coinId);
+        console.log("updateCoinPrediction predictionPrice: ", predictionPrice);
+        console.log("updateCoinPrediction totalrating: ", totalrating);
+        console.log("updateCoinPrediction newGainPrediction: ", newGainPrediction);
+        console.log("updateCoinPrediction newAvgGainPrediction: ", newAvgGainPrediction);
+        console.log("updateCoinPrediction buysell: ", buysell);
+  
+        updateCoinPrediction(coinId, predictionPrice, totalrating, newGainPrediction, newAvgGainPrediction, buysell);
+      }
+    } catch (error) {
+      console.log(error);
     }
-
-    
   };
 
   useEffect(() => {
@@ -198,26 +188,27 @@ function Analysis() {
   }, []);
 
 
-  async function GetAnalysisCoins() {
 
+  async function GetAnalysisCoins() {
+      try {
           const portfolios = await api.get("http://localhost:3006/portfolios");
           let allAnalysisCoins = [];
-          
+
           for (let i = 0; i < portfolios.data.length; i++) {
             const response = await api.get(
               `http://localhost:3006/portfolios/${portfolios.data[i].id}`
             );
             let analysisCoins = response.data.analysis;
 
+            console.log("analysisCoins: ",analysisCoins);
+
             for (let [index, value] of Object.entries(analysisCoins)) {
-              let coinNameAnalysis = value.coinName;
-              let coinIdAnalysis = value.coinId;
-              
-              allAnalysisCoins.push({
-                coinName: coinNameAnalysis,
-                coinId: coinIdAnalysis,
-              });
-              
+                let coinNameAnalysis = value.coinName.replace(/\s+/g, '-');                
+                let coinIdAnalysis = value.coinId;
+                allAnalysisCoins.push({
+                  coinName: coinNameAnalysis,
+                  coinId: coinIdAnalysis,
+                });
             }
           }
 
@@ -225,13 +216,10 @@ function Analysis() {
 
           let allAnalysisCoinsArray = Object.keys(allAnalysisCoins);
 
-          if (allAnalysisCoinsArray.length === 0) {    
-
+          if (allAnalysisCoinsArray.length === 0) {
             setIsLoading(false);
             setNoCoins(true);
-
           } else {
-
             setNoCoins(false);
             setIsLoading(true);
 
@@ -239,469 +227,940 @@ function Analysis() {
             const allCoinIds = [];
 
             for (let a = 0; a < allAnalysisCoinsArray.length; a++) {
-                 allCoinNames.push(allAnalysisCoins[a].coinName);
+              allCoinNames.push(allAnalysisCoins[a].coinName);
               allCoinIds.push(allAnalysisCoins[a].coinId);
             }
-            let allCoinNamesjoin = allCoinNames.join(",");
-            let allCoinIdsjoin = allCoinIds.join(",");
-            let allCoinNamesArray = Object.keys(allCoinNames);
-         
-            if (allCoinNamesArray.length !== 0) {       
+            let allCoinIdsjoin = allCoinIds.join(",");              
+            
+              // ** Test ** Function to fetch coin details from CoinPaprika
+              async function fetchCoinDetailsFromCoinPaprika(coinSymbol) {
 
-              const cache = {}; // initialize an empty cache object
+                console.log("fetchCoinDetailsFromCoinPaprika: https://api.coinpaprika.com/v1/coins/");
+                console.log("fetchCoinDetailsFromCoinPaprika 0: https://api.coinpaprika.com/v1/coins/"+coinSymbol);
+                console.log("fetchCoinDetailsFromCoinPaprika 0: https://api.coinpaprika.com/v1/tickers/"+coinSymbol);
 
-              const marketChartData = await axios.get(
-                `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${allCoinNamesjoin}&price_change_percentage=30d%2C200d%2C1y`
-              );
-              
-              // function to fetch data from API
-              async function fetchData(coinName) {
-                if (cache[coinName]) {
-                  // check if the data for the coin already exists in the cache
-                  return cache[coinName]; // return the cached data
-                } else {
-                  const response = await axios.get(
-                    `https://api.coingecko.com/api/v3/coins/${coinName}/market_chart?vs_currency=usd&days=max`
-                  );
-                  const data = response.data;
-                  cache[coinName] = data; // store the data in the cache
-                  return data; // return the API response
+                try {
+                  const coinPaprikaCoinListUrl = `https://api.coinpaprika.com/v1/coins`;
+                  const coinListResponse = await axios.get(coinPaprikaCoinListUrl);
+                  const coinList = coinListResponse.data;
+                  
+                  const coin = coinList.find(c => c.symbol === coinSymbol);
+
+                  if (!coin) {
+                    throw new Error(`Coin with symbol ${coinSymbol} not found in CoinPaprika.`);
+                  }
+                  
+                  const coinId = coin.id;
+
+                  console.log("fetchCoinDetailsFromCoinPaprika 1: https://api.coinpaprika.com/v1/coins/"+coin.id);
+                  console.log("fetchCoinDetailsFromCoinPaprika 1: https://api.coinpaprika.com/v1/tickers/"+coin.id);
+
+                  const coinDetailsUrl = `https://api.coinpaprika.com/v1/coins/${coinId}`;
+                  const coinDetailsResponse = await axios.get(coinDetailsUrl);
+                  const coinDetails = coinDetailsResponse.data;
+
+                  // Fetch current price
+                  const coinPriceUrl = `https://api.coinpaprika.com/v1/tickers/${coinId}`;
+                  const coinPriceResponse = await axios.get(coinPriceUrl);
+                  const coinPrice = coinPriceResponse.data;
+
+                  return {
+                    ...coinDetails,
+                    price: coinPrice.quotes.USD.price
+                  };
+                } catch (error) {
+                  console.error(`Error fetching coin details from CoinPaprika: ${error}`);
+                  return null;
                 }
               }
-              const coinDataCache = {}; // Create a cache object to store coin data
 
-              const historicalDataPromises = marketChartData.data.map((coinData) => {
+              // Function to fetch coin details from Messari
+              async function fetchCoinDetailsFromMessari(coinSymbol) {
+                try {
+                  const messariCoinListUrl = `https://data.messari.io/api/v1/assets`;
+                  const coinListResponse = await axios.get(messariCoinListUrl);
+                  const coinList = coinListResponse.data.data;
+                  
+                  const coin = coinList.find(c => c.symbol === coinSymbol);
+                  if (!coin) {
+                    throw new Error(`Coin with symbol ${coinSymbol} not found in Messari.`);
+                  }
+                  
+                  const coinId = coin.id;
 
-                // Check if the coin data is already in the cache
-                if (coinDataCache[coinData.id]) {
-                  // If the data is in the cache, return a resolved promise with the cached data
-                  return Promise.resolve(coinDataCache[coinData.id]);
-                } else if (localStorage.getItem(coinData.id)) {
-                  // If the data is in the local storage, parse and return the data
-                  const data = JSON.parse(localStorage.getItem(coinData.id));
-                  coinDataCache[coinData.id] = data;
-                  return data;
-                } else {
-                  // If the data is not in the cache or local storage, make an API request to fetch it
-                  return fetchData(coinData.id).then((data) => {
-                    // Store the data in the cache and local storage
-                    coinDataCache[coinData.id] = data;
-                    localStorage.setItem(coinData.id, JSON.stringify(data));
-                    return data;
-                  });
+                  const coinDetailsUrl = `https://data.messari.io/api/v1/assets/${coinId}/profile`;
+                  const coinDetailsResponse = await axios.get(coinDetailsUrl);
+                  const coinDetails = coinDetailsResponse.data.data;
+
+                  // Fetch current price
+                  const coinPriceUrl = `https://data.messari.io/api/v1/assets/${coinId}/metrics/market-data`;
+                  const coinPriceResponse = await axios.get(coinPriceUrl);
+                  const coinPrice = coinPriceResponse.data.data.market_data.price_usd;
+
+                  return {
+                    ...coinDetails,
+                    price: coinPrice
+                  };
+                } catch (error) {
+                  console.error(`Error fetching coin details from Messari: ${error}`);
+                  return null;
                 }
-              });
+              }
 
-              const historicalData = await Promise.all(historicalDataPromises);      
+            //API to get name, symbol, images, market cap, price change in 24hrs, etc, for each coin in the analysis
+            if (allCoinIdsjoin.length !== 0) {
 
-              let now = new Date();
-              const ninetyDaysAgo = new Date(now - 90 * 24 * 60 * 60 * 1000);
-              const ninetyDaysAgoTimestamp = Math.floor(ninetyDaysAgo - 1 / 1000);
-              const ninetyDaysAgoDate = new Date(ninetyDaysAgoTimestamp);
-              const ninetyDaysAgoDay = ninetyDaysAgoDate.getDate().toString();
-              const ninetyDaysAgoMonth = ninetyDaysAgoDate.getMonth() + 1;
-              const ninetyDaysAgoYear = ninetyDaysAgoDate.getFullYear();
+              const marketChartData = await axios.get(
+                `https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${allCoinIdsjoin}&tsyms=USD&api_key=de528b65cdbb62a301a3bbd68201919b928595d750ce18281f45ad59ee77bdfa`
+              );
+           
+              console.log("marketChartData.data: ", marketChartData.data); //RAW DISPLAY
+              console.log("marketChartData.data RAW: ", marketChartData.data.RAW); //NAKA
 
-              let coinData = [];
-
-              for (let [index, value] of Object.entries(marketChartData.data)) {
+              for (let [index, value] of Object.entries(marketChartData.data.RAW)) {
                 
                 let volumeScore = 0;
                 let oneYearPercentScore = 0;
                 let btcChangeScore = 0;
                 let btcPercentScore = 0;
-                let inceptionPercentScore = 0;
                 let threeMonthsPercentScore = 0;
                 let maxGradeScore = 0;
                 let twitterScore = 0;
                 let gitScore = 0;
-                let highPercentScore = 0;
+                let highPercentScore = 0;       
+                let latestPrice = null;
 
-                const market_chart_prices = historicalData[index].prices;
+                console.log("index: ",index); 
+                console.log("value: ",value);
 
-                const highestPrice = market_chart_prices.reduce((prev, curr) => (prev[1] > curr[1] ? prev : curr));
-                setHighestPrice(highestPrice[1]);        
-                
-                let HighPrice = highestPrice[1];
-                let highestPricePercentage = parseFloat((value.current_price - HighPrice) /  HighPrice);
+                let coinId = null; 
+                let coinName = null;
 
-                let ninetyDaysAgoPrice = null;
-                for (let i = 0; i < market_chart_prices.length; i++) {
-                  const ninetyDayArrayTimestamp = market_chart_prices[i][0];
-                  const ninetyDayArrayPrice = market_chart_prices[i][1];
-                  const ninetyDaysAgoArrayDate = new Date(ninetyDayArrayTimestamp);
-                  const ninetyDaysAgoArrayDay = ninetyDaysAgoArrayDate
-                    .getDate()
-                    .toString();
-                  const ninetyDaysAgoArrayMonth =
-                    ninetyDaysAgoArrayDate.getMonth() + 1;
-                  const ninetyDaysAgoArrayYear = ninetyDaysAgoArrayDate.getFullYear();
+                console.log("allAnalysisCoins coinId 0: ",coinId);
+                console.log("allAnalysisCoins coinName 0: ",coinName);
 
-                  if (
-                    ninetyDaysAgoArrayDay === ninetyDaysAgoDay &&
-                    ninetyDaysAgoArrayMonth === ninetyDaysAgoMonth &&
-                    ninetyDaysAgoArrayYear === ninetyDaysAgoYear
-                  ) {
-                    ninetyDaysAgoPrice = ninetyDayArrayPrice;
-                    break;
-                  }
-                }
+                for (let i = 0; i < allAnalysisCoins.length; i++) {  
 
-                let coinId = null;
+                  if(allAnalysisCoins[i].coinId === value.USD.FROMSYMBOL){
+             
+                    coinId = allAnalysisCoins[i].coinId;   
+                    coinName = allAnalysisCoins[i].coinName; 
+                    latestPrice = value.USD.PRICE;                    
+                    break;  
 
-                for (let i = 0; i < allAnalysisCoins.length; i++) {
+                  } else if (value.USD.CONVERSIONTYPE === "not_possible") {
 
-                  coinId = allAnalysisCoins.find(
-                    (coin) => coin.coinName === value.id
-                  )?.coinId;
+                    console.log("allAnalysisCoins not_possible for "+index+" is ",value);   
 
-                }            
+                    const coinSymbol = index; // Assuming 'index' is the coin symbol here
+      
+                    // First, try CoinPaprika
+                    let coinDetails = await fetchCoinDetailsFromCoinPaprika(coinSymbol);
 
-                let getCurrentBtcPrice = await axios.get(
-                  `https://min-api.cryptocompare.com/data/price?fsym=${coinId}&tsyms=BTC&api_key=de528b65cdbb62a301a3bbd68201919b928595d750ce18281f45ad59ee77bdfa`
-                );      
-                let currentBtcPrice = null;    
-
-                if(getCurrentBtcPrice.data === undefined){         
-
-                  getCurrentBtcPrice = await axios.get(`https://data.messari.io/api/v2/assets/${coinId}/metrics`);       
-                  currentBtcPrice = getCurrentBtcPrice.data.market_data.price_btc;                  
-
-                } else {
-
-                  currentBtcPrice = getCurrentBtcPrice.data.BTC;           
-
-                }
-
-                let getYearAgoBtcPrice = await axios.get(
-                  `https://min-api.cryptocompare.com/data/v2/histoday?fsym=${coinId}&tsym=BTC&limit=365&api_key=de528b65cdbb62a301a3bbd68201919b928595d750ce18281f45ad59ee77bdfa`
-                );
-               
-                let yearAgoBtcPrice = null;   
-                let getYearAgoBtcPriceValues = getYearAgoBtcPrice.data.Data.Data;
-
-                if (getYearAgoBtcPriceValues !== undefined) {
-                  yearAgoBtcPrice = getYearAgoBtcPrice.data.Data.Data[0].close;
-                } else {  
-                  const endDate = new Date().toISOString().split('T')[0]; // Today's date
-                  const startDate = new Date(); // Current date/time
-                  startDate.setDate(startDate.getDate() - 365); // Subtract 365 days
-                  const startDateFormatted = startDate.toISOString().split('T')[0]; // Formatted start date                
+                    console.log("fetchCoinDetailsFromCoinPaprika: "+coinDetails);
                     
-                    const response = await axios.get(
-                      `https://data.messari.io/api/v1/assets/${coinId}/metrics/price/time-series`,
-                      {
-                        params: {
-                          start: startDateFormatted,
-                          end: endDate,
-                          format: 'json',
-                          interval: '1d',
-                          market: 'btc', // Specify 'btc' to get BTC price data
-                        },
-                      }
-                    );
-                   
+                    // If CoinPaprika fails, try Messari
+                    if (!coinDetails) {
+                      coinDetails = await fetchCoinDetailsFromMessari(coinSymbol);
+                    }
 
-                    if(response.data.data.values !== null ) {
-                      const priceData = response.data.data.values[0]; 
-                      yearAgoBtcPrice = priceData[4];
-                    } else {
-                      yearAgoBtcPrice = 0;
-                    }              
+                    console.log("allAnalysisCoins coinDetails for "+index+" is ",coinDetails); 
+                     
+                    if (coinDetails) {
+                      coinId = coinDetails.symbol || coinDetails.slug; // Adjust based on API response
+                      coinName = coinDetails.name;
+                      latestPrice = coinDetails.price;
+                      break;
+                    }
+                } 
+                
 
                 }
 
+                console.log("allAnalysisCoins coinId 1: ", coinId);
+                console.log("allAnalysisCoins coinName 1: ", coinName);
+
+                async function getAllTimeHighPriceFromMessari(coinId,coinName) {
+                  try {
+                      console.log("getHighPrice for " + coinId + " API: " + `https://data.messari.io/api/v1/assets/${coinId}/metrics`);
+                      
+                      // Get all-time highest price for coin data
+                      let getHighPrice = await axios.get(`https://data.messari.io/api/v1/assets/${coinId}/metrics`); 
+                      const highPriceData = getHighPrice.data.data;
+                      console.log("getHighPrice highPriceData: ", highPriceData);
+                      
+                      const alltimeHighPrice = highPriceData.all_time_high.price;
+                      let isNanPrice = isNaN(alltimeHighPrice); //true if not number
+                      let athPrice = 0;
+                      
+                      const coinSymbol = highPriceData.symbol.toUpperCase();  
+                      const coinSlug = highPriceData.slug.toUpperCase();                 
+                      console.log("getHighPrice id: ", highPriceData.id );
+                      console.log("getHighPrice slug: ",  highPriceData.slug);
+                      console.log("getHighPrice coinSymbol: ", highPriceData.symbol);
+                      console.log("getHighPrice athPrice alltimeHighPrice "+coinId+": ", alltimeHighPrice);
+                      console.log("getHighPrice athPrice isNanPrice "+coinId+": ", isNanPrice);
+                      
+                      // Assuming coinSymbol should be compared with a field in highPriceData
+                      if ((coinSymbol === coinId || coinSlug === coinId) && isNanPrice === false && alltimeHighPrice !== null) {
+                          athPrice = alltimeHighPrice;
+                          console.log("getHighPrice athPrice 1: ", athPrice);
+                      } else {
+                          athPrice = await getAllTimeHighPriceFromCryptoCompare(coinId,coinName);
+                          console.log("getHighPrice athPrice 2: ", athPrice);
+                      }                     
+                      
+                      return athPrice;
+                      
+                  } catch (error) {
+                      if (error.response && error.response.status === 404) {
+                          console.log("getHighPrice Messari API returned 404 for " + coinId + ", using CryptoCompare as fallback");
+                          return await getAllTimeHighPriceFromCryptoCompare(coinId,coinName);
+                      } else {
+                          throw error;
+                      }
+                  }
+              }
+              
+              async function getAllTimeHighPriceFromCryptoCompare(coinId,coinName) {
+                  // Replace this with your actual CryptoCompare API key
+                  const cryptoCompareApiKey = 'de528b65cdbb62a301a3bbd68201919b928595d750ce18281f45ad59ee77bdfa';
+                  const url = `https://min-api.cryptocompare.com/data/v2/histoday?fsym=${coinId}&tsym=USD&limit=2000&api_key=${cryptoCompareApiKey}`;
+                  
+                  try {
+                      let response = await axios.get(url);
+                      let data = response.data.Data ? response.data.Data.Data : null;
+                      let athPrice = null;
+
+                      console.log("getHighPrice CryptoCompare response.data " + coinId + ": ", response.data);
+              
+                      if (response.data.Response === "Error" ) {
+                          console.log(`getHighPrice Invalid data received from CryptoCompare for ${coinId}, falling back to CoinPaprika`);  
+                      } else {
+                          athPrice = Math.max(...data.map(day => day.high));
+                      }              
+                      
+                      console.log("getHighPrice CryptoCompare athPrice for " + coinId + ": ", athPrice);
+                      
+                      return athPrice;
+                  } catch (error) {
+                      console.error("getHighPrice Error fetching data from CryptoCompare: ", error);
+                      throw error;
+                  }
+              }              
+              
+        
+                const athPrice = await getAllTimeHighPriceFromMessari(coinId, coinName);  
+
+                console.log("getHighPrice athPrice " + coinId + ": ", athPrice);
+                //let coinPriceValue = value.USD.PRICE;
+                
+                console.log("coinPriceValue athPrice latestPrice "+coinId+": ",latestPrice);
+                console.log("coinPriceValue athPrice "+coinId+": ",athPrice);
+          
+                let highestPricePercentage = ((latestPrice - athPrice) / athPrice) * 100;
+
+                console.log("getHighPrice athPrice highestPricePercentage: ", highestPricePercentage);
+          
+               let currentBtcPrice = null;
+
+                try {
+                    let getCurrentBtcPrice = await axios.get(`https://data.messari.io/api/v1/assets/${coinId}/metrics`);
+
+                    if (getCurrentBtcPrice.data === undefined || getCurrentBtcPrice.data.data.market_data === undefined) {
+                        throw new Error("Data undefined");
+                    }
+
+                    if (coinId === 'BTC') {
+                        currentBtcPrice = (getCurrentBtcPrice.data.data.market_data.price_usd).toFixed(2);
+                    } else if (getCurrentBtcPrice.data.data.market_data.price_btc !== null) {
+                        currentBtcPrice = (getCurrentBtcPrice.data.data.market_data.price_btc).toFixed(10);
+                    } else {
+                        let getCurrentBtcPriceData = await axios.get(
+                            `https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD&api_key=de528b65cdbb62a301a3bbd68201919b928595d750ce18281f45ad59ee77bdfa`
+                        );
+
+                        console.log("value.USD.PRICE latestPrice: ", latestPrice);
+                        console.log("cryptocompare getCurrentBtcPriceData: ", getCurrentBtcPriceData.data.USD);
+                        let currentBtc = getCurrentBtcPriceData.data.USD;
+                        currentBtcPrice = latestPrice / currentBtc;
+                        console.log("cryptocompare currentBtcPrice: ", currentBtcPrice);
+                    }
+                } catch (error) {
+                    if (error.response && error.response.status === 404 || error.message === "Data undefined") {
+                        let getCurrentBtcPriceData = await axios.get(
+                            `https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD&api_key=de528b65cdbb62a301a3bbd68201919b928595d750ce18281f45ad59ee77bdfa`
+                        );
+
+                        let getCurrentBtcPrice = await axios.get(
+                            `https://min-api.cryptocompare.com/data/price?fsym=${coinId}&tsyms=BTC&api_key=de528b65cdbb62a301a3bbd68201919b928595d750ce18281f45ad59ee77bdfa`
+                        );
+
+                        if (coinId === 'BTC') {
+                            currentBtcPrice = (getCurrentBtcPriceData.data.USD).toFixed(2);
+                        } else if (getCurrentBtcPrice.data.BTC !== null) {
+                            currentBtcPrice = (getCurrentBtcPrice.data.BTC).toFixed(10);
+                        } else {
+                          console.log("value.USD.PRICE latestPrice: ", latestPrice);
+                            console.log("cryptocompare getCurrentBtcPriceData: ", getCurrentBtcPriceData.data.USD);
+
+                            let currentBtc = getCurrentBtcPriceData.data.USD;
+
+                            currentBtcPrice = latestPrice / currentBtc;
+                            console.log("cryptocompare currentBtcPrice: ", currentBtcPrice);
+                        }
+                    } else {
+                        console.error("An error occurred:", error);
+                    }
+                }
+
+
+                async function yearAgoPriceByBTC(coinId, coinName) {
+                  coinId = coinId.toLowerCase();
+                  coinName = coinName.toLowerCase();
+              
+                  let endDate = new Date().toISOString().split('T')[0];
+                  let yearDate = new Date();
+                  yearDate.setFullYear(yearDate.getFullYear() - 1);
+                  let yearDateFormatted = yearDate.toISOString().split('T')[0]; // Formatted start date
+              
+                  try {
+                      // Get BTC price from a year ago
+                      let getYearAgoBtcPrice = await axios.get(
+                          `https://data.messari.io/api/v1/assets/btc/metrics/price/time-series`,
+                          {
+                              params: {
+                                  start: yearDateFormatted,
+                                  end: endDate,
+                                  format: 'json',
+                                  interval: '1d'
+                              },
+                          }
+                      );
+              
+                      let btcPrice1YearAgo = getYearAgoBtcPrice.data.data.values[0][4];
+              
+                      if (coinId === 'BTC') {
+                          return { btcPrice1YearAgo, yearAgoBtcPrice: btcPrice1YearAgo };
+                      }
+              
+                      let getYearAgoUSDPrice = await axios.get(
+                          `https://data.messari.io/api/v1/assets/${coinId}/metrics/price/time-series`,
+                          {
+                              params: {
+                                  start: yearDateFormatted,
+                                  end: endDate,
+                                  format: 'json',
+                                  interval: '1d'
+                              },
+                          }
+                      );
+              
+                      let btcPrice = getYearAgoBtcPrice.data.data.values[0];
+                      let coinSlugRaw = getYearAgoUSDPrice.data.data.slug;
+                      let coinSlug = coinSlugRaw.replace(/-/g, '');
+                      let coinSymbolRaw = getYearAgoUSDPrice.data.data.symbol;
+                      let coinSymbol = coinSymbolRaw.toLowerCase();
+              
+                      let coinPrice = 0;
+                      let yearAgoBtcPrice = 0;
+              
+                      console.log("yearAgoPriceByBTC getYearAgoUSDPrice data " + coinId + ": ", getYearAgoUSDPrice.data);
+                      console.log("yearAgoPriceByBTC getYearAgoUSDPrice coinName coinSlugRaw " + coinName + ": ", coinSlugRaw);
+                      console.log("yearAgoPriceByBTC getYearAgoUSDPrice coinName coinSlug " + coinName + ": ", coinSlug);
+                      console.log("yearAgoPriceByBTC getYearAgoUSDPrice coinId coinSymbol " + coinId + ": ", coinSymbol);
+              
+                      if (getYearAgoUSDPrice.data.data.values !== null &&
+                          (coinName === coinSlugRaw || coinName.includes(coinSlug)) && coinId === coinSymbol) {
+              
+                          console.log("yearAgoPriceByBTC getYearAgoUSDPrice data.data " + coinId + ": ", getYearAgoUSDPrice.data.data);
+              
+                          coinPrice = getYearAgoUSDPrice.data.data.values[0][4];
+              
+                          console.log("yearAgoPriceByBTC getYearAgoUSDPrice.data coinPrice " + coinId + ": ", coinPrice);
+                      }
+              
+                      if (coinPrice !== 0) {
+                          // Calculate price in BTC
+                          yearAgoBtcPrice = coinPrice / btcPrice[4];
+              
+                      } else {
+                          // Fallback to CryptoCompare API
+                          let getYearAgoBtcPriceFromCC = await axios.get(
+                              `https://min-api.cryptocompare.com/data/v2/histoday?fsym=${coinId}&tsym=BTC&limit=365&api_key=de528b65cdbb62a301a3bbd68201919b928595d750ce18281f45ad59ee77bdfa`
+                          ); 
+                          
+                          if(getYearAgoBtcPriceFromCC.data.Data.Data){
+                            yearAgoBtcPrice = getYearAgoBtcPriceFromCC.data.Data.Data[0].close;
+                          }                   
+              
+                          if (yearAgoBtcPrice === 0 && getYearAgoBtcPriceFromCC.data.Data.Data ) {
+
+                              let getYearAgoBtcPriceValues = getYearAgoBtcPriceFromCC.data.Data.Data;  
+
+                              console.log("yearAgoPriceByBTC cryptocompare getYearAgoBtcPriceValues" + coinId + ": ", getYearAgoBtcPriceValues);
+              
+                              for (let i = 0; i < getYearAgoBtcPriceValues.length; i++) {                                
+                                  if (getYearAgoBtcPriceValues[i].close !== 0) {
+                                      yearAgoBtcPrice = getYearAgoBtcPriceValues[i].close;
+                                      break;
+                                  }
+                              }
+              
+                              if (yearAgoBtcPrice === 0 || !getYearAgoBtcPriceFromCC.data.Data.Data) {
+                                  const dateObject = new Date(yearDateFormatted);
+                                  dateObject.setDate(dateObject.getDate() + 2);
+                                  const newYearDateFormatted = dateObject.toISOString().split('T')[0];  
+              
+                                  try {
+                                      const yearAgoPricePaprika = await axios.get(
+                                          `https://api.coinpaprika.com/v1/tickers/${coinId}-${coinName}/historical?start=${newYearDateFormatted}&interval=1d`
+                                      );
+              
+                                      console.log("yearAgoPriceByBTC yearAgoPricePaprika " + coinId + ": ", yearAgoPricePaprika);
+              
+                                      if (yearAgoPricePaprika.data && yearAgoPricePaprika.data.length > 0) {
+              
+                                          console.log("yearAgoPriceByBTC yearAgoPricePaprika.data" + coinId + ": ", yearAgoPricePaprika.data);
+              
+                                          yearAgoBtcPrice = yearAgoPricePaprika.data[0].price.toFixed(16);
+              
+                                          console.log("yearAgoPriceByBTC yearAgoPricePaprika yearAgoBtcPrice " + coinId + ": ", yearAgoBtcPrice);
+              
+                                      } else {
+                                          yearAgoBtcPrice = 0;
+                                      }
+                                  } catch (error) {
+                                      if (error.response && error.response.status === 404) {
+                                          yearAgoBtcPrice = 0;
+                                      } 
+                                  }
+                              }
+                          } else {
+                            console.log("yearAgoBtcPrice cryptocompare yearAgoBtcPrice " + coinId + ": ", yearAgoBtcPrice);
+                          }
+                      }
+              
+                      return { btcPrice1YearAgo, yearAgoBtcPrice };
+                  } catch (error) {
+                      console.error('yearAgoPriceByBTC An error occurred:', error);
+                      throw error;
+                  }
+              }             
+
+                async function getNinetyDaysAgoPrice(coinId, coinName) {
+                  try {
+
+                      const threeMonthsDate = new Date();
+                      threeMonthsDate.setDate(threeMonthsDate.getDate() - 90);
+                      const threeMonthsDateFormatted = threeMonthsDate.toISOString().split('T')[0];
+                      const endDate = new Date().toISOString().split('T')[0]; // Assuming endDate is today
+              
+                      console.log("3 month Attempting to fetch data from Messari API for coin:", coinId);
+              
+                      let response = await axios.get(
+                          `https://data.messari.io/api/v1/assets/${coinId}/metrics/price/time-series`,
+                          {
+                              params: {
+                                  start: threeMonthsDateFormatted,
+                                  end: endDate,
+                                  format: 'json',
+                                  interval: '1d',
+                                  market: 'usd',
+                              },
+                          }
+                      );
+              
+                      let ninetyDaysAgoPrice = null;
+              
+                      let coinSlugRaw = response.data.data.slug;
+                      let coinSlug = coinSlugRaw.replace(/-/g, '');
+                      let coinSymbolRaw = response.data.data.symbol;
+                      let coinSymbol = coinSymbolRaw.toLowerCase();
+
+                      console.log("3 month coin "+coinId+" response: ",response);
+
+                      console.log("3 month coin coinName "+coinName+" coinSlugRaw: ",coinSlugRaw);
+
+                      console.log("3 month coin coinName "+coinName+" coinSlug: ",coinSlug);
+
+                      console.log("3 month coin coinId "+coinId+" coinSymbolRaw: ",coinSymbolRaw);
+
+                      console.log("3 month coin coinId "+coinId+" coinSymbol: ",coinSymbol);
+
+              
+                      if (response.data.data.values.length > 0 &&
+                          (coinName === coinSlugRaw || coinName.includes(coinSlug)) &&
+                          coinId.toLowerCase() === coinSymbol) {
+                          console.log("3 month coin coinId "+coinId+" values: ",response.data.data.values);
+                          const threeMonthPriceData = response.data.data.values[0];
+                          ninetyDaysAgoPrice = parseFloat(threeMonthPriceData[4]).toFixed(10); 
+                      } else {
+                          console.log("3 month No data found in the response from Messari for the specified coin ID:", coinId);
+                          console.log("3 month Attempting to fetch data from CryptoCompare API for coin:", coinId);
+              
+                          response = await axios.get(
+                              `https://min-api.cryptocompare.com/data/v2/histoday`,
+                              {
+                                  params: {
+                                      fsym: coinId,
+                                      tsym: 'USD',
+                                      limit: 90,
+                                      api_key: 'de528b65cdbb62a301a3bbd68201919b928595d750ce18281f45ad59ee77bdfa'
+                                  }
+                              }
+                          );
+              
+                          const ninetyDaysAgoTimestamp = Math.floor((Date.now() - 90 * 24 * 60 * 60 * 1000) / 1000);
+                          const priceData = response.data.Data.Data;
+              
+                          for (let dayData of priceData) {
+                            
+                            console.log("3 month ninetyDaysAgoPrice ninetyDaysAgoTimestamp " + coinId + ": ", ninetyDaysAgoTimestamp);
+                            console.log("3 month ninetyDaysAgoPrice time " + coinId + ": ", dayData.time);
+                              if (dayData.time === ninetyDaysAgoTimestamp || dayData.close !== 0) {
+                                  ninetyDaysAgoPrice = parseFloat(dayData.close).toFixed(10);
+                                  break;
+                              }
+                          }                                                    
+
+                      } 
+
+                      console.log("3 month ninetyDaysAgoPrice " + coinId + ": ", ninetyDaysAgoPrice);
+              
+                      if (ninetyDaysAgoPrice === null || isNaN(ninetyDaysAgoPrice) === true) {
+                          throw new Error("Error fetching data from Messari and CryptoCompare");
+                      } else {
+                        return ninetyDaysAgoPrice;
+                      }
+              
+                  } catch (error) {
+                      console.log("3 month Error fetching data from Messari and CryptoCompare, falling back to CoinPaprika API:", error.message);
+              
+                      const ninetyDaysAgoDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                      console.log("3 month Attempting to fetch data from CoinPaprika API for coin:", coinId);                
+              
+                      try {
+                          coinId = coinId.toLowerCase();
+                          coinName = coinName.toLowerCase();
+                          let ninetyDaysAgoPrice = null;
+
+                          let response = await axios.get(
+                              `https://api.coinpaprika.com/v1/tickers/${coinId}-${coinName}/historical?start=${ninetyDaysAgoDate}&interval=1d`
+                          );
+              
+                          if (response.data && response.data.length > 0) {
+                              ninetyDaysAgoPrice = parseFloat(response.data[0].price).toFixed(10);                              
+                          } 
+
+                        return ninetyDaysAgoPrice; 
+                          
+                      } catch (coinPaprikaError) {
+                          console.log("3 month Error fetching data from CoinPaprika API:", coinPaprikaError.message);
+                          throw coinPaprikaError;
+                      }                 
+                  }
+              }
+              
+
+                const ninetyDaysAgoPrice = await getNinetyDaysAgoPrice(coinId, coinName);
+
+                console.log("3 month ninetyDaysAgoPrice Return "+coinId+": ",ninetyDaysAgoPrice);
+                
                 let oneYearBTCPercentChange = null;
                 let oneYearBTCPriceChange = null;
+                let yearAgoBtcPrice = null;
+                let btcPrice1YearAgo = null;
+ 
+                let yearAgoBtcPriceResult = await yearAgoPriceByBTC(coinId, coinName);
 
-                if (yearAgoBtcPrice === null || yearAgoBtcPrice === 0) {
-                  oneYearBTCPercentChange = 0;
-                  oneYearBTCPriceChange = parseFloat(currentBtcPrice) - 0;
-                  oneYearBTCPriceChange = oneYearBTCPriceChange.toFixed(10);
+                yearAgoBtcPrice = parseFloat(yearAgoBtcPriceResult.yearAgoBtcPrice);
+                btcPrice1YearAgo = parseFloat(yearAgoBtcPriceResult.btcPrice1YearAgo); 
+
+                if(yearAgoBtcPrice > 0.00000001 ){
+                  yearAgoBtcPrice = yearAgoBtcPrice.toFixed(8);
+                } else if(yearAgoBtcPrice > 0 ){
+                  yearAgoBtcPrice = yearAgoBtcPrice.toFixed(16);
+                } else {
+                  yearAgoBtcPrice = yearAgoBtcPrice.toFixed(18);
+                }
+
+                if(btcPrice1YearAgo > 0.00000001 ){
+                  btcPrice1YearAgo = btcPrice1YearAgo.toFixed(8);
+                } else if(btcPrice1YearAgo > 0 ){
+                  btcPrice1YearAgo = btcPrice1YearAgo.toFixed(16);
+                } else {
+                  btcPrice1YearAgo = btcPrice1YearAgo.toFixed(18);
+                }
+
+                console.log("yearAgoBtcPrice Return yearAgoBtcPrice "+coinId+": ",yearAgoBtcPrice);
+                console.log("yearAgoBtcPrice Return btcPrice1YearAgo "+coinId+": ",btcPrice1YearAgo);
+    
+                if (yearAgoBtcPrice === null || yearAgoBtcPrice === 0) { 
+            
+                  btcChangeScore = 0;               
+                  btcPercentScore = 0;
+
+                  oneYearBTCPercentChange = "N/A";   
+                  oneYearBTCPriceChange = "N/A";
+
+                  console.log("yearAgoBtcPrice PercentChange yearAgoBtcPrice "+coinId+": ",yearAgoBtcPrice);
+                  console.log("yearAgoBtcPrice PercentChange oneYearBTCPriceChange"+coinId+": ",oneYearBTCPriceChange);
+                  console.log("yearAgoBtcPrice PercentChange "+coinId+": ",oneYearBTCPercentChange);
+
+                } else if (yearAgoBtcPrice === 1) { 
+   
+                  oneYearBTCPriceChange = parseFloat(currentBtcPrice) - parseFloat(btcPrice1YearAgo);
+                  oneYearBTCPercentChange = (oneYearBTCPriceChange / btcPrice1YearAgo) * 100; 
+
                   if (oneYearBTCPriceChange > 0.0000001) {
                     btcChangeScore = 1;
                   } else {
                     btcChangeScore = 0;
                   }
-                  btcPercentScore = 0;
-                } else {
-                  oneYearBTCPercentChange =
-                    (currentBtcPrice - yearAgoBtcPrice) / yearAgoBtcPrice;
-                  oneYearBTCPriceChange = parseFloat(currentBtcPrice) - parseFloat(yearAgoBtcPrice);
-                  oneYearBTCPriceChange = oneYearBTCPriceChange.toFixed(10);
-                  if (oneYearBTCPriceChange > 0.0000001) {
+                  if (oneYearBTCPercentChange > 0.2) {
+                    btcPercentScore = 2;
+                  } else {
+                    btcPercentScore = 0;
+                  }
+
+                  console.log("yearAgoBtcPrice PercentChange yearAgoBtcPrice "+coinId+": ",yearAgoBtcPrice);
+                  console.log("yearAgoBtcPrice PercentChange currentBtcPrice "+coinId+": ",currentBtcPrice);
+                  console.log("yearAgoBtcPrice PercentChange oneYearBTCPriceChange"+coinId+": ",oneYearBTCPriceChange);
+                  console.log("yearAgoBtcPrice PercentChange "+coinId+": ",oneYearBTCPercentChange);
+
+                }  else {
+
+                  oneYearBTCPriceChange = parseFloat(currentBtcPrice) - parseFloat(yearAgoBtcPrice); 
+                  oneYearBTCPercentChange = (oneYearBTCPriceChange / yearAgoBtcPrice) * 100;  
+        
+                  if (oneYearBTCPriceChange > 0.000001) {
                     btcChangeScore = 1;
+                  } else {
+                    btcChangeScore = 0;
                   }
                   if (oneYearBTCPercentChange > 0.2) {
                     btcPercentScore = 2;
-                  }
-                }
-                  
-
-                const earliestTimestamp = market_chart_prices[2][0]; // timestamp of the first recorded price
-                const earliestDate = new Date(earliestTimestamp); // convert timestamp to Date object
-                let startyear = earliestDate.getFullYear();
-                let startday = earliestDate.getDate();
-                let startmonth = earliestDate.getMonth() + 2;
-
-                if ([2, 4, 6, 9, 10, 11].includes(startmonth)) {
-                  if (startday >= 30) {
-                    startday = 28;
-                  }
-                } else if ([1, 3, 5, 7, 8, 10, 12].includes(startmonth)) {
-                  if (startday > 28) {
-                    startday = 1;
-                  }
-                } else if (startmonth > 12) {
-                  startmonth = startmonth - 12;
-                  startyear = earliestDate.getFullYear() + 1;
-                
-                }
-
-                startday = startday.length < 2 ? "0" + startday : startday;
-                startmonth = startmonth.toString().length < 2 ? "0" + startmonth : startmonth;
-
-                let coincache = {};
-                let inceptionDate = startday + "-" + startmonth + "-" + startyear;
-                let cacheKey = `${value.id}_${inceptionDate}`;
-                let startDateCoinData = null;
-
-                if (coincache[cacheKey]) {
-                  // Use cached data
-                  startDateCoinData = coincache[cacheKey];
-
-                }  else if (localStorage.getItem(cacheKey)) {    
-                  
-                  startDateCoinData = JSON.parse(localStorage.getItem(cacheKey));                     
-                  coincache[cacheKey] = JSON.stringify(startDateCoinData);            
-                
-                } else {
-                  // Fetch data from API
-                  startDateCoinData = await axios.get(
-                    `https://api.coingecko.com/api/v3/coins/${value.id}/history?date=${inceptionDate}`
-                  );
-                  
-                }
-                
-                let coinDataPass = startDateCoinData?.data?.market_data?.current_price?.usd;
-
-                if (coinDataPass === undefined) {
-
-                  startmonth = earliestDate.getMonth() + 6;
-
-                  if ([2, 4, 6, 9, 10, 11].includes(startmonth)) {
-              
-                    if (startday >= 30) {
-                      startday = 28;
-                    }
-
-                  } else if ([1, 3, 5, 7, 8, 10, 12].includes(startmonth)) {
-             
-                    if (startday > 28) {
-                      startday = 1;
-                    }
-                  } else if (startmonth > 12) {
-                    startmonth = startmonth - 12;
-                    startyear = earliestDate.getFullYear() + 1;        
-                  }
-
-                  startday = startday.length < 2 ? "0" + startday : startday;
-                  startmonth =
-                  startmonth.toString().length < 2 ? "0" + startmonth : startmonth;   
-                  let inceptionDate = startday + "-" + startmonth + "-" + startyear;
-
-                  if (coincache[cacheKey]) {
-                  // Use cached data
-                  startDateCoinData = coincache[cacheKey];
-                  
-                  }  else if (localStorage.getItem(cacheKey)) {                        
-                    startDateCoinData = JSON.parse(localStorage.getItem(cacheKey));                     
-                    coincache[cacheKey] = JSON.stringify(startDateCoinData);
                   } else {
-                    // Fetch data from API
-                    startDateCoinData = await axios.get(
-                      `https://api.coingecko.com/api/v3/coins/${value.id}/history?date=${inceptionDate}`
+                   btcPercentScore = 0;
+                   }
+                   console.log("yearAgoBtcPrice PercentChange yearAgoBtcPrice "+coinId+": ",yearAgoBtcPrice);
+                   console.log("yearAgoBtcPrice PercentChange currentBtcPrice "+coinId+": ",currentBtcPrice);
+                   console.log("yearAgoBtcPrice PercentChange oneYearBTCPriceChange"+coinId+": ",oneYearBTCPriceChange);
+                   console.log("yearAgoBtcPrice PercentChange "+coinId+": ",oneYearBTCPercentChange);
+              } 
+                
+              if (oneYearBTCPriceChange !== "N/A") {
+
+                  if (parseFloat(oneYearBTCPriceChange) > 0.00000001) {
+                    oneYearBTCPriceChange = oneYearBTCPriceChange.toFixed(8);
+                  } else if (parseFloat(oneYearBTCPriceChange) > 0) {
+                    oneYearBTCPriceChange = oneYearBTCPriceChange.toFixed(14);
+                  } else {
+                    oneYearBTCPriceChange = oneYearBTCPriceChange.toFixed(4);
+                  }   
+
+              }
+
+                async function getInception(coinId, coinName, setYears) {
+                  let today = new Date();
+                  let inceptionDate = today;
+                  let inceptionPrices = null;
+                  let inceptionPrice = null;
+                
+                  // Step 1: Get Inception Date
+                  try {
+                    // Attempt to get inception date from coin's data
+                    let coinDataResponse = await axios.get(
+                      `https://data.messari.io/api/v1/assets/${coinId}/profile`
                     );
-                    
+                
+                    console.log("inceptionPrices using messari " + coinId + ": ", coinDataResponse);
+                    console.log("inceptionPrices using messari data " + coinId + ": ", coinDataResponse.data);
+                    let coinData = coinDataResponse.data.data;
+                
+                    console.log("inceptionPrices using messari coinData " + coinId + ": ", coinData);
+                
+                    // Check if inception date is available
+                    if (coinData.profile && coinData.profile.genesis_date) {
+                      inceptionDate = new Date(coinData.profile.genesis_date);
+                      console.log("inceptionPrices using messari genesis date " + coinId + ": ", inceptionDate);
+                    }
+                  } catch (error) {
+                    console.error("Error fetching inception date from Messari API " + coinId + ":", error);
                   }
-                  coinDataPass = startDateCoinData?.data?.market_data?.current_price?.usd;
-
-                  if (coinDataPass === undefined) {
-                    const todaysDate = new Date();
-                    const currentMonth = todaysDate.getMonth();
-                    const currentYearNow = todaysDate.getFullYear();
-                    startmonth = parseInt(earliestDate.getMonth() + 12);
-      
-                    if ([2, 4, 6, 9, 10, 11].includes(startmonth)) {                 
-                      if (startday >= 30) {
-                        startday = 28;
-                      }
-                    } else if ([1, 3, 5, 7, 8, 10, 12].includes(startmonth)) {
-                    
-                      if (startday > 28) {
-                        startday = 1;
-                      }
-                    } else if (startmonth > 12) {
-                      startmonth = startmonth - 12;
-                      startyear = earliestDate.getFullYear() + 1;
-                  
-                      if(startyear === currentYearNow + 1){     
-
-                        startyear = currentYearNow;
-                        startmonth = currentMonth;
-
-                      }
+                
+                  // Fallback to previous years if inception date is not available
+                  if (inceptionDate === today) {
+                    inceptionDate.setFullYear(today.getFullYear() - setYears); // Fallback to set number of years ago 
+                    inceptionDate.setDate(inceptionDate.getDate() + 2); // Add one day                     
+                    console.log("inceptionPrices using new inception date " + coinId + ": ", inceptionDate);
                   }
+                
+                  let formattedInceptionDate = inceptionDate.toISOString().split('T')[0];
+                  const endDate = new Date().toISOString().split('T')[0]; // Assuming endDate is today
+                
+                  try {
+                    // Step 2: Fetch price data from Messari API
+                    let inceptionDataResponse = await axios.get(
+                      `https://data.messari.io/api/v1/assets/${coinId}/metrics/price/time-series`,
+                      {
+                        params: {
+                          start: formattedInceptionDate,
+                          end: endDate,
+                          format: 'json',
+                          interval: '1d',
+                        },
+                      }
+                    );
+                
+                    console.log("inceptionPrices using messari formattedInceptionDate " + coinId + ": ", formattedInceptionDate);
+                            
+                    let coinSlugRaw = inceptionDataResponse.data.data.slug;
+                    let coinSlug = coinSlugRaw.replace(/-/g, '');
 
-                    startday = startday.length < 2 ? "0" + startday : startday;
-                    startmonth =
-                      startmonth.toString().length < 2
-                        ? "0" + startmonth
-                        : startmonth;
+                    let coinSymbolRaw = inceptionDataResponse.data.data.symbol;
+                    let coinSymbol = coinSymbolRaw.toLowerCase();
 
-                    let inceptionDate = startday + "-" + startmonth + "-" + startyear;      
-
-                    if (coincache[cacheKey]) {
-                      // Use cached data
-                      startDateCoinData = coincache[cacheKey];
-                      
-                    }  else if (localStorage.getItem(cacheKey)) {    
-                      
-                      startDateCoinData = JSON.parse(localStorage.getItem(cacheKey));                     
-                      coincache[cacheKey] = JSON.stringify(startDateCoinData);            
-                    
+                    console.log("inceptionPrices using messari coinName coinSlug " + coinName + ": ", coinSlug); 
+                    console.log("inceptionPrices using messari coinId coinSymbol " + coinId.toLowerCase() + ": ", coinSymbol);  
+                    console.log("inceptionPrices using messari coinName coinSymbol " + coinName + ": ", coinSymbol);               
+                
+                    // Update to check if coinSymbol equals coinName or is a part of coinName
+                    if ( (coinName === coinSlugRaw || coinName.includes(coinSlug) ) && coinId.toLowerCase() === coinSymbol) {
+                      inceptionPrices = inceptionDataResponse.data.data.values;
+                    }
+                
+                    console.log("inceptionPrices using messari data for inceptionPrices " + coinId + ": ", inceptionPrices);
+                
+                    // Check if inceptionPrices is empty
+                    if (inceptionPrices && inceptionPrices.length > 0) {
+                      inceptionPrice = inceptionPrices[0][4];
+                      console.log("inceptionPrices using messari data for " + coinId + ": ", inceptionPrice);
                     } else {
-                      // Fetch data from API
-                      startDateCoinData = await axios.get(
-                        `https://api.coingecko.com/api/v3/coins/${value.id}/history?date=${inceptionDate}`
-                      );                      
+                      throw new Error('Empty data from Messari API');
                     }
-
-                  } else {
-                    // Store data in cache and local storage
-                    coincache[cacheKey] = JSON.stringify(startDateCoinData);
-                    localStorage.setItem(cacheKey, JSON.stringify(startDateCoinData));
-                  }
-
-                  coinDataPass = startDateCoinData?.data?.market_data?.current_price?.usd;
-
-                  if (coinDataPass === undefined) {         
-                    
-                    const todaysDate = new Date();
-                    const currentMonth = todaysDate.getMonth();
-                    const currentYearNow = todaysDate.getFullYear();
-                    startmonth = parseInt(startmonth);   
-
-                    if ([2, 4, 6, 9, 10, 11].includes(startmonth)) {
-                    
-                      if (startday >= 30) {
-                        startday = 28;
-                      }
-                    } else if ([1, 3, 5, 7, 8, 10].includes(startmonth)) {
-                   
-                      if (startday > 28) {
-                        startday = 1;
-                      }
-                    } else if (startmonth >= 12) {
-                      startmonth = startmonth - 12;
-                      startyear = earliestDate.getFullYear() + 1;
-
-                      if(startyear === currentYearNow + 1){     
-
-                        startyear = currentYearNow;
-                        startmonth = currentMonth + 1;
-
-                      }
-
-                  }
-                    startday = startday.length < 2 ? "0" + startday : startday;
-                    startmonth = startmonth.toString().length < 2 ? "0" + startmonth : startmonth;
-                    let inceptionDate = startday + "-" + startmonth + "-" + startyear;    
-                    
-                    if (coincache[cacheKey]) {
-                      // Use cached data
-                      startDateCoinData = coincache[cacheKey];
-                      
-                    }  else if (localStorage.getItem(cacheKey)) {    
-                      
-                      startDateCoinData = JSON.parse(localStorage.getItem(cacheKey));                     
-                      coincache[cacheKey] = JSON.stringify(startDateCoinData);            
-                    
-                    } else if(inceptionDate !== undefined) {
-                      // Fetch data from API
-                      startDateCoinData = await axios.get(
-                        `https://api.coingecko.com/api/v3/coins/${value.id}/history?date=${inceptionDate}`
+                  } catch (error) {
+                    console.error("Error fetching price data from Messari API. Fallback to CryptoCompare API " + coinId + ":", error);
+                
+                    let toTs = Math.floor(new Date().getTime() / 1000);
+                
+                    // Step 3: Fallback to CryptoCompare API
+                    try {
+                      // Fetch historical price data
+                      let cryptoCompareResponse = await axios.get(
+                        `https://min-api.cryptocompare.com/data/v2/histoday?fsym=${coinId}&tsym=USD&limit=2000&toTs=${toTs}`
                       );
-                      
+                
+                      let firstNonZeroPrice = 0;
+                
+                      console.log("inceptionPrices cryptocompare data " + coinId + ": ", cryptoCompareResponse.data);
+                
+                      // Loop through the data to find the first non-zero close price
+                      for (let dataPoint of cryptoCompareResponse.data.Data.Data) {
+                        if (dataPoint.close !== 0) {
+                          firstNonZeroPrice = dataPoint.close;
+                          console.log("inceptionPrices using cryptocompare " + coinId + ": ", firstNonZeroPrice);
+                          inceptionDate = new Date(dataPoint.time * 1000);
+                          console.log("inceptionPrices using cryptocompare " + coinId + ": ", inceptionDate);
+                          break;
+                        }
+                      }
+                
+                      inceptionPrice = firstNonZeroPrice;
+                
+                    } catch (error) {
+                      console.error("Error fetching data from CryptoCompare API " + coinId + ": ", error.message);
                     }
-
-                  }  else {
-                    // Store data in cache
-                    coincache[cacheKey] = startDateCoinData;
-                    localStorage.setItem(cacheKey, JSON.stringify(startDateCoinData));
                   }
-
-                } else {
-                  // Store data in cache
-                  coincache[cacheKey] = startDateCoinData;
-                  localStorage.setItem(cacheKey, JSON.stringify(startDateCoinData));
+                
+                  // Step 4: Fallback to CoinPaprika API if no inception date or price found
+                  if (!inceptionPrice && setYears === 1) {
+                    try {
+                      coinId = coinId.toLowerCase();
+                      coinName = coinName.toLowerCase();
+                
+                      const inceptionDataResponse = await axios.get(
+                        `https://api.coinpaprika.com/v1/tickers/${coinId}-${coinName}/historical?start=${formattedInceptionDate}&interval=1d`
+                      );
+                
+                      console.log("inceptionPrices using coinpaprika formattedInceptionDate " + coinId + ": ", formattedInceptionDate);
+                      console.log("inceptionPrices using coinpaprika " + coinId + ": ", inceptionDataResponse);
+                
+                      if (inceptionDataResponse.data && inceptionDataResponse.data.length > 0) {
+                        const firstPriceData = inceptionDataResponse.data[0];
+                        inceptionPrice = parseFloat(firstPriceData.price).toFixed(8);
+                        inceptionDate = new Date(firstPriceData.timestamp);
+                        console.log("inceptionPrices using coinpaprika " + coinId + ": ", inceptionPrice, inceptionDate);
+                      }
+                    } catch (error) {
+                      console.error("Error fetching data from CoinPaprika API " + coinId + ":", error.message);
+                    }
+                  }
+                
+                  // Return both inception date and prices
+                  return { inceptionDate: inceptionDate, inceptionPrice: inceptionPrice };
                 }
-          
-                let inceptionPriceChange =
-                  (value.current_price -
-                    startDateCoinData.data.market_data.current_price.usd) /
-                  startDateCoinData.data.market_data.current_price.usd;          
+                
 
-                if (inceptionPriceChange > 0.3) {
-                  inceptionPercentScore = 2;                 
-                } else {
-                  inceptionPercentScore = 0;                  
+              let inceptionPrices = await getInception(coinId, coinName, 10); 
+
+              console.log("inceptionPrices oustside function for length "+coinId+": ",inceptionPrices.inceptionPrice);
+              console.log("inceptionPrices oustside function for 10 year "+coinId);
+
+              if(inceptionPrices.inceptionPrice === null){
+                inceptionPrices = await getInception(coinId, coinName, 5); 
+                console.log("inceptionPrices oustside function for 5 year "+coinId+": ",inceptionPrices.inceptionPrice);
+              }
+              if(inceptionPrices.inceptionPrice === null){
+                inceptionPrices = await getInception(coinId, coinName, 3);
+                console.log("inceptionPrices oustside function for 3 year "+coinId+": ",inceptionPrices.inceptionPrice);
+              }
+              if(inceptionPrices.inceptionPrice === null){
+                inceptionPrices = await getInception(coinId, coinName, 2);
+                console.log("inceptionPrices oustside function for 2 year "+coinId+": ",inceptionPrices.inceptionPrice);
+              }
+              if(inceptionPrices.inceptionPrice === null){
+                inceptionPrices = await getInception(coinId, coinName, 1);  
+                console.log("inceptionPrices oustside function for 1 year "+coinId+": ",inceptionPrices.inceptionPrice);  
+              } else {
+                console.log("inceptionPrices oustside function for "+coinId+": ",inceptionPrices.inceptionPrice);
+              }
+  
+              console.log("value.USD.PRICE inceptionPriceChange latestPrice: ", latestPrice);
+              
+              let inceptionPriceChange =  ((latestPrice - inceptionPrices.inceptionPrice) / inceptionPrices.inceptionPrice) * 100;
+
+              let maxChartGrade = null;
+
+              if (parseFloat(inceptionPriceChange) >= 800) {
+                maxChartGrade = 'A';
+              } else if (parseFloat(inceptionPriceChange) >= 500){
+                maxChartGrade = 'B';
+              } else if (parseFloat(inceptionPriceChange) >= 100){
+                maxChartGrade = 'C';
+              } else if (parseFloat(inceptionPriceChange) >= 50){
+                maxChartGrade = 'D';
+              } else if (parseFloat(inceptionPriceChange) < 50){
+                maxChartGrade = 'F';
+              }
+
+              if (parseFloat(inceptionPriceChange) >= 500) {
+                maxGradeScore = 2;
+              } else if (parseFloat(inceptionPriceChange) < 500){
+                maxGradeScore = 1;
+              } else if (parseFloat(inceptionPriceChange) < 100){
+                maxGradeScore = 0;
+              }        
+              
+              async function getOneYearPercentChange(coinId, coinName, latestPrice) {
+                let oneYearAgoPrice = null;
+              
+                // Attempt to fetch data from CryptoCompare
+                try {
+                  const response = await axios.get(`https://min-api.cryptocompare.com/data/v2/histoday?fsym=${coinId}&tsym=USD&limit=365&api_key=de528b65cdbb62a301a3bbd68201919b928595d750ce18281f45ad59ee77bdfa`);
+                  const data = response.data.Data.Data;
+              
+                  oneYearAgoPrice = data[0].close;
+              
+                  if (parseInt(oneYearAgoPrice) === 0) {
+                    for (let yearIndex = 0; yearIndex < data.length; yearIndex++) {
+                      let getYearAgoPrice = data[yearIndex].close;
+                      if (getYearAgoPrice !== 0) {
+                        oneYearAgoPrice = getYearAgoPrice;
+                        break;
+                      }
+                    }
+                  }
+                } catch (error) {
+                  console.log('Error fetching data from CryptoCompare:', error.message);
                 }
-                let maxChartGrade = null;
-
-                if (parseFloat(inceptionPriceChange) >= 2.0) {
-                  maxChartGrade = "A";
-                  maxGradeScore = 2;
-                } else if (parseFloat(inceptionPriceChange) >= 1.0 && parseFloat(inceptionPriceChange) < 2.0) {
-                  maxChartGrade = "B";
-                  maxGradeScore = 2;                
-                } else if (parseFloat(inceptionPriceChange) < 1.0 && parseFloat(inceptionPriceChange) > 0.15) {
-                  maxChartGrade = "C";
-                  maxGradeScore = 1;
-                } else {
-                  maxChartGrade = "D";
-                  maxGradeScore = 0;
+              
+                // If CryptoCompare data is not available or invalid, fetch from Messari
+                if (!oneYearAgoPrice || oneYearAgoPrice === 0) {
+                  try {
+                    const response = await axios.get(`https://data.messari.io/api/v1/assets/${coinId}/metrics/market-data`);
+                    const data = response.data.data.market_data;
+                    oneYearAgoPrice = data.price_usd;
+                  } catch (error) {
+                    console.log('Error fetching data from Messari:', error.message);
+                  }
                 }
+              
+                // If Messari data is not available, fetch from CoinPaprika
+                if (!oneYearAgoPrice || oneYearAgoPrice === 0) {
+                  try {
+                    const now = Math.floor(Date.now() / 1000);
+                    const oneYearAgo = now - 363 * 24 * 60 * 60;
+                    const date = new Date(oneYearAgo * 1000);
 
-                let oneYearPercentChange = value.price_change_percentage_1y_in_currency / 100;
+                    // Extract year, month, and day from the Date object
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0')
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const yearAgoDate = year+"-"+month+"-"+day; 
+                    
+                    coinId = coinId.toLowerCase();
+                    coinName = coinName.toLowerCase();
+              
+                    const response = await axios.get(`https://api.coinpaprika.com/v1/tickers/${coinId}-${coinName}/historical?start=${yearAgoDate}&interval=1d`);
+                    const data = response.data;
+              
+                    oneYearAgoPrice = data[0].price;
+                  } catch (error) {
+                    console.log('Error fetching data from CoinPaprika:', error.message);
+                  }
+                }
+              
+                // Calculate the percentage change
+                if (!oneYearAgoPrice || oneYearAgoPrice === 0) {
+                  throw new Error('Unable to fetch valid one year ago price from all sources.');
+                }
+              
+                const change = ((latestPrice - oneYearAgoPrice) / oneYearAgoPrice) * 100;
+              
+                return change.toFixed(4);
+              }     
+              
+                            
+              //const latestPrice = value.USD.PRICE;
+
+              console.log("value.USD.PRICE getOneYearPercentChange latestPrice: ", latestPrice);
+
+              const oneYearPercentChange = await getOneYearPercentChange(coinId, coinName, latestPrice);
+
+              console.log('coinPaprika oneYearPercentChange:'+coinId+': ', oneYearPercentChange);
 
                 if (oneYearPercentChange === null) {
                   oneYearPercentChange = 0;
                   oneYearPercentScore = 0;
-                 
-                } else {  
-                    if (oneYearPercentChange > .2) {
-                      oneYearPercentScore = 2;
-                    } else {
-                      oneYearPercentScore = 0;
-                    }
+
+                } else {
+                  if (oneYearPercentChange > .2) {
+                    oneYearPercentScore = 2;
+                  } else {
+                    oneYearPercentScore = 0;
+                  }
                 }
 
                 let ninetyDaysPercentChange = null;
 
-                if(ninetyDaysAgoPrice !== null){
+                console.log("value.USD.PRICE ninetyDaysPriceChange latestPrice "+coinId+": ", latestPrice);
 
-                  ninetyDaysPercentChange =
-                  (value.current_price - ninetyDaysAgoPrice) / ninetyDaysAgoPrice;
+                console.log("3 month percentage ninetyDaysAgoPrice "+coinId+": ", ninetyDaysAgoPrice);            
 
-                } else {
+                if (ninetyDaysAgoPrice !== null && isNaN(ninetyDaysAgoPrice) === false){
 
-                  ninetyDaysPercentChange =
-                  (value.current_price - startDateCoinData.data.market_data.current_price.usd) / startDateCoinData.data.market_data.current_price.usd;
+                  let ninetyDaysPriceChange = parseFloat(latestPrice) - parseFloat(ninetyDaysAgoPrice);
+                  ninetyDaysPriceChange = ninetyDaysPriceChange.toFixed(10);
 
-                }
+                  ninetyDaysPercentChange = (ninetyDaysPriceChange / ninetyDaysAgoPrice) * 100;
 
-                if (ninetyDaysPercentChange > 0.14) {
+                  console.log("3 month percentage ninetyDaysPercentChange "+coinId+": ", ninetyDaysPercentChange);
+
+                }             
+
+                if (ninetyDaysPercentChange > 0.14 && ninetyDaysPercentChange !== null ) {
                   threeMonthsPercentScore = 1;
                 } else {
                   threeMonthsPercentScore = 0;
@@ -711,196 +1170,367 @@ function Analysis() {
                   `https://data-api.cryptocompare.com/asset/v1/data/by/symbol?asset_symbol=${coinId}&api_key=de528b65cdbb62a301a3bbd68201919b928595d750ce18281f45ad59ee77bdfa`
                 );
 
-                if(getCoinData.data){
-
-                let twitter = getCoinData.data.Data.TWITTER_ACCOUNTS;
-                let twitterArray = [];
-                let twitterURL = null;
-                let twitterFollowers = null;
-                let sourceCode = getCoinData.data.Data.CODE_REPOSITORIES;
-                let gitRepository = null;
-                let website = getCoinData.data.Data.WEBSITE_URL;                
-
-                if (twitter !== null) {
-
-                  twitter = Object.values(twitter);
-                  twitterArray = twitter.map((account) => account.FOLLOWERS);
+                if (getCoinData.data) {
                   
-                  twitterURL = twitter.map(
-                    (accounts) => accounts.URL            
-                  );  
 
-                  if(twitterURL.length > 1){
-                    twitterURL = twitterURL[0];
+                  let twitter = getCoinData.data.Data.TWITTER_ACCOUNTS;          
+                  let twitterArray = [];
+                  let twitterURL = null;
+                  let twitterFollowers = null;
+                  let sourceCode = getCoinData.data.Data.CODE_REPOSITORIES;
+                  let gitRepository = null;
+                  let website = getCoinData.data.Data.WEBSITE_URL;
+
+
+
+                  if (twitter !== null) {
+
+                    twitter = Object.values(twitter);
+                    twitterArray = twitter.map((account) => account.FOLLOWERS);
+
+                    twitterURL = twitter.map(
+                      (accounts) => accounts.URL
+                    );
+
+                    if (twitterURL.length > 1) {
+                      twitterURL = twitterURL[0];
+                    }
+                    twitterFollowers = twitterArray.reduce((acc, val) => acc + val);
+
+                    if (twitterFollowers > 25000) {
+                      twitterScore = 1;
+                    }
+
+                  } else {
+                    twitterFollowers = 0;
+                    twitterScore = 0;
                   }
-                  twitterFollowers = twitterArray.reduce((acc, val) => acc + val);            
 
-                  if (twitterFollowers > 25000) {
-                    twitterScore = 1;              
+                  if (sourceCode !== null && sourceCode !== undefined && sourceCode.length !== 0) {
+                    gitRepository = sourceCode[0].URL;
+                    gitScore = 1;
+
+                  } else {
+                    gitRepository = "N/A";
+                    gitScore = 0;
                   }
 
-                } else {
-                  twitterFollowers = 0;
-                  twitterScore = 0;          
-                }
+                  if (website === null) {
+                    website = "N/A";
+                  }
 
-                if (sourceCode !== null && sourceCode !== undefined && sourceCode.length !== 0) {
-                  gitRepository = sourceCode[0].URL;
-                  gitScore = 1;
-                  
-                } else {
-                  gitRepository = "N/A";
-                  gitScore = 0;                
-                }
+                  if (value.total_volume > 250000) {
+                    volumeScore = 1;
+                  }
 
-                if (website === null) {
-                  website = "N/A";
-                }              
+                  console.log("inceptionPriceChange for score "+coinId+": ",inceptionPriceChange);
 
-                if (value.total_volume > 250000) {
-                  volumeScore = 1;
-                }    
+                  if (parseFloat(inceptionPriceChange) >= 500) {
+                    maxGradeScore = 2;
+                  } else if (parseFloat(inceptionPriceChange) < 500){
+                    maxGradeScore = 1;
+                  } else if (parseFloat(inceptionPriceChange) < 250){
+                    maxGradeScore = 0;
+                  }
 
-                let total =
-                volumeScore +
-                oneYearPercentScore +
-                btcChangeScore +
-                btcPercentScore +
-                inceptionPercentScore +
-                threeMonthsPercentScore +
-                maxGradeScore +
-                twitterScore +
-                gitScore; 
+                  let total =
+                    volumeScore +
+                    oneYearPercentScore +
+                    btcChangeScore +
+                    btcPercentScore +                 
+                    threeMonthsPercentScore +
+                    maxGradeScore +
+                    twitterScore +
+                    gitScore;
 
-                let buysellrating = 0;
-                let buyHighPercentScore = 0;
-                let sellHighPercentScore = 0;
-                let buyrating = 0;
-                let sellrating = 0;
-                let buysell = null;
+                  let buysellrating = 0;
+                  let buyHighPercentScore = 0;
+                  let sellHighPercentScore = 0;
+                  let buyrating = 0;
+                  let sellrating = 0;
+                  let buysell = null;
 
-                if(total > 3 ){
+                  if (total > 3) {
 
-                  buyrating = 1; 
-                  sellrating = 0;
+                    buyrating = 1;
+                    sellrating = 0;
 
-                } else {
+                  } else {
 
-                  sellrating = 1; 
-                  buyrating = 0;
+                    sellrating = 1;
+                    buyrating = 0;
 
-                }            
+                  }
 
-                if(highestPricePercentage <= -0.75 ){   
+                  if (highestPricePercentage <= -0.75) {
 
-                  buyHighPercentScore = 2; 
-                  sellHighPercentScore = 0;     
+                    buyHighPercentScore = 2;
+                    sellHighPercentScore = 0;
 
-                } else if(highestPricePercentage >= -0.55 ){
-                  
-                  sellHighPercentScore = 2;  
-                  buyHighPercentScore = 0;
+                  } else if (highestPricePercentage >= -0.55) {
 
-                }
-                  
+                    sellHighPercentScore = 2;
+                    buyHighPercentScore = 0;
+
+                  }
+
                   let totalbuyrating = buyrating + buyHighPercentScore;
-
                   let totalsellrating = sellrating + sellHighPercentScore;
 
-                  if(totalbuyrating > totalsellrating) {
+                    if (totalbuyrating > totalsellrating) {
 
-                      buysellrating = totalbuyrating;             
+                      buysellrating = totalbuyrating;
 
-                      if(buysellrating > 2 && ninetyDaysPercentChange < 0.40){
+                      if (buysellrating > 2 && ninetyDaysPercentChange < 0.40) {
                         buysell = "BUY";
-                      }  else {
-                        buysell = "HODL";  
-                      } 
+                      } else {
+                        buysell = "HODL";
+                      }
 
-                  } else if(totalsellrating > totalbuyrating) {
+                    } else if (totalsellrating > totalbuyrating) {
 
                       buysellrating = totalsellrating;
 
-                      if(buysellrating > 3 && ninetyDaysPercentChange > 0.50){
+                      if (buysellrating > 3 && ninetyDaysPercentChange > 0.50) {
                         buysell = "SELL";
                       } else {
-                        buysell = "HODL";  
-                      }  
+                        buysell = "HODL";
+                      }
 
-                  } 
+                    }
 
-                setTotalScore(total);
+                  setTotalScore(total);
 
-                const response = await api.get('http://localhost:3006/portfolios');
-                const portfolios = response.data;          
-                let portfolioId = null; 
-                let coinPrediction = null;
-          
-                // Find the portfolio containing the analysis for the specified coinId
-                const portfolio = portfolios.find((p) =>      
-                  p.analysis.some((analysisItem) => analysisItem.coinId === coinId)      
-                );  
+                  const response = await api.get('http://localhost:3006/portfolios');
+                  const portfolios = response.data;
+                  let portfolioId = null;
+                  let coinPrediction = null;
 
-                if (portfolio) {
-
-                  portfolioId = portfolio.id;
-                
-                  // Find the analysis item for the specified coinId within the portfolio
-                  const analysisItem = portfolio.analysis.find(
-                    (analysis) => analysis.coinId === coinId
+                  // Find the portfolio containing the analysis for the specified coinId
+                  const portfolio = portfolios.find((p) =>
+                    p.analysis.some((analysisItem) => analysisItem.coinId === coinId)
                   );
+
+                  if (portfolio) {
+
+                    portfolioId = portfolio.id;
+
+                    // Find the analysis item for the specified coinId within the portfolio
+                    const analysisItem = portfolio.analysis.find(
+                      (analysis) => analysis.coinId === coinId
+                    );
+                    if (analysisItem && analysisItem.prediction) {
+                      // Access the prediction value for the coin
+                      coinPrediction = analysisItem.prediction;
+                    } else {
+                      console.log(`No prediction found for ${coinId}`);
+                    }
+                  } else {
+                    console.log(`Portfolio not found for ${coinId}`);
+                  }
+
+                  console.log("coinMarketCap cryptocompare before: "+coinId+": ",value.USD.MKTCAP); 
+
+                  let coinMarketCap = parseInt(value.USD.MKTCAP);
+                  
+                  async function fetchMarketCapWhenZero(coinId, coinName) {
+                    try {
+                        // Step 1: Attempt to fetch coin data from Messari
+                        try {
+                            console.log("Messari market cap Fetching market cap from Messari for coin: " + coinId);
+                            const messariResponse = await axios.get(`https://data.messari.io/api/v1/assets/${coinId}/metrics`);
+                            const messariMarketCap = messariResponse.data.data.marketcap.current_marketcap_usd;
+                            console.log("Messari market cap for " + coinId + ": ", messariMarketCap);
+                            
+                            if (messariMarketCap !== 0 && messariMarketCap !== null) {
+                                return messariMarketCap;
+                            }
+                        } catch (error) {
+                            console.error('Messari market cap Error fetching data from Messari', error);
+                        }
                 
-                  if (analysisItem && analysisItem.prediction) {
-                    // Access the prediction value for the coin
-                    coinPrediction = analysisItem.prediction;       
+                        // Step 2: If Messari data is unavailable or market cap is zero, attempt to fetch coin data from CoinLore
+                        try {
+                            console.log("CoinLore market cap from CoinLore for coin: " + coinId);
+                            const coinLoreResponse = await axios.get('https://api.coinlore.net/api/tickers/');
+                            const coinLoreData = coinLoreResponse.data.data;
+                            const coin = coinLoreData.find(coin => coin.symbol === coinId || coin.name === coinName);
+                            console.log("CoinLore coin: " + coinId + ": ", coin);
+                
+                            if (coin) {
+                                const coinLoreMarketCap = coin.market_cap_usd;
+                                console.log("CoinLore market cap for " + coinId + ": ", coinLoreMarketCap);
+                                
+                                if (coinLoreMarketCap !== 0) {
+                                    return coinLoreMarketCap;
+                                }
+                            }
+                        } catch (error) {
+                            console.error('CoinLore market cap Error fetching data from CoinLore', error);
+                        }
+                
+                        //Step 3: If both Messari and CoinLore data are unavailable or market cap is zero, fallback to CoinPaprika
+                        try {
+
+                            console.log("CoinPaprika market cap Fetching coin details from coinlore for coin: " + coinId + " or " + coinName);         
+
+                            const allCoinsResponse = await axios.get('https://api.coinpaprika.com/v1/coins');
+                            const allCoins = allCoinsResponse.data;
+                            const coin = allCoins.find(coin => coin.symbol === coinId || coin.name === coinName);
+
+                            console.log("CoinPaprika market cap coin: " + coinId + ": ", coin);
+                
+                            if (coin) {
+                                const coinPaprikaId = coin.id;
+                                try {
+                                    const coinDetailsResponse = await axios.get(`https://api.coinpaprika.com/v1/tickers/${coinPaprikaId}`);
+                                    const coinDetails = coinDetailsResponse.data;
+                                    const coinPaprikaMarketCap = coinDetails.quotes.USD.market_cap;
+                                    console.log("CoinPaprika market cap for " + coinId + ": ", coinPaprikaMarketCap);
+                                    
+                                    return coinPaprikaMarketCap;
+                                } catch (error) {
+                                    if (error.response && error.response.status === 402) {
+                                        console.error('CoinPaprika market cap 402 Payment Required error encountered', error);
+                                    } else {
+                                        throw error; // Re-throw if it's not a 402 error
+                                    }
+                                }
+                            } else {
+                                console.warn("CoinPaprika market cap Coin not found in CoinPaprika for coinId: " + coinId + " or coinName: " + coinName);
+                                return null;
+                            }
+                        } catch (error) {
+                            console.error('Error fetching data from CoinLore', error);
+                        }
+                    } catch (error) {
+                        console.error('Error fetching market cap', error);
+                        return null;
+                    }
+                
+                    // If all sources fail, return null or a default value
+                    return null;
+                }
+                
+                
+                
+                
+                  
+                  if(parseInt(coinMarketCap) === 0){
+
+                    coinMarketCap = await fetchMarketCapWhenZero(coinId, coinName);
+                    coinMarketCap = parseInt(coinMarketCap);
+
+                    console.log("coinMarketCap after results: "+coinId+": ",coinMarketCap); 
 
                   } else {
-                    console.log(`No prediction found for ${coinId}`);
-                  } 
+                    coinMarketCap = parseInt(coinMarketCap);
+                  }                  
 
-                } else {
 
-                  console.log(`Portfolio not found for ${coinId}`);
+                  let coinCurrentPrice = parseFloat(latestPrice); 
+
+                  console.log("value.USD.PRICE coinCurrentPrice latestPrice "+coinId+": ", latestPrice);
+                  console.log("coinCurrentPrice "+coinId+": ",coinCurrentPrice);
+
+                  if (coinCurrentPrice > 0.00000001) {
+                    coinCurrentPrice = coinCurrentPrice.toFixed(8);
+                  } else {
+                    coinCurrentPrice = coinCurrentPrice.toFixed(12);
+                  }
+
+                  if (oneYearBTCPercentChange !== "N/A") {
+
+                    if (parseFloat(oneYearBTCPercentChange) > 0) {
+                      oneYearBTCPercentChange = oneYearBTCPercentChange.toFixed(4);
+                    } else {
+                      oneYearBTCPercentChange = oneYearBTCPercentChange.toFixed(8);
+                    }    
+                   
+                  }   
                   
+                  console.log("ninetyDaysPercentChange 0: ",ninetyDaysPercentChange);
+
+                  if( isNaN(ninetyDaysPercentChange) === false && ninetyDaysPercentChange !== null){
+
+                    if (parseFloat(ninetyDaysPercentChange) > 0) {
+                      ninetyDaysPercentChange = ninetyDaysPercentChange.toFixed(4);
+                    } else {
+                      ninetyDaysPercentChange = ninetyDaysPercentChange.toFixed(8);
+                    }
+
+                    console.log("ninetyDaysPercentChange 1: ",ninetyDaysPercentChange);
+
+                  }
+
+                  if( isNaN(highestPricePercentage) === false && highestPricePercentage !== null){
+
+                    if (parseFloat(highestPricePercentage) > 0) {
+                      highestPricePercentage = highestPricePercentage.toFixed(4);
+                    } else {
+                      highestPricePercentage = highestPricePercentage.toFixed(8);
+                    }                 
+
+                  }
+
+                  console.log("inceptionPriceChange 0: ",inceptionPriceChange);
+                  if( isNaN(inceptionPriceChange) === false && inceptionPriceChange !== null){
+
+                    if (parseFloat(inceptionPriceChange) > 0) {
+                      inceptionPriceChange = inceptionPriceChange.toFixed(4);
+                    } else {
+                      inceptionPriceChange = inceptionPriceChange.toFixed(8);
+                    }
+                    console.log("inceptionPriceChange 1: ",inceptionPriceChange);
+
+                  }
+
+
+                  let coinCurrentVol = value.USD.TOTALVOLUME24HTO;         
+                  coinCurrentVol = parseInt(coinCurrentVol);           
+          
+                  coinData.push({
+                    id: coinId,
+                    name: coinName.toUpperCase(),
+                    current_price: coinCurrentPrice,
+                    marketCap: coinMarketCap,
+                    volume: coinCurrentVol,
+                    oneYearPercentChange: oneYearPercentChange,
+                    oneYearBTCPercentChange: oneYearBTCPercentChange,
+                    actualYearDate: yearDateFormatted,
+                    oneYearBTCPriceChange: oneYearBTCPriceChange,          
+                    ninetyDaysPercentChange: ninetyDaysPercentChange,
+                    inceptionPriceChange: inceptionPriceChange,
+                    maxChartGrade: maxChartGrade,
+                    prediction: coinPrediction,
+                    gainPrediction: null,
+                    avgGainPrediction: null,
+                    highestPricePercentage: highestPricePercentage,
+                    twitterFollowers: twitterFollowers,
+                    twitterURL: twitterURL,
+                    gitRepository: gitRepository,
+                    website: website,
+                    rating: total,
+                    buysellrating: buysellrating,
+                    buysell: buysell
+                  });
+
+                  console.log("coinData: ",coinData);
+
+                  setCoinData(coinData);
+                  setIsLoading(false);
+
                 }
-
-                coinData.push({
-                  id: value.id,
-                  name: value.name,
-                  current_price: value.current_price,
-                  marketCap: value.market_cap,
-                  volume: value.total_volume,
-                  oneYearPercentChange: oneYearPercentChange,
-                  oneYearBTCPercentChange: oneYearBTCPercentChange,
-                  oneYearBTCPriceChange: oneYearBTCPriceChange,
-                  inceptionPriceChange: inceptionPriceChange,
-                  ninetyDaysPercentChange: ninetyDaysPercentChange,
-                  maxChartGrade: maxChartGrade,
-                  prediction: coinPrediction,
-                  gainPrediction: null,
-                  avgGainPrediction: null,
-                  highestPricePercentage: highestPricePercentage,
-                  twitterFollowers: twitterFollowers,
-                  twitterURL: twitterURL,
-                  gitRepository: gitRepository,
-                  website: website,
-                  rating: total,
-                  buysellrating: buysellrating,
-                  buysell: buysell
-                });
-
-                setCoinData(coinData);  
-                setIsLoading(false); 
-
               }
+
+            } else {
+              console.log("Error retrieving coin data");
             }
-
-        } else {            
-            console.log("Error retrieving coin data"); 
-      } 
-    }
-
-};
+          }
+      } catch (error) {
+          console.log(error);
+      }
+  };
 
   async function removeAllCoinsHandler() {
 
@@ -917,98 +1547,71 @@ function Analysis() {
         let coinName = portfolio.data.analysis[j].coinName;
         localStorage.removeItem(coinName);
       }
-  
+
       // set the analysis array to an empty array
       portfolio.data.analysis = [];
-  
+
       // update the portfolio with the new analysis array
       await api.patch(
         `http://localhost:3006/portfolios/${portfolios.data[i].id}`,
         { analysis: portfolio.data.analysis }
       );
-  
+
       const updatedPortfolio = await api.get(
         `http://localhost:3006/portfolios/${portfolios.data[i].id}`
       );
 
       // set the analysisCoins state to the empty array
       setAnalysisCoins([]);
-    }  
+    }
     // call the function to fetch the updated analysis coins
     GetAnalysisCoins();
   }
 
-  async function removeCoinHandler(coinName) {
-    // your logic to delete the analysis coin from the API
-
-    const portfolios = await api.get("http://localhost:3006/portfolios");
-
-    for (let i = 0; i < portfolios.data.length; i++) {
-      const portfolio = await api.get(
-        `http://localhost:3006/portfolios/${portfolios.data[i].id}`
-      );
-
-      for (let c = 0; c < portfolio.data.analysis.length; c++) {
-         if (coinName === "binancecoin") {
-          coinName = coinName.replace("binancecoin", "binance-coin");
+    async function removeCoinHandler(coinName) {
+      try {
+        const portfolios = await api.get("http://localhost:3006/portfolios");
+        for (const portfolio of portfolios.data) {
+          const updatedAnalysis = portfolio.analysis.filter(item => item.coinName !== coinName);
+          const updatedPortfolio = { ...portfolio, analysis: updatedAnalysis };
+          await api.put(`http://localhost:3006/portfolios/${portfolio.id}`, updatedPortfolio);
         }
-
-        if (portfolio.data.analysis[c].coinName === coinName) {
-          const coinIndex = portfolio.data.analysis.findIndex(
-            (coin) => coin.coinName === coinName
-          );
-
-            if (coinIndex === -1) {
-            throw new Error(
-              `Analysis Coin with id ${coinName} could not found in portfolio with id ${portfolios.data[i].id}`
-            );
-          }
-
-          // remove the coin from the portfolio's coins array
-          portfolio.data.analysis.splice(coinIndex, 1);
-
-          // update the portfolio with the new coins array---
-          await api.patch(
-            `http://localhost:3006/portfolios/${portfolios.data[i].id}`,
-            { analysis: portfolio.data.analysis }
-          );
-
-          const updatedPortfolio = await api.get(
-            `http://localhost:3006/portfolios/${portfolios.data[i].id}`
-          );
-            
-          // remove the corresponding key-value pair from the browser's storage
-          localStorage.removeItem(coinName);
-      
-          // set the analysisCoins state to the updated analysis array
-          setAnalysisCoins(updatedPortfolio.data.analysis);
-
-          GetAnalysisCoins();
-        }
+        setAnalysisCoins(prevCoins => prevCoins.filter(coin => coin.coinName !== coinName));
+        GetAnalysisCoins();
+      } catch (error) {
+        console.error("Error removing coin:", error);
       }
     }
-  }; 
-  
-  async function handleInputChange(e, coinId) {    
 
-    console.log("coinId: " + coinId);
+// Asynchronous function to handle changes in input fields related to a specific coin
+async function handleInputChange(e, coinId) {
+  try {
+      // Log the coinId to the console for debugging purposes
+      console.log("coinId: " + coinId);
+      
+      // Check if the input value is an empty string
+      if (e === '') {
+          // Update the state to set the value of the specified coin input field to an empty string
+          setCoinInputValues((prevInputValues) => ({
+              ...prevInputValues,  // Spread the previous input values
+              [coinId]: ''         // Set the current coinId value to an empty string
+          }));
+      } else {
+          // Determine the new value; if 'e' is not a number, set it to 0
+          const newValue = !isNaN(e) ? e : 0;
+          
+          // Update the state with the new value for the specified coin input field
+          setCoinInputValues((prevInputValues) => ({
+              ...prevInputValues,  // Spread the previous input values
+              [coinId]: newValue,  // Set the current coinId value to the new value
+          }));
+      }
+  } catch (error) {
+      // Log any errors that occur during the execution of the try block
+      console.log(error);
+  }
+};
 
-    if (e === '') {
-      setCoinInputValues((prevInputValues) => ({
-        ...prevInputValues,
-        [coinId]: ''
-      }));
-    } else {  
-
-    const newValue = !isNaN(e) ? e : 0;    
-
-    setCoinInputValues((prevInputValues) => ({
-      ...prevInputValues,
-      [coinId]: newValue,
-    }));
-    }    
-
-  };
 
   const handleSort = (attribute) => {
     // Update sort order and attribute    
@@ -1016,24 +1619,21 @@ function Analysis() {
     setSortBy(attribute);
   };
 
-
   const sortedCoins = coinData.slice().sort((a, b) => {
 
     const aValue = a[sortBy];
-    const bValue = b[sortBy];    
-
-  // Check if both values are strings before performing alphabetical sorting
-  if (typeof aValue === 'string' && typeof bValue === 'string') {
-    // Perform alphabetical sorting
-    return sortOrder === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
-  } else {
-
-    // If one or both values are not strings, maintain the existing order
-    return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
-
-  }  
-
+    const bValue = b[sortBy];
+    // Check if both values are strings before performing alphabetical sorting
+    if (typeof aValue === 'string' && typeof bValue === 'string') {
+      // Perform alphabetical sorting
+      return sortOrder === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+    } else {
+      // If one or both values are not strings, maintain the existing order
+      return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
+    }
   });
+
+  console.log("sortedCoins: ", sortedCoins.length);
 
   if (isLoading) return <div>Loading...</div>;
   if (noCoins) return <div>Add some coins to analyze!</div>;
@@ -1043,145 +1643,145 @@ function Analysis() {
       <div className="app-main">
         <div className="ui coin-analysis">
           <div className="ui relaxed divided list">
-          <div className="coin-table-header">
-            <div 
-                  className={`headerCell ${sortBy === "name" ? "active" : ""}`}
-                  align="left"
-                  onClick={() => handleSort("name")}
-            >
-              Coin {" "}
-            </div>
-            <div 
-              className={`headerCell ${sortBy === "marketCap" ? "active" : ""}`}
-                  align="left"
-                  onClick={() => handleSort("marketCap")}
+            <div className="coin-table-header">
+              <div
+                className={`headerCell ${sortBy === "name" ? "active" : ""}`}
+                align="left"
+                onClick={() => handleSort("name")}
               >
-               Market Cap{" "}                
+                Coin {" "}
+              </div>
+              <div
+                className={`headerCell ${sortBy === "marketCap" ? "active" : ""}`}
+                align="left"
+                onClick={() => handleSort("marketCap")}
+              >
+                Market Cap{" "}
               </div>
               <div
                 className={`headerCell ${sortBy === "volume" ? "active" : ""}`}
-                  align="left"
-                  onClick={() => handleSort("volume")}
+                align="left"
+                onClick={() => handleSort("volume")}
               >
                 Volume{" "}
               </div>
-              <div 
-              className={`headerCell ${sortBy === "current_price" ? "active" : ""}`}
-                  align="left"
-                  onClick={() => handleSort("current_price")}
-              >              
-                Price{" "}                
+              <div
+                className={`headerCell ${sortBy === "current_price" ? "active" : ""}`}
+                align="left"
+                onClick={() => handleSort("current_price")}
+              >
+                Price{" "}
               </div>
-              <div 
-              className={`headerCell ${sortBy === "oneYearPercentChange" ? "active" : ""}`}
-                  align="left"
-                  onClick={() => handleSort("oneYearPercentChange")}
+              <div
+                className={`headerCell ${sortBy === "oneYearPercentChange" ? "active" : ""}`}
+                align="left"
+                onClick={() => handleSort("oneYearPercentChange")}
               >
                 USD 1YR % Change{" "}
-               </div>
-              <div 
-              className={`headerCell ${sortBy === "oneYearBTCPercentChange" ? "active" : ""}`}
-                  align="left"
-                  onClick={() => handleSort("oneYearBTCPercentChange")}
+              </div>
+              <div
+                className={`headerCell ${sortBy === "oneYearBTCPercentChange" ? "active" : ""}`}
+                align="left"
+                onClick={() => handleSort("oneYearBTCPercentChange")}
               >
                 BTC 1YR % Change{" "}
               </div>
-              <div 
-              className={`headerCell ${sortBy === "oneYearBTCPriceChange" ? "active" : ""}`}
-                  align="left"
-                  onClick={() => handleSort("oneYearBTCPriceChange")}
+              <div
+                className={`headerCell ${sortBy === "oneYearBTCPriceChange" ? "active" : ""}`}
+                align="left"
+                onClick={() => handleSort("oneYearBTCPriceChange")}
               >
                 BTC 1YR Change{" "}
-              </div>
-              <div 
-              className={`headerCell ${sortBy === "inceptionPriceChange" ? "active" : ""}`}
-                  align="left"
-                  onClick={() => handleSort("inceptionPriceChange")}
-              >
-                Inception % Change{" "}
-              </div>
-              <div 
-              className={`headerCell ${sortBy === "ninetyDaysPercentChange" ? "active" : ""}`}
-                  align="left"
-                  onClick={() => handleSort("ninetyDaysPercentChange")}
+              </div>  
+              <div
+                className={`headerCell ${sortBy === "ninetyDaysPercentChange" ? "active" : ""}`}
+                align="left"
+                onClick={() => handleSort("ninetyDaysPercentChange")}
               >
                 3 Months % Change{" "}
               </div>
-              <div 
-              className={`headerCell ${sortBy === "maxChartGrade" ? "active" : ""}`}
-                  align="left"
-                  onClick={() => handleSort("maxChartGrade")}
+              <div
+                className={`headerCell ${sortBy === "inceptionPriceChange" ? "active" : ""}`}
+                align="left"
+                onClick={() => handleSort("inceptionPriceChange")}
               >
-                Max Chart Grade{" "}               
+                Inception Est. % Change{" "}
+              </div>
+              <div
+                className={`headerCell ${sortBy === "maxChartGrade" ? "active" : ""}`}
+                align="left"
+                onClick={() => handleSort("maxChartGrade")}
+              >
+                Max Chart Grade{" "}
               </div>
               <div
                 className={`headerCell ${sortBy === "prediction" ? "active" : ""}`}
-                  align="left"
-                  onClick={() => handleSort("prediction")}
+                align="left"
+                onClick={() => handleSort("prediction")}
               >
-                Price Prediction{" "}               
+                Price Prediction{" "}
               </div>
-              <div 
-              className={`headerCell ${sortBy === "gainPrediction" ? "active" : ""}`}
-                  align="left"
-                  onClick={() => handleSort("gainPrediction")}
+              <div
+                className={`headerCell ${sortBy === "gainPrediction" ? "active" : ""}`}
+                align="left"
+                onClick={() => handleSort("gainPrediction")}
               >
                 Future Gain Prediction{" "}
               </div>
-              <div 
-              className={`headerCell ${sortBy === "avgGainPrediction" ? "active" : ""}`}
-                  align="left"
-                  onClick={() => handleSort("avgGainPrediction")}
+              <div
+                className={`headerCell ${sortBy === "avgGainPrediction" ? "active" : ""}`}
+                align="left"
+                onClick={() => handleSort("avgGainPrediction")}
               >
-                Avg. Gain Prediction{" "}              
+                Avg. Gain Prediction{" "}
               </div>
-              <div 
-                 className={`headerCell ${sortBy === "highestPricePercentage" ? "active" : ""}`}
-                  align="left"
-                  onClick={() => handleSort("highestPricePercentage")}
+              <div
+                className={`headerCell ${sortBy === "highestPricePercentage" ? "active" : ""}`}
+                align="left"
+                onClick={() => handleSort("highestPricePercentage")}
               >
                 % from ATH{" "}
               </div>
-              <div  
-              className={`headerCell ${sortBy === "twitterFollowers" ? "active" : ""}`}
-                  align="left"
-                  onClick={() => handleSort("twitterFollowers")}
+              <div
+                className={`headerCell ${sortBy === "twitterFollowers" ? "active" : ""}`}
+                align="left"
+                onClick={() => handleSort("twitterFollowers")}
               >
-                Twitter Followers{" "}                
+                Twitter Followers{" "}
               </div>
-              <div  
-              className={`headerCell ${sortBy === "gitRepository" ? "active" : ""}`}
-                  align="left"
-                  onClick={() => handleSort("gitRepository")}
+              <div
+                className={`headerCell ${sortBy === "gitRepository" ? "active" : ""}`}
+                align="left"
+                onClick={() => handleSort("gitRepository")}
               >
-                Git Source{" "}               
+                Git Source{" "}
               </div>
-              <div  
-              className={`headerCell ${sortBy === "rating" ? "active" : ""}`}
-                  align="left"
-                  onClick={() => handleSort("rating")}
+              <div
+                className={`headerCell ${sortBy === "rating" ? "active" : ""}`}
+                align="left"
+                onClick={() => handleSort("rating")}
               >
-                Coin Score{" "}             
+                Coin Score{" "}
               </div>
-              <div  
-              className={`headerCell ${sortBy === "buysell" ? "active" : ""}`}
-                  align="left"
-                  onClick={() => handleSort("buysell")}
+              <div
+                className={`headerCell ${sortBy === "buysell" ? "active" : ""}`}
+                align="left"
+                onClick={() => handleSort("buysell")}
               >
-                Buy/Sell{" "}        
+                Buy/Sell{" "}                
               </div>
-    </div>
-            {              
-            sortedCoins.length === 0 ? (
+            </div>
+            {
+              sortedCoins.length === 0 ? (
                 <span>Loading...</span>
               ) : (
-                sortedCoins.map((coin, index) => (             
+                sortedCoins.map((coin, index) => (
                   <CoinTableRow
-                  coin={coin}        
-                  coinInputValues={coinInputValues} 
-                  handleInputChange={handleInputChange}     
-                  handleCoinPrediction={handleCoinPrediction}
-                  removeCoinHandler={removeCoinHandler}              
+                    coin={coin}
+                    coinInputValues={coinInputValues}
+                    handleInputChange={handleInputChange}
+                    handleCoinPrediction={handleCoinPrediction}
+                    removeCoinHandler={removeCoinHandler}
                   />
                 ))
               )
@@ -1189,14 +1789,13 @@ function Analysis() {
           </div>
         </div>
         <button
-              className="ui red basic button"
-              onClick={() => removeAllCoinsHandler()}
-          >
-              Delete All
+          className="ui red basic button"
+          onClick={() => removeAllCoinsHandler()}
+        >
+          Delete All
         </button>
       </div>
     </div>
   );
 }
-
 export default Analysis;

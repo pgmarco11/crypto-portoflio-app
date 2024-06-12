@@ -20,19 +20,12 @@ const PortfolioCoins = (props) => {
     const [portfolioValue, setPortfolioValue] = useState(0);
     const [chartData, setChartData] = useState(null);
 
-    console.log("PortfolioCoins prop 1: "+props.portfolioName);
-    console.log("PortfolioCoins prop 2: "+props.portfolioId);
-    console.log("props.portfolioId Portfolio ID: "+props.portfolioId)
-
     const portfolioId = props.portfolioId;
 
     useEffect(() => {
       api.get(`http://localhost:3006/portfolios/${portfolioId}`)
         .then(response => {
           setPortfolioCoins(response.data.coins); // Update the portfolioCoins state variable with the portfolio's coins data
-
-          console.log("date response.data : ",response.data)
-
           setPortfolioStartDate(response.data.start_date);
         })
         .catch(error => {
@@ -59,37 +52,21 @@ const PortfolioCoins = (props) => {
 
 
     useEffect(() => {
-        console.log("portfolioValue portfolioCoins chart: "+portfolioCoins);
-        console.log("portfolioValue portfolioCoins :"+parseInt(portfolioValue));      
-     
-
-        if ( parseInt(portfolioValue) > 0) {
-          console.log("portfolioValue portfolioCoins fetching chart: "+portfolioCoins);
+      
+        if ( parseInt(portfolioValue) > 0) {         
           setChartData(null)
-          fetchChartData(portfolioId, portfolioCoins);
-          console.log('chartData:', chartData);
+          fetchChartData(portfolioId, portfolioCoins);          
         }
 
-    }, [portfolioCoins,portfolioValue]);
-    
-    // Use another useEffect to handle chartData changes
-    useEffect(() => {
-      
-      if (chartData) {
-        console.log("chartData.data: ", chartData.data);
-      }
-    }, [chartData]);
+    }, [portfolioCoins,portfolioValue]);    
+
 
     async function getCoinAmount(coin, portfolioId) {
         try {
 
-          console.log("amount coin: ",coin)
-          console.log("amount portfolioId: ",portfolioId)
           const response = await api.get(`http://localhost:3006/portfolios/${portfolioId}`);
           const portfolio = response.data; // Assuming response.data is an object with properties
 
-          console.log("amount portfolio: ",portfolio)
-          console.log("amount portfolio.values: ",portfolio.values)
           
           // Check if the 'values' property exists and it is an array
           if (Array.isArray(portfolio.values)) {
@@ -106,43 +83,53 @@ const PortfolioCoins = (props) => {
         }
       };
 
-    function parseMessariResponse(apiResponse) {
+      function parseCryptoCompareResponse(apiResponse) {
         try {
-
-          console.log("apiResponse: ",apiResponse);
-          console.log("data apiResponse: ",apiResponse.data);
-          console.log("value apiResponse date: ",apiResponse.data.values[0][0])  
-          console.log("value apiResponse price: ",apiResponse.data.values[0][4]) 
-          
-          console.log("value apiResponse length: ",apiResponse.data.values.length)  
 
           let parsedData = {
             date: 0, //the timestamp
             price: 0 //price for the date
-          };          
+          }; 
+              
           
-          if(apiResponse.data.values.length !== 0){
+          if(apiResponse.Data.Data !== undefined){
 
             parsedData = {
-              date: apiResponse.data.values[0][0], //the timestamp
-              price: apiResponse.data.values[0][4] //price for the date
+              date: apiResponse.Data.Data[0].time, //the timestamp
+              price: apiResponse.Data.Data[0].close //price for the date
             };            
-
-            console.log("chartData parsedData values: ",parsedData)
-
-            console.log("chartData parsedData date values: ",parsedData.date)
-  
-            console.log("chartData parsedData price values: ",parsedData.price)
 
             return parsedData;
 
           } else {            
 
-            console.log("chartData parsedData : ",parsedData)
+                    return 0;
+          }      
+          
+        } catch (error) {
+          console.error('Error parsing Crypto compare API response:', error);
+          return []; // Return an empty array in case of any errors
+        }
+      }
 
-            console.log("chartData parsedData date: ",parsedData.date)
-  
-            console.log("chartData parsedData price: ",parsedData.price)
+    function parseMessariResponse(apiResponse) {
+        try {
+
+          let parsedData = {
+            date: 0, //the timestamp
+            price: 0 //price for the date
+          }; 
+          
+          if(apiResponse.data.values !== null){
+
+            parsedData = {
+              date: apiResponse.data.values[0][0], //the timestamp
+              price: apiResponse.data.values[0][4] //price for the date
+            }; 
+
+            return parsedData;
+
+          } else {            
 
             return 0;
           }      
@@ -153,149 +140,122 @@ const PortfolioCoins = (props) => {
         }
       }
 
-    async function fetchChartData(portfolioId,portfolioCoins) {
-
-      try {
-    
-        const today = new Date();
-        const twentyOneDaysAgo = new Date(today.getTime() - 21 * 24 * 60 * 60 * 1000); // 21 days ago
-        const portfolioStartDateHuman = new Date(portfolioStartDate * 1000);
-
-
-        console.log("chart portfolio json chart 1: "+portfolioStartDateHuman)
-        console.log("chart portfolio json chart 2: "+twentyOneDaysAgo)
-
-        const startDate =
-        portfolioStartDateHuman > twentyOneDaysAgo ? portfolioStartDateHuman : twentyOneDaysAgo;
-        
-        
-        console.log("chart portfolio date calc : "+twentyOneDaysAgo)
-        console.log("chart portfolio final date : "+startDate)
-        
+      async function fetchChartData(portfolioId, portfolioCoins) {
+        try {
+          const today = new Date();
+          const twentyOneDaysAgo = new Date(today.getTime() - 21 * 24 * 60 * 60 * 1000); // 21 days ago
+          const portfolioStartDateHuman = new Date(portfolioStartDate * 1000);
       
-        let totalPortfolioValues = [];
-        let dates = [];           
-        
-        
-        console.log("coinValues portfolioCoins twentyOneDaysAgo : ",twentyOneDaysAgo); 
-
-           
-          let updatePortfolioValue = 0;
-
-          console.log("chart portfolio startDate : ",startDate);   
-
-          // Loop for each day (21 days)
-            for (let i = 0; i < 21; i++) {   
+          const startDate =
+            portfolioStartDateHuman > twentyOneDaysAgo ? portfolioStartDateHuman : twentyOneDaysAgo;
       
-                const date = new Date(startDate.getTime() + i * 24 * 60 * 60 * 1000);
+          let totalPortfolioValues = [];
+          let dates = [];
+      
+          for (let i = 0; i < 21; i++) {
+            
+            const date = new Date(startDate.getTime() + i * 24 * 60 * 60 * 1000);
+            const dateString = date.toISOString().slice(0, 10);
+      
+            let updatePortfolioValue = 0; // Initialize the value for each day  
+      
+            for (const coin of portfolioCoins) {
+              const assetId = coin;
+      
+              try {
 
-                console.log("coinValues coin date 1 : ",date);   
-
-                const dateString = date.toISOString().slice(0, 10);    
-                
-                //reset price for day
-                updatePortfolioValue = 0;
-
-                for (const coin of portfolioCoins) {
-
-                  const assetId = coin;
-
-                  console.log("coinValues coin: " + assetId);
-                  console.log("coinValues coin date 2 : " + dateString);
-
-                  try {
-                    const response = await axios.get(
-                      `https://data.messari.io/api/v1/assets/${assetId}/metrics/price/time-series`,
-                      {
-                        params: {
-                          start: dateString,
-                          end: dateString,
-                          format: 'json',
-                          interval: '1d',
-                        },
-                      }
-                    );                    
-              
-                    const coinValues = parseMessariResponse(response.data);
-        
-                    let coinPrice = 0;
-                    let coinAmount = 0; 
-                    let coinValue = 0;                 
-
-                    if (coinValues) {
-
-                      console.log("coinValues messariResponse.data 2 : ", coinValues);
-                      console.log("coinValues messariResponse.data 3 : ", response.data);
-
-                      coinPrice = coinValues?.price || 0;
-                      coinAmount = await getCoinAmount(coin, portfolioId);                  
-                      coinValue = coinPrice * coinAmount;                              
-                      
-                      console.log("Total Portfolio Value ",updatePortfolioValue);      
-                      
-                      updatePortfolioValue = updatePortfolioValue + coinValue;                        
-                    
-                    }                    
-                  
-
-                  } catch (coinError) {
-                    console.error("Error fetching coin data:", coinError);
+                const response = await axios.get(
+                  `https://data.messari.io/api/v1/assets/${assetId}/metrics/price/time-series`,
+                  {
+                    params: {
+                      start: dateString,
+                      end: dateString,
+                      format: 'json',
+                      interval: '1d',
+                    },
                   }
+                ); 
+                                
+                let coinValues = parseMessariResponse(response.data)
 
-                } 
+                if(coinValues === 0 || coinValues === undefined ){                      
 
-                dates.push(dateString);
-                totalPortfolioValues.push(updatePortfolioValue);
+                  const backup_response = await axios.get(
+                    `https://min-api.cryptocompare.com/data/v2/histoday?fsym=${assetId}&tsym=USD&ts=${dateString}`
+                  ); 
 
-                console.log('Total Portfolio Value on ' + dateString + ' was ' + updatePortfolioValue);
+                  coinValues = parseCryptoCompareResponse(backup_response.data);
+
+                }         
+
+                let coinPrice = 0;
+                let coinAmount = 0;
+                let coinValue = 0;  
+                
+                console.log("coinValues: ",coinValues);               
+      
+                if (coinValues !== 0 && coinValues !== undefined) {
+                  coinPrice = coinValues?.price || 0;
+                  coinAmount = await getCoinAmount(coin, portfolioId);
+                  // Accumulate the coin values for the day             
+                }
+
+                console.log("coinValue: ",coinValue);
+                console.log("coinPrice: ",coinPrice);
+                console.log("coinAmount: ",coinAmount);
+
+                coinValue = coinPrice * coinAmount;
+                updatePortfolioValue += coinValue;
+
+              } catch (coinError) {
+                console.log("Error fetching coin data:", coinError);                
               }
-
-    
-    const chartData = {
-      labels: dates,
-      datasets: [
-        {
-          label: 'Portfolio Value',   
-          data: totalPortfolioValues,
-          fill: false,
-          borderColor: 'rgba(75,192,192,1)',
-          tension: 0.1,
-        },
-      ],            
-    };
-    
-    const chartOptions = {
-      scales: {
-        x: {
-          type: 'time',
-          time: {
-            unit: 'day',
-            displayFormats: {
-              day: 'MMM DD',
+            }
+      
+            dates.push(dateString);
+            totalPortfolioValues.push(updatePortfolioValue);      
+     
+          }
+      
+          // Rest of your code remains the same
+          const chartData = {
+            labels: dates,
+            datasets: [
+              {
+                label: 'Portfolio Value',
+                data: totalPortfolioValues,
+                fill: false,
+                borderColor: 'rgba(75,192,192,1)',
+                tension: 0.1,
+              },
+            ],
+          };
+      
+          const chartOptions = {
+            scales: {
+              x: {
+                type: 'time',
+                time: {
+                  unit: 'day',
+                  displayFormats: {
+                    day: 'MMM DD',
+                  },
+                },
+              },
             },
-          },
-        },
-      },
-    };
+          };
+      
+          setChartData({ data: chartData, options: chartOptions });
 
-    console.log('chartData:', chartData);
-
-    setChartData({ data: chartData, options: chartOptions }); 
-
-    console.log('chartData:', chartData);
-    
-    } catch (error) {
-
-      console.error(error);
-    }
-
-  }
-
+        } catch (error) {
+          console.error(error);
+        }
+      }
+      
 
     // Function to receive data from the child component
     async function handlePortoflioValue(data) {
-      // Use the data received from the child component
-      console.log("Update button setting setPortfolioValue:",data)    
+      // Use the data received from the child component   
       if(data > 0)  {
         setPortfolioValue(data);
       }
@@ -316,7 +276,6 @@ const PortfolioCoins = (props) => {
                 portfolio.coins = [selectedCoinId]; // If it doesn't exist, create a new array with the selected coin id
             }
             await api.patch(`http://localhost:3006/portfolios/${portfolioId}`, { coins: portfolio.coins } );
-            console.log(response.data);
             setSelectedCoinId(''); // reset selectedCoinId to the disabled option
             CoinRefresh();
          } catch (error) {
@@ -349,15 +308,13 @@ const PortfolioCoins = (props) => {
 
     if(chartData){
       chartDataObject = Object.values(chartData);
-      console.log('chartData chartDataObject:', chartDataObject);
-
     } 
 
     return (
       
     <div>
         <div className="portfolioValue">
-        <span className="left">Total:&nbsp;</span><div className="left">{portfolioValue.toLocaleString('en-US', {style: 'currency', currency: 'USD', minimumFractionDigits: 2})}</div>
+        <span className="left">Total:&nbsp;</span><div className="left">{portfolioValue?.toLocaleString('en-US', {style: 'currency', currency: 'USD', minimumFractionDigits: 2})}</div>
           <br/>
           <br/>
           {chartDataObject != null ? (

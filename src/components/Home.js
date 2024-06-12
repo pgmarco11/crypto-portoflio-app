@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom"
 import NewsFeed from './NewsFeed';
 import CurrencyConverter from './CurrencyConverter';
 import Portfolios from './Portfolios';

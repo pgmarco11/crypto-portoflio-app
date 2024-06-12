@@ -32,11 +32,19 @@ const PortfolioPage = (props) => {
 
     try {
 
+      console.log("help cachedCoinValues: ",cachedCoinValues)
+
     const cachedValue = cachedCoinValues[coinId];
 
     if (cachedValue !== undefined) {
-      return cachedValue * amount;
+
+      console.log("help cachedValue: ",cachedValue)
+
+      return cachedValue * amount;      
+
     } else {   
+
+      console.log("help coinId: ",coinId)
 
       const url = `https://min-api.cryptocompare.com/data/price?fsym=${coinId}&tsyms=USD`;
 
@@ -155,8 +163,7 @@ const PortfolioPage = (props) => {
                   portfolio,
                   'https://min-api.cryptocompare.com/data/v2/histoday?fsym='
                 );
-                console.log("portfolioValue : ",portfolioValue)
-
+           
                 grandTotal += portfolioValue;
                 totalValue24HoursAgo += portfolioValue24HoursAgo;
                 totalValue21DaysAgo += portfolioValue21DaysAgo;                
@@ -172,10 +179,7 @@ const PortfolioPage = (props) => {
   };
 
 
-  useEffect(() => {
-    
-    console.log("props.portfolios: "+props.portfolios);
-
+  useEffect(() => {   
     setPortfolios(props.portfolios); // Update the portfolios state when the prop changes
   }, [props.portfolios]);
 

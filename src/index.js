@@ -18,7 +18,7 @@ ReactDOM.render(
           <Route path="*" element={<Home />} />
           <Route path="/portfolios/*" element={<Portfolios />} />
           <Route path="/analysis/*" element={<Analysis />} />
-          <Route path="/portfolio" element={<Portfolio />} />
+          <Route path="/portfolio/*" element={<Portfolio />} />
         </Routes>
       </div>
     </>
