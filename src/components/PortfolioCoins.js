@@ -1,5 +1,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { Line, LineChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import axios from 'axios';
 import api from '../api/portfolios';
@@ -19,6 +21,7 @@ const PortfolioCoins = (props) => {
     const [isLoading, setIsLoading] = useState(false);
     const [portfolioValue, setPortfolioValue] = useState(0);
     const [chartData, setChartData] = useState(null);
+    
 
     const portfolioId = props.portfolioId;
 
@@ -29,7 +32,7 @@ const PortfolioCoins = (props) => {
           setPortfolioStartDate(response.data.start_date);
         })
         .catch(error => {
-          console.error(error);
+          console.log(error.message);
         });
     }, [portfolioId]);
 
@@ -45,7 +48,7 @@ const PortfolioCoins = (props) => {
           setIsLoading(false);
         })
         .catch((error) => {
-          console.error(error);
+          console.log(error.message);
           setIsLoading(false);
         });
     }, [portfolioId]);
@@ -78,7 +81,7 @@ const PortfolioCoins = (props) => {
           
 
         } catch (error) {
-          console.error(error);
+          console.log(error.message);
           return 0;
         }
       };
@@ -141,7 +144,7 @@ const PortfolioCoins = (props) => {
       }
 
       async function fetchChartData(portfolioId, portfolioCoins) {
-        try {
+    
           const today = new Date();
           const twentyOneDaysAgo = new Date(today.getTime() - 21 * 24 * 60 * 60 * 1000); // 21 days ago
           const portfolioStartDateHuman = new Date(portfolioStartDate * 1000);
@@ -161,10 +164,9 @@ const PortfolioCoins = (props) => {
       
             for (const coin of portfolioCoins) {
               const assetId = coin;
-      
+            
               try {
-
-                const response = await axios.get(
+                const response = await api.get(
                   `https://data.messari.io/api/v1/assets/${assetId}/metrics/price/time-series`,
                   {
                     params: {
@@ -174,41 +176,52 @@ const PortfolioCoins = (props) => {
                       interval: '1d',
                     },
                   }
-                ); 
-                                
-                let coinValues = parseMessariResponse(response.data)
-
-                if(coinValues === 0 || coinValues === undefined ){                      
-
+                );
+            
+                let coinValues = null;
+            
+                if (response.status === 400 || response.status === 404) {
                   const backup_response = await axios.get(
                     `https://min-api.cryptocompare.com/data/v2/histoday?fsym=${assetId}&tsym=USD&ts=${dateString}`
-                  ); 
-
+                  );
+            
                   coinValues = parseCryptoCompareResponse(backup_response.data);
+                } else {
 
-                }         
-
+                  coinValues = parseMessariResponse(response.data);
+            
+                  if (coinValues === 0 || coinValues === undefined) {
+                    const backup_response = await axios.get(
+                      `https://min-api.cryptocompare.com/data/v2/histoday?fsym=${assetId}&tsym=USD&ts=${dateString}`
+                    );
+                    coinValues = parseCryptoCompareResponse(backup_response.data);
+                  }
+                  
+                }
+            
                 let coinPrice = 0;
                 let coinAmount = 0;
-                let coinValue = 0;  
-                
-                console.log("coinValues: ",coinValues);               
-      
-                if (coinValues !== 0 && coinValues !== undefined) {
-                  coinPrice = coinValues?.price || 0;
-                  coinAmount = await getCoinAmount(coin, portfolioId);
-                  // Accumulate the coin values for the day             
+                let coinValue = 0;
+            
+                console.log("coinValues: ", coinValues);
+            
+                if (coinValues !== null) {
+                  if (coinValues !== 0 && coinValues !== undefined) {
+                    coinPrice = coinValues?.price || 0;
+                    coinAmount = await getCoinAmount(coin, portfolioId);
+                    // Accumulate the coin values for the day             
+                  }
+            
+                  console.log("coinValue: ", coinValue);
+                  console.log("coinPrice: ", coinPrice);
+                  console.log("coinAmount: ", coinAmount);
+            
+                  coinValue = coinPrice * coinAmount;
+                  updatePortfolioValue += coinValue;
                 }
-
-                console.log("coinValue: ",coinValue);
-                console.log("coinPrice: ",coinPrice);
-                console.log("coinAmount: ",coinAmount);
-
-                coinValue = coinPrice * coinAmount;
-                updatePortfolioValue += coinValue;
-
-              } catch (coinError) {
-                console.log("Error fetching coin data:", coinError);                
+              } catch (error) {
+                console.error(`Error fetching data for ${assetId}:`, error);
+                // Handle error (maybe continue to the next coin or retry logic)
               }
             }
       
@@ -247,9 +260,7 @@ const PortfolioCoins = (props) => {
       
           setChartData({ data: chartData, options: chartOptions });
 
-        } catch (error) {
-          console.error(error);
-        }
+
       }
       
 
@@ -270,17 +281,40 @@ const PortfolioCoins = (props) => {
         try {
             const response = await api.get(`http://localhost:3006/portfolios/${portfolioId}`);
             const portfolio = response.data;
-            if (portfolio.coins) { // Check if portfolio.coins exists
+
+            console.log("portfolio.coins: ",portfolio.coins)
+
+            if (portfolio.coins) { 
+
+              if (portfolio.coins.includes(selectedCoinId)) {
+                toast('Coin exists in portfolio', {
+                  position: "top-center",
+                    autoClose: 3000, // close after 3 seconds
+                    hideProgressBar: true,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                });                
+              } else {  
                 portfolio.coins.push(selectedCoinId);
+                
+                await api.patch(`http://localhost:3006/portfolios/${portfolioId}`, { coins: portfolio.coins });             
+                CoinRefresh();
+
+              }
+            
             } else {
-                portfolio.coins = [selectedCoinId]; // If it doesn't exist, create a new array with the selected coin id
+
+              portfolio.coins = [selectedCoinId]; // If it doesn't exist, create a new array with the selected coin id            
+              await api.patch(`http://localhost:3006/portfolios/${portfolioId}`, { coins: portfolio.coins });             
+              CoinRefresh();
+
             }
-            await api.patch(`http://localhost:3006/portfolios/${portfolioId}`, { coins: portfolio.coins } );
             setSelectedCoinId(''); // reset selectedCoinId to the disabled option
-            CoinRefresh();
+
          } catch (error) {
-            console.error(error);
-          }
+            console.log(error.message);
+        }
       };
 
     const handleSearch = debounce((e) => {
@@ -297,10 +331,10 @@ const PortfolioCoins = (props) => {
             setPortfolioCoins([]);
             const portfolio = response.data;            
             api.patch(`http://localhost:3006/portfolios/${portfolioId}`, { coins: portfolio.coins } );
-            setPortfolioCoins(response.data.coins); // update the portfolioCoins state variable with the portfolio's coins data
+            setPortfolioCoins(response.data.coins); 
         })
         .catch(error => {
-            console.error(error);
+            console.log(error.message);
         });
     };  
     
@@ -364,6 +398,7 @@ const PortfolioCoins = (props) => {
                             onClick={() => addCoinToPortfolio(selectedCoinId, portfolioId)}>
                                             Add to Portfolio
                             </button>
+                            <ToastContainer className="custom-toast-container" />
                             
                             <PortfolioCoinList 
                             id={portfolioId} 

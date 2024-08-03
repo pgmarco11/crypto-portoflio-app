@@ -291,7 +291,7 @@ select.currrency-options {
 }
 .coin-analysis {
   background-color: #fff;
-  border-radius: 8px;
+  border-radius: 0;
   overflow: hidden;
 }
 .coin-analysis .coin-table-header {
