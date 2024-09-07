@@ -44,17 +44,22 @@ nav {
     display: block;
   }
 
+.menu-list .portfolio-list li:hover {
+    background-color: #fff;    
+    transition: all 0.5s ease-in-out;
+}  
+.menu-list .portfolio-list li a:hover {
+    color:rgba(0,0,0,.9);
+}
+.menu-list li a:hover {
+    color: gold;
+}
 .menu-list li a {
     text-decoration: none;
     color: #fff;
     font-weight: 300;
     padding: 5px 10px;
     margin: 0 auto 0 20px;
-}
-.menu-list li a:hover {
-    background-color: #fff;
-    color:rgba(0,0,0,.9);
-    transition: all 0.5s ease-in-out;
 }
 .menu-list li a.active {
     background-color: #fff;
