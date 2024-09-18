@@ -455,6 +455,9 @@ const PortfolioCoinList = (props) => {
       if (coinName.charAt(0) === '-') {
         coinName = coinName.substring(1); // remove first character if it is a dash
       }
+      if (coinName.charAt(coinName.length - 1) === '-') {
+        coinName = coinName.substring(0, coinName.length - 1); // remove last character if it is a dash
+      }
       if (coinName.includes("travala")) {
          coinName = coinName.replace("travala", "concierge-io");
       }
@@ -530,9 +533,6 @@ const PortfolioCoinList = (props) => {
       if (coinName.includes("spool-dao")) {
         coinName = coinName.replace("spool-dao", "spool-dao-token");  
       }  
-      if (coinName.includes("bob-token")) {
-        coinId = coinId.replace("bobt", "bob");  
-      }
       if (coinName.includes("volt-inu")) {
         coinName = coinName.replace("volt-inu", "volt-inu-2");  
       }   
@@ -590,6 +590,9 @@ const PortfolioCoinList = (props) => {
       }
       if (coinName.includes("turbo")) {
         coinId = coinId.replace("turbot", "turbo");
+      }
+      if (coinName.includes("the-open-network")) {
+        coinId = coinId.replace("toncoin", "ton");
       }
      // GST-SOL
      if (coinName.includes("green-satoshi-token-(sol)") ) {  

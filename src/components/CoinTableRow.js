@@ -14,7 +14,6 @@ function CoinTableRow({ coin, coinInputValues, handleInputChange, handleCoinPred
 
   let formattedAvgGainPred; 
   let formattedGainPred;
-  let formattedtwitterFollowers;
   let formattedcoinMarketCap;
 
   if(!isNaN(coin.gainPrediction) || !isNaN(coin.avgGainPrediction)){
@@ -27,19 +26,19 @@ function CoinTableRow({ coin, coinInputValues, handleInputChange, handleCoinPred
     formattedGainPred = null;
   }
 
-  if(isNaN(coin.twitterFollowers) === true){
-    formattedtwitterFollowers = "Link";
-  } else {
-    formattedtwitterFollowers = coin.twitterFollowers;
-  }
-
   if(isNaN(coin.marketCap) === true){
     formattedcoinMarketCap = "-";
   } else {
     formattedcoinMarketCap = coin.marketCap;
   }
+  
 
- 
+  if(isNaN(coin.ninetyDaysPercentChange) === false){
+    coin.ninetyDaysPercentChange = coin.ninetyDaysPercentChange + "%";
+  } 
+
+  console.log("twitter url for "+coin.id+": "+coin.twitterURL);
+  console.log("twitter followers for "+coin.id+": "+coin.twitterFollowers);
 
   return (
     <>
@@ -65,7 +64,7 @@ function CoinTableRow({ coin, coinInputValues, handleInputChange, handleCoinPred
         {coin.oneYearBTCPriceChange}             
       </div>
       <div className="item rowCell" align="left" style={{ fontWeight: coin.ninetyDaysPercentChange && parseInt(coin.ninetyDaysPercentChange) > 14 ? 'bold' : 'normal' }}>
-        {coin.ninetyDaysPercentChange+"%"}
+        {coin.ninetyDaysPercentChange}
       </div>
       <div className="item rowCell" align="left" style={{ fontWeight: coin.inceptionPriceChange && parseInt(coin.inceptionPriceChange) > 50 ? 'bold' : 'normal' }}>
         {coin.inceptionPriceChange+"%"}
@@ -92,7 +91,13 @@ function CoinTableRow({ coin, coinInputValues, handleInputChange, handleCoinPred
         {coin.highestPricePercentage+"%" || "-"}
       </div>
       <div className="item rowCell" align="left" style={{ fontWeight: coin.twitterFollowers > 25000 ? 'bold' : 'normal' }}>
-        <a href={coin.twitterURL}>{formattedtwitterFollowers}</a>
+       { (isNaN(coin.twitterFollowers) || coin.twitterFollowers === null) && coin.twitterURL === null ? (
+          "N/A"
+        ) : isNaN(coin.twitterFollowers) || coin.twitterFollowers === null ? (
+          <a href={coin.twitterURL}>Link</a>
+        ) : (
+          <a href={coin.twitterURL}>{coin.twitterFollowers}</a>
+        )}
       </div>
       <div className="item rowCell" align="left">
         {coin.gitRepository !== "N/A" ? (

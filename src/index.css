@@ -146,11 +146,11 @@ span {
   padding: 0;
 }
 .headerCell {
-  width: 5.26%;
+  width: 5%;
   padding: 10px;
 }
 .rowCell {
-  width: 5.26%;
+  width: 5%;
   float: left;
   padding: 5px 0;
 }
@@ -159,7 +159,14 @@ span {
   background-color: #cfcfcf;
 }
 .coin-analysis .rowCell a {
-  font-size: .93rem;
+    font-size: .84rem;
+    font-weight: 500;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    align-items: center;
+    text-align: center;
+    padding: 0;
 }
 
 .coin-portfolio .headerCell {
@@ -309,7 +316,7 @@ select.currrency-options {
   align-items: center;
   padding: 10px 0;
   border-top: 1px solid #dee2e6;
-  font-size: .9rem;
+  font-size: .87rem;
 }
 .coin-analysis .ui.relaxed.divided.list .item:hover {
   background-color: #f8f9fa;
