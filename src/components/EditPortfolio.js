@@ -31,7 +31,7 @@ const EditPortoflio = (props) => {
 
         const updatedPortfolio = { ...props.portfolio, name: portfolioName };
 
-        await api.put(`http://localhost:3006/portfolios/${id}`, updatedPortfolio);
+        await api.put(`http://localhost:8888/portfolios/${id}`, updatedPortfolio);
 
         props.editPortfolioHandler(updatedPortfolio);
 

@@ -53,7 +53,7 @@ function CoinTable({ coinData, updateNoCoins }) {
         try {
             console.log("removeCoinHandler coinId: " + coinId);
     
-            const portfolios = await api.get("http://localhost:3006/portfolios");
+            const portfolios = await api.get("http://localhost:8888/portfolios");
             console.log("removeCoinHandler portfolios: ", portfolios.data);
     
             // Iterate over portfolios to find and update analysis
@@ -70,7 +70,7 @@ function CoinTable({ coinData, updateNoCoins }) {
                 console.log("removeCoinHandler updatedPortfolio: ", updatedPortfolio);
     
                 // Update the portfolio with the updated analysis
-                await api.put(`http://localhost:3006/portfolios/${portfolio.id}`, updatedPortfolio);
+                await api.put(`http://localhost:8888/portfolios/${portfolio.id}`, updatedPortfolio);
             }
     
             // Remove the coin from coinDataState to reflect the change in UI
@@ -85,17 +85,17 @@ function CoinTable({ coinData, updateNoCoins }) {
 
     async function removeAllCoinsHandler() {
         try {
-            const portfolios = await api.get("http://localhost:3006/portfolios");
+            const portfolios = await api.get("http://localhost:8888/portfolios");
     
             for (let i = 0; i < portfolios.data.length; i++) {
                 const portfolioId = portfolios.data[i].id;
     
                 // Update the portfolio data to remove all analysis
-                await api.patch(`http://localhost:3006/portfolios/${portfolioId}`, { analysis: [] });
+                await api.patch(`http://localhost:8888/portfolios/${portfolioId}`, { analysis: [] });
             }
     
             // After removing all coins, fetch updated portfolios data
-            const updatedPortfolios = await api.get(`http://localhost:3006/portfolios`);
+            const updatedPortfolios = await api.get(`http://localhost:8888/portfolios`);
     
             // Update state to reflect the updated portfolios
             setAnalysisCoins(updatedPortfolios.data);
@@ -142,7 +142,7 @@ function CoinTable({ coinData, updateNoCoins }) {
                 return;
             }
     
-            const apiUrl = `http://localhost:3006/portfolios`;
+            const apiUrl = `http://localhost:8888/portfolios`;
             const response = await axios.get(apiUrl);
             const portfolios = response.data;
     
@@ -153,7 +153,7 @@ function CoinTable({ coinData, updateNoCoins }) {
             }
     
             const portfolioId = portfolio.id;
-            const portfolioUrl = `http://localhost:3006/portfolios/${portfolioId}`;
+            const portfolioUrl = `http://localhost:8888/portfolios/${portfolioId}`;
             const responsePortfolio = await axios.get(portfolioUrl);
             const portfolioAnalysis = responsePortfolio.data;
     

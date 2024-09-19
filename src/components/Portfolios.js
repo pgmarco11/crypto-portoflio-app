@@ -14,13 +14,13 @@ const history = useNavigate();
 
 //Retrieve Portfolios
 const retrievePortfolios = async () => {
-    const response = await api.get("http://localhost:3006/portfolios");
+    const response = await api.get("http://localhost:8888/portfolios");
     setPortfolios(response.data); // Update the portfolios state with the received data
 };
 
 const updatePortfolioHandler = async (portfolio) => { 
     
-    const response = await api.put(`http://localhost:3006/portfolios/${portfolio.id}`, portfolio);      
+    const response = await api.put(`http://localhost:8888/portfolios/${portfolio.id}`, portfolio);      
 
     console.log("EDIT ID update:"+portfolio.id)
 
@@ -46,7 +46,7 @@ const addPortfolioHandler = async (portfolio) => {
     }       
 
     const response = await api.post(
-        "http://localhost:3006/portfolios", request)
+        "http://localhost:8888/portfolios", request)
 
 
     setPortfolios([ ...portfolios, response.data]);

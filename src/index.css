@@ -145,12 +145,14 @@ span {
   display: flex;
   padding: 0;
 }
+.headerCell, 
+.rowCell {
+  width: 5.24%;
+}
 .headerCell {
-  width: 5%;
   padding: 10px;
 }
 .rowCell {
-  width: 5%;
   float: left;
   padding: 5px 0;
 }
@@ -290,7 +292,7 @@ select.currrency-options {
   padding: 30px 15px;
 }
 .coin-table-row {
-  min-height: 64px;
+  min-height: 80px;
 }
 .coin-table-row input[type="number"] {
   border: 1px solid #000;
@@ -314,7 +316,7 @@ select.currrency-options {
   flex-wrap: wrap;
   justify-content: space-evenly;
   align-items: center;
-  padding: 10px 0;
+  padding: 8px 0 4px 0;
   border-top: 1px solid #dee2e6;
   font-size: .87rem;
 }

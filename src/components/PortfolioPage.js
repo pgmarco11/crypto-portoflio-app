@@ -189,7 +189,7 @@ const PortfolioPage = (props) => {
   }, [portfolios]);
 
   async function idPortfolioHandler(id) {
-    const response = await api.delete(`http://localhost:3006/portfolios/${id}`);
+    const response = await api.delete(`http://localhost:8888/portfolios/${id}`);
 
     if (response.status === 200) {
       const newPortfolioList = portfolios.filter((portfolio) => portfolio.id !== id);

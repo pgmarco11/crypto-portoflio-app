@@ -14,7 +14,7 @@ const Header = () => {
   const [showPortfolioList, setShowPortfolioList] = useState(false);
 
   useEffect(() => {
-    api.get('http://localhost:3006/portfolios/')
+    api.get('http://localhost:8888/portfolios/')
       .then((response) => setPortfolioData(response.data))
       .catch((error) => console.error('Error fetching portfolio data:', error));
   }, []);

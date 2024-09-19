@@ -26,7 +26,7 @@ const PortfolioCoins = (props) => {
     const portfolioId = props.portfolioId;
 
     useEffect(() => {
-      api.get(`http://localhost:3006/portfolios/${portfolioId}`)
+      api.get(`http://localhost:8888/portfolios/${portfolioId}`)
         .then(response => {
           setPortfolioCoins(response.data.coins); // Update the portfolioCoins state variable with the portfolio's coins data
           setPortfolioStartDate(response.data.start_date);
@@ -67,7 +67,7 @@ const PortfolioCoins = (props) => {
     async function getCoinAmount(coin, portfolioId) {
         try {
 
-          const response = await api.get(`http://localhost:3006/portfolios/${portfolioId}`);
+          const response = await api.get(`http://localhost:8888/portfolios/${portfolioId}`);
           const portfolio = response.data; // Assuming response.data is an object with properties
 
           
@@ -279,7 +279,7 @@ const PortfolioCoins = (props) => {
 
     async function addCoinToPortfolio(selectedCoinId, portfolioId) {
         try {
-            const response = await api.get(`http://localhost:3006/portfolios/${portfolioId}`);
+            const response = await api.get(`http://localhost:8888/portfolios/${portfolioId}`);
             const portfolio = response.data;
 
             console.log("portfolio.coins: ",portfolio.coins)
@@ -298,7 +298,7 @@ const PortfolioCoins = (props) => {
               } else {  
                 portfolio.coins.push(selectedCoinId);
                 
-                await api.patch(`http://localhost:3006/portfolios/${portfolioId}`, { coins: portfolio.coins });             
+                await api.patch(`http://localhost:8888/portfolios/${portfolioId}`, { coins: portfolio.coins });             
                 CoinRefresh();
 
               }
@@ -306,7 +306,7 @@ const PortfolioCoins = (props) => {
             } else {
 
               portfolio.coins = [selectedCoinId]; // If it doesn't exist, create a new array with the selected coin id            
-              await api.patch(`http://localhost:3006/portfolios/${portfolioId}`, { coins: portfolio.coins });             
+              await api.patch(`http://localhost:8888/portfolios/${portfolioId}`, { coins: portfolio.coins });             
               CoinRefresh();
 
             }
@@ -326,11 +326,11 @@ const PortfolioCoins = (props) => {
     };
 
     async function CoinRefresh () {
-        await api.get(`http://localhost:3006/portfolios/${portfolioId}`)
+        await api.get(`http://localhost:8888/portfolios/${portfolioId}`)
         .then(response => {
             setPortfolioCoins([]);
             const portfolio = response.data;            
-            api.patch(`http://localhost:3006/portfolios/${portfolioId}`, { coins: portfolio.coins } );
+            api.patch(`http://localhost:8888/portfolios/${portfolioId}`, { coins: portfolio.coins } );
             setPortfolioCoins(response.data.coins); 
         })
         .catch(error => {

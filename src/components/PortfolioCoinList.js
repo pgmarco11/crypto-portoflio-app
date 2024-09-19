@@ -49,7 +49,7 @@ const PortfolioCoinList = (props) => {
 
   async function updateAmtHandler(coinId) {
     try {
-      const response = await api.get(`http://localhost:3006/portfolios/${props.id}`);
+      const response = await api.get(`http://localhost:8888/portfolios/${props.id}`);
       const portfolio = response.data;  
       let portfolioValues = [...portfolio.values]; // Create a copy of the portfolio values array 
       const existingIndex = portfolioValues.findIndex((item) => item.coinId === coinId);
@@ -61,7 +61,7 @@ const PortfolioCoinList = (props) => {
         const newPortfolioAmount = { coinId: coinId, amount: inputValues[coinId] };
         portfolioValues.push(newPortfolioAmount);
       }  
-      await api.patch(`http://localhost:3006/portfolios/${props.id}`, { values: portfolioValues });
+      await api.patch(`http://localhost:8888/portfolios/${props.id}`, { values: portfolioValues });
       fetchData();
     } catch (error) {
       console.error(error);
@@ -172,7 +172,7 @@ const PortfolioCoinList = (props) => {
           }
   
           const portfolioData = await api.get(
-            `http://localhost:3006/portfolios/${props.id}`
+            `http://localhost:8888/portfolios/${props.id}`
           );
           const portfolio = portfolioData.data;
   
@@ -378,7 +378,7 @@ const PortfolioCoinList = (props) => {
     
     async function addAllCoinsToAnalysis() {
       try {
-        const response = await api.get(`http://localhost:3006/portfolios/${props.id}`);
+        const response = await api.get(`http://localhost:8888/portfolios/${props.id}`);
         const portfolio = response.data;
         if (!portfolio.analysis) {
             portfolio.analysis = [];
@@ -427,7 +427,7 @@ const PortfolioCoinList = (props) => {
             console.log("addcoinIdToAnalysis new filteredAnalysisItems: ", filteredAnalysisItems);
             console.log("addcoinIdToAnalysis new portfolio.analysis: ", portfolio.analysis);
     
-            await api.patch(`http://localhost:3006/portfolios/${props.id}`, { analysis: portfolio.analysis });
+            await api.patch(`http://localhost:8888/portfolios/${props.id}`, { analysis: portfolio.analysis });
     
             // Show success toast
             toast.success('All Coins added to analysis!', {
@@ -607,7 +607,7 @@ const PortfolioCoinList = (props) => {
 
     async function addcoinIdToAnalysis(coinId) {
           try {
-            const response = await api.get(`http://localhost:3006/portfolios/${props.id}`);
+            const response = await api.get(`http://localhost:8888/portfolios/${props.id}`);
             const portfolio = response.data;
 
             const coinNameData = await axios.get(`https://data-api.cryptocompare.com/asset/v1/data/by/symbol?asset_symbol=${coinId}&api_key=${process.env.REACT_APP_CRYPTOCOMPARE_API_KEY}`);
@@ -628,7 +628,7 @@ const PortfolioCoinList = (props) => {
             console.log("addcoinIdToAnalysis new analysisItem: ", analysisItem);
             console.log("addcoinIdToAnalysis new portfolio.analysis: ", portfolio.analysis);
 
-            await api.patch(`http://localhost:3006/portfolios/${props.id}`, { analysis: portfolio.analysis });
+            await api.patch(`http://localhost:8888/portfolios/${props.id}`, { analysis: portfolio.analysis });
 
             // Show success toast
             toast.success('Coin added to analysis!', {
@@ -650,7 +650,7 @@ const PortfolioCoinList = (props) => {
       // your logic to delete the coin from the API
       try { 
 
-          const response = await api.get(`http://localhost:3006/portfolios/${props.id}`);
+          const response = await api.get(`http://localhost:8888/portfolios/${props.id}`);
           const portfolio = response.data;
           
           // find the index of the coin in the portfolio's coins array
@@ -671,7 +671,7 @@ const PortfolioCoinList = (props) => {
             portfolio.coins.splice(coinIndex, 1);
 
             // update the portfolio with the new coins array
-            await api.patch(`http://localhost:3006/portfolios/${props.id}`, { coins: portfolio.coins, values: portfolio.values });       
+            await api.patch(`http://localhost:8888/portfolios/${props.id}`, { coins: portfolio.coins, values: portfolio.values });       
 
           } else {
 

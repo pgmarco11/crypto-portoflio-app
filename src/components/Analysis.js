@@ -23,12 +23,12 @@ function Analysis() {
 
   async function GetAnalysisCoins() {
       try {
-          const portfolios = await api.get("http://localhost:3006/portfolios");
+          const portfolios = await api.get("http://localhost:8888/portfolios");
           let allAnalysisCoins = [];
 
           for (let i = 0; i < portfolios.data.length; i++) {
               const response = await api.get(
-                `http://localhost:3006/portfolios/${portfolios.data[i].id}`
+                `http://localhost:8888/portfolios/${portfolios.data[i].id}`
               );
               let analysisCoins = response.data.analysis;
 
@@ -1444,7 +1444,7 @@ function Analysis() {
 
                   setTotalScore(total);
 
-                  const response = await api.get('http://localhost:3006/portfolios');
+                  const response = await api.get('http://localhost:8888/portfolios');
                   const portfolios = response.data;
                   let portfolioId = null;
                   let coinPrediction = null;
