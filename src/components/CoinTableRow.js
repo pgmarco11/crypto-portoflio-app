@@ -14,28 +14,16 @@ function CoinTableRow({ coin, coinInputValues, handleInputChange, handleCoinPred
 
   let formattedAvgGainPred; 
   let formattedGainPred;
-  let formattedcoinMarketCap;
 
   if(!isNaN(coin.gainPrediction) || !isNaN(coin.avgGainPrediction)){
     const coinGainPred  = coin.gainPrediction;
     const coinAvgGainPred  = coin.avgGainPrediction;
-    formattedAvgGainPred = parseFloat((coinAvgGainPred * 100).toFixed(4)) + '%';
-    formattedGainPred = parseFloat((coinGainPred * 100).toFixed(4)) + '%';
+    formattedAvgGainPred = parseFloat((coinAvgGainPred * 100).toFixed(4));
+    formattedGainPred = parseFloat((coinGainPred * 100).toFixed(4));
   } else {
-    formattedAvgGainPred = null;
-    formattedGainPred = null;
+    formattedAvgGainPred = parseInt(0);
+    formattedGainPred = parseInt(0);
   }
-
-  if(isNaN(coin.marketCap) === true){
-    formattedcoinMarketCap = "-";
-  } else {
-    formattedcoinMarketCap = coin.marketCap;
-  }
-  
-
-  if(isNaN(coin.ninetyDaysPercentChange) === false){
-    coin.ninetyDaysPercentChange = coin.ninetyDaysPercentChange + "%";
-  } 
 
   console.log("twitter url for "+coin.id+": "+coin.twitterURL);
   console.log("twitter followers for "+coin.id+": "+coin.twitterFollowers);
@@ -49,25 +37,25 @@ function CoinTableRow({ coin, coinInputValues, handleInputChange, handleCoinPred
           <div>{coin.name}</div>
         )}
       </div>
-      <div className="item rowCell" align="left">{formattedcoinMarketCap}</div>
+      <div className="item rowCell" align="left">{parseInt(coin.marketCap) || parseInt(0)}</div>
       <div className="item rowCell" align="left" style={{ fontWeight: coin.volume && parseInt(coin.volume) > 250000 ? 'bold' : 'normal' }}>
         {coin.volume}
       </div>
-      <div className="item rowCell" align="left">{coin.coinCurrentPrice}</div>
+      <div className="item rowCell" align="left">{parseFloat(coin.coinCurrentPrice)}</div>
       <div className="item rowCell" align="center" style={{ fontWeight: coin.oneYearPercentChange && parseInt(coin.oneYearPercentChange) > 2 ? 'bold' : 'normal' }}>
-        {coin.oneYearPercentChange+"%"}                 
+        {`${coin.oneYearPercentChange}%`}                 
       </div>
       <div className="item rowCell" align="left" style={{ fontWeight: coin.oneYearBTCPercentChange && parseFloat(coin.oneYearBTCPercentChange) > 2 ? 'bold' : 'normal' }}>
-        {coin.oneYearBTCPercentChange+"%"}
+       {`${coin.oneYearBTCPercentChange}%`}
       </div>   
       <div className="item rowCell" align="left" style={{ fontWeight: coin.oneYearBTCPriceChange && parseFloat(coin.oneYearBTCPriceChange) >  0.000001 ? 'bold' : 'normal' }}>
         {coin.oneYearBTCPriceChange}             
       </div>
       <div className="item rowCell" align="left" style={{ fontWeight: coin.ninetyDaysPercentChange && parseInt(coin.ninetyDaysPercentChange) > 14 ? 'bold' : 'normal' }}>
-        {coin.ninetyDaysPercentChange}
+        {`${coin.ninetyDaysPercentChange}%`}
       </div>
       <div className="item rowCell" align="left" style={{ fontWeight: coin.inceptionPriceChange && parseInt(coin.inceptionPriceChange) > 50 ? 'bold' : 'normal' }}>
-        {coin.inceptionPriceChange+"%"}
+        {`${coin.inceptionPriceChange}%`}
       </div>
       <div className="item rowCell" align="left" style={{ fontWeight: coin.maxChartGrade && parseInt(coin.maxChartGrade) > 50 ? 'bold' : 'normal' }}>
         {coin.maxChartGrade}
@@ -88,11 +76,11 @@ function CoinTableRow({ coin, coinInputValues, handleInputChange, handleCoinPred
         {formattedAvgGainPred}
       </div>
       <div className="item rowCell" align="left">
-        {coin.highestPricePercentage+"%" || "-"}
+        {`${parseFloat(coin.highestPricePercentage) || parseInt(0)}%`}
       </div>
       <div className="item rowCell" align="left" style={{ fontWeight: coin.twitterFollowers > 25000 ? 'bold' : 'normal' }}>
        { (isNaN(coin.twitterFollowers) || coin.twitterFollowers === null) && coin.twitterURL === null ? (
-          "N/A"
+          "No Twitter Data"
         ) : isNaN(coin.twitterFollowers) || coin.twitterFollowers === null ? (
           <a href={coin.twitterURL}>Link</a>
         ) : (
@@ -103,7 +91,7 @@ function CoinTableRow({ coin, coinInputValues, handleInputChange, handleCoinPred
         {coin.gitRepository !== "N/A" ? (
           <a href={coin.gitRepository}>Git</a>
         ) : (
-          "N/A"
+          "No Git Data"
         )}
       </div>
       <div className="item rowCell" align="left" style={{ fontWeight: parseInt(coin.rating) > 3 ? 'bold' : 'normal' }}>

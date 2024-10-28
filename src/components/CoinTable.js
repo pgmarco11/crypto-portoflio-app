@@ -21,12 +21,31 @@ function CoinTable({ coinData, updateNoCoins }) {
     const sortedCoins = coinDataState.slice().sort((a, b) => {
         const aValue = a[sortBy];
         const bValue = b[sortBy];
-        if (typeof aValue === 'string' && typeof bValue === 'string') {
-            return sortOrder === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
-        } else {
-            return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
+
+        const parsePercent = (value) => {
+            if (typeof value === 'string' && value.includes('%')) {
+                return parseFloat(value.replace('%', '')); // Return as a float
+            }
+            return value;
+        };
+    
+        // Convert to numbers while handling percentages
+        const aNumericValue = parsePercent(aValue);
+        const bNumericValue = parsePercent(bValue);
+    
+        // If both values are numbers, sort numerically
+        if (!isNaN(aNumericValue) && !isNaN(bNumericValue)) {
+            return sortOrder === 'asc' ? aNumericValue - bNumericValue : bNumericValue - aNumericValue;
         }
-    });
+    
+        // If both values are strings, sort alphabetically
+        if (typeof aNumericValue === 'string' && typeof bNumericValue === 'string') {
+            return sortOrder === 'asc' ? aNumericValue.localeCompare(bNumericValue) : bNumericValue.localeCompare(aNumericValue);
+        }
+    
+        // Default fallback for mixed types (string and number)
+        return sortOrder === 'asc' ? aNumericValue - bNumericValue : bNumericValue - aNumericValue;
+    });    
     
 
     async function handleInputChange(e, coinId) {
@@ -70,11 +89,11 @@ function CoinTable({ coinData, updateNoCoins }) {
                 console.log("removeCoinHandler updatedPortfolio: ", updatedPortfolio);
     
                 // Update the portfolio with the updated analysis
-                await api.put(`http://localhost:8888/portfolios/${portfolio.id}`, updatedPortfolio);
+                await api.patch(`http://localhost:8888/portfolios/${portfolio.id}`, updatedPortfolio);
             }
     
             // Remove the coin from coinDataState to reflect the change in UI
-            setCoinDataState(prevCoins => prevCoins.filter(coin => coin.id !== coinId)); // Use coin.id here, not coin.coinId
+            setCoinDataState(prevCoins => prevCoins.filter(coin => coin.id !== coinId));             
     
         } catch (error) {
             console.error("Error removing coin:", error);
@@ -184,7 +203,7 @@ function CoinTable({ coinData, updateNoCoins }) {
 
     async function handleCoinPrediction(
         predictionPrice,
-        current_price,
+        coinCurrentPrice,
         coinId,
         oneYearPercentChange,
         buysellrating,
@@ -211,11 +230,11 @@ function CoinTable({ coinData, updateNoCoins }) {
             if (!predictionPrice) {
                 predictionPrice = parseFloat(coin.prediction);
                 newGainPrediction = parseFloat(
-                    (predictionPrice - current_price) / current_price
+                    (predictionPrice - coinCurrentPrice) / coinCurrentPrice
                 );
             } else {
                 newGainPrediction = parseFloat(
-                    (parseFloat(predictionPrice) - current_price) / current_price
+                    (parseFloat(predictionPrice) - coinCurrentPrice) / coinCurrentPrice
                 );
             }
 
@@ -292,9 +311,9 @@ function CoinTable({ coinData, updateNoCoins }) {
                             Volume{" "}
                             </div>
                             <div
-                                className={`headerCell ${sortBy === "current_price" ? "active" : ""}`}
+                                className={`headerCell ${sortBy === "coinCurrentPrice" ? "active" : ""}`}
                                 align="left"
-                                onClick={() => handleSort("current_price")}
+                                onClick={() => handleSort("coinCurrentPrice")}
                             >
                             Price{" "}
                             </div>
@@ -394,7 +413,7 @@ function CoinTable({ coinData, updateNoCoins }) {
                                 align="left"
                                 onClick={() => handleSort("buysell")}
                             >
-                            Buy/Sell{" "}                
+                            Buy/Sell/Hodl{" "}                
                         </div>
                         </div>                           
                         {sortedCoins.map((coin) => (

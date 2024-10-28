@@ -24,9 +24,16 @@ const updatePortfolioHandler = async (portfolio) => {
 
     console.log("EDIT ID update:"+portfolio.id)
 
-    const updatedPortfolio = response.data;
+    const updatedPortfolio = response.data; 
 
-    setPortfolios(prevPortfolios => prevPortfolios.map(p => p.id === portfolio.id ? updatedPortfolio : p));
+    setPortfolios((prevPortfolios) =>
+        prevPortfolios.map((portfolio) =>
+            portfolio.id === updatedPortfolio.id ? updatedPortfolio : portfolio
+        )
+    );
+
+    // Fetch the updated list of portfolios from the server
+    await retrievePortfolios();
     
     return history("/");
 

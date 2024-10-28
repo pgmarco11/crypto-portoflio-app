@@ -26,13 +26,21 @@ const PortfolioCoins = (props) => {
     const portfolioId = props.portfolioId;
 
     useEffect(() => {
+      setIsLoading(true);
+      toast.info("Loading data..."); // Show loading toast
+    
       api.get(`http://localhost:8888/portfolios/${portfolioId}`)
         .then(response => {
-          setPortfolioCoins(response.data.coins); // Update the portfolioCoins state variable with the portfolio's coins data
+          setPortfolioCoins(response.data.coins);
           setPortfolioStartDate(response.data.start_date);
+          toast.dismiss(); 
         })
         .catch(error => {
           console.log(error.message);
+          toast.error("Failed to load data.");
+        })
+        .finally(() => {
+          setIsLoading(false);
         });
     }, [portfolioId]);
 
@@ -44,7 +52,7 @@ const PortfolioCoins = (props) => {
           `https://min-api.cryptocompare.com/data/all/coinlist?api_key=${process.env.REACT_APP_CRYPTOCOMPARE_API_KEY}`
         )
         .then((response) => {
-          setCoinData(Object.values(response.data.Data)); // extract array of coins from the Data property
+          setCoinData(Object.values(response.data.Data)); 
           setIsLoading(false);
         })
         .catch((error) => {
@@ -201,20 +209,14 @@ const PortfolioCoins = (props) => {
             
                 let coinPrice = 0;
                 let coinAmount = 0;
-                let coinValue = 0;
-            
-                console.log("coinValues: ", coinValues);
+                let coinValue = 0;   
             
                 if (coinValues !== null) {
                   if (coinValues !== 0 && coinValues !== undefined) {
                     coinPrice = coinValues?.price || 0;
                     coinAmount = await getCoinAmount(coin, portfolioId);
                     // Accumulate the coin values for the day             
-                  }
-            
-                  console.log("coinValue: ", coinValue);
-                  console.log("coinPrice: ", coinPrice);
-                  console.log("coinAmount: ", coinAmount);
+                  }  
             
                   coinValue = coinPrice * coinAmount;
                   updatePortfolioValue += coinValue;
@@ -282,13 +284,11 @@ const PortfolioCoins = (props) => {
             const response = await api.get(`http://localhost:8888/portfolios/${portfolioId}`);
             const portfolio = response.data;
 
-            console.log("portfolio.coins: ",portfolio.coins)
-
             if (portfolio.coins) { 
 
               if (portfolio.coins.includes(selectedCoinId)) {
                 toast('Coin exists in portfolio', {
-                  position: "top-center",
+                  position: toast.POSITION.TOP_CENTER,
                     autoClose: 3000, // close after 3 seconds
                     hideProgressBar: true,
                     closeOnClick: true,
@@ -297,9 +297,20 @@ const PortfolioCoins = (props) => {
                 });                
               } else {  
                 portfolio.coins.push(selectedCoinId);
+
+                console.log("Adding coin: ",selectedCoinId);
                 
                 await api.patch(`http://localhost:8888/portfolios/${portfolioId}`, { coins: portfolio.coins });             
                 CoinRefresh();
+
+                toast('Coin added to portfolio', {
+                  position: toast.POSITION.TOP_CENTER,
+                  autoClose: 3000, // close after 3 seconds
+                  hideProgressBar: true,
+                  closeOnClick: true,
+                  pauseOnHover: true,
+                  draggable: true    
+              });  
 
               }
             
@@ -324,19 +335,25 @@ const PortfolioCoins = (props) => {
     if(isLoading){
         return <p>Loading...</p>
     };
-
-    async function CoinRefresh () {
-        await api.get(`http://localhost:8888/portfolios/${portfolioId}`)
-        .then(response => {
-            setPortfolioCoins([]);
-            const portfolio = response.data;            
-            api.patch(`http://localhost:8888/portfolios/${portfolioId}`, { coins: portfolio.coins } );
-            setPortfolioCoins(response.data.coins); 
-        })
-        .catch(error => {
-            console.log(error.message);
+    async function CoinRefresh() {
+      try {
+        const response = await api.get(`http://localhost:8888/portfolios/${portfolioId}`);
+        const portfolio = response.data;
+        console.log("coin refresh: ", portfolio.coins);
+        
+        // Only update if there's a difference in the coins state
+        setPortfolioCoins(prevCoins => {
+          if (JSON.stringify(prevCoins) !== JSON.stringify(portfolio.coins)) {
+            return portfolio.coins;
+          }
+          return prevCoins;
         });
-    };  
+        
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+    
     
     let chartDataObject = null;
 
@@ -390,7 +407,6 @@ const PortfolioCoins = (props) => {
                                                             {coin.FullName}
                                                         </option>
                                         ))}
-
                                 
                                 </select>
 
@@ -398,6 +414,7 @@ const PortfolioCoins = (props) => {
                             onClick={() => addCoinToPortfolio(selectedCoinId, portfolioId)}>
                                             Add to Portfolio
                             </button>
+
                             <ToastContainer className="custom-toast-container" />
                             
                             <PortfolioCoinList 

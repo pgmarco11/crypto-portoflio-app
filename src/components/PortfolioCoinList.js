@@ -33,16 +33,23 @@ const PortfolioCoinList = (props) => {
 
   async function handleAmountChange(event, coinId) {
     const inputValue = event.target.value;
-    if (inputValue === '') {
+
+    console.log("inputValue old: "+coinId+" ",inputValue);
+
+    if (inputValue === ''|| inputValue === undefined) {
       setInputValues((prevInputValues) => ({
         ...prevInputValues,
-        [coinId]: ''
+        [coinId]: '' // Reset to empty if the input is cleared
       }));
     } else {  
-      const newValue = !isNaN(inputValue) ? inputValue : 0;    
+      const newValue = !isNaN(inputValue) ? parseFloat(inputValue) : 0; // Ensure value is a number
+
+      console.log("inputValue new: "+coinId+" ",newValue);
+
       setInputValues((prevInputValues) => ({
         ...prevInputValues,
-        [coinId]: newValue,
+        [coinId]: newValue, // Update the corresponding coin amount
+
       }));
     }          
   };
@@ -52,21 +59,46 @@ const PortfolioCoinList = (props) => {
       const response = await api.get(`http://localhost:8888/portfolios/${props.id}`);
       const portfolio = response.data;  
       let portfolioValues = [...portfolio.values]; // Create a copy of the portfolio values array 
+
+      console.log("portfolioValues: ",portfolioValues);
+  
       const existingIndex = portfolioValues.findIndex((item) => item.coinId === coinId);
+
+      console.log("existingIndex: ",existingIndex);
+  
       if (existingIndex !== -1) {
-        // If the coinId already exists in the portfolio, update the amount and patch api
-        portfolioValues[existingIndex].amount = inputValues[coinId];          
+        // If the coinId exists, update the amount
+        portfolioValues[existingIndex].amount = inputValues[coinId];
+
+        console.log("portfolioValues "+coinId+" ",portfolioValues[existingIndex]);
+        
+        console.log("inputValues: "+coinId+" ",inputValues[coinId]);
+  
       } else {
-        // If the coinId doesn't exist, create a new portfolio amount object
+        // If coinId doesn't exist, create a new entry
         const newPortfolioAmount = { coinId: coinId, amount: inputValues[coinId] };
+        console.log("newPortfolioAmount: "+coinId+" ",newPortfolioAmount);
+  
         portfolioValues.push(newPortfolioAmount);
-      }  
-      await api.patch(`http://localhost:8888/portfolios/${props.id}`, { values: portfolioValues });
-      fetchData();
+      }
+  
+      console.log("all inputValues: "+coinId+" ",inputValues);
+      console.log("inputValues: "+coinId+" ",inputValues[coinId]);
+
+      // Ensure the input value exists before making the patch request
+      if (inputValues[coinId]) {
+        await api.patch(`http://localhost:8888/portfolios/${props.id}`, { values: portfolioValues });
+        console.log("portfolioValues: "+coinId+" ",portfolioValues);
+
+        fetchData(); // Refresh data after patching
+      } else {
+        console.error('Amount is invalid or missing for coinId:', coinId);
+      }
     } catch (error) {
-      console.error(error);
+      console.error('Error updating portfolio:', error);
     }
   };
+  
   
   let portfolioTotalValue = [];     
 
@@ -402,18 +434,10 @@ const PortfolioCoinList = (props) => {
                 if (matchingCoin) {
                     coinId = matchingCoin;
                 }
-
-                console.log("addcoinIdToAnalysis old coinId: " + coinId);
-
-                console.log("addcoinIdToAnalysis old coinName: ", coinName);
-
+        
                 // Update coinId
                 let coinReplace = await coinID_replacements(coinName, coinId);
-
-                console.log("addcoinIdToAnalysis new coinName: ", coinReplace.coinName);
-
-                console.log("addcoinIdToAnalysis new coinId: ", coinReplace.coinId);
-
+       
                 return { coinName: coinReplace.coinName, coinId: coinReplace.coinId };
             } else {
                 return null; // Skip the coin with a 404 error
@@ -423,10 +447,7 @@ const PortfolioCoinList = (props) => {
         const analysisItems = await Promise.all(analysisItemsPromises);
         const filteredAnalysisItems = analysisItems.filter((item) => item !== null);
         portfolio.analysis.push(...filteredAnalysisItems);
-
-            console.log("addcoinIdToAnalysis new filteredAnalysisItems: ", filteredAnalysisItems);
-            console.log("addcoinIdToAnalysis new portfolio.analysis: ", portfolio.analysis);
-    
+   
             await api.patch(`http://localhost:8888/portfolios/${props.id}`, { analysis: portfolio.analysis });
     
             // Show success toast
@@ -604,107 +625,96 @@ const PortfolioCoinList = (props) => {
       return { coinName: coinName, coinId: coinId }
     }
 
-
     async function addcoinIdToAnalysis(coinId) {
-          try {
-            const response = await api.get(`http://localhost:8888/portfolios/${props.id}`);
-            const portfolio = response.data;
+      try {      
 
-            const coinNameData = await axios.get(`https://data-api.cryptocompare.com/asset/v1/data/by/symbol?asset_symbol=${coinId}&api_key=${process.env.REACT_APP_CRYPTOCOMPARE_API_KEY}`);
+        // Call the external API for coin details
+        const coinNameData = await axios.get(
+          `https://data-api.cryptocompare.com/asset/v1/data/by/symbol?asset_symbol=${coinId}&api_key=${process.env.REACT_APP_CRYPTOCOMPARE_API_KEY}`
+        );
 
-            let coinName = coinNameData.data.Data.NAME.toLowerCase();
+        let coinName = coinNameData.data.Data.NAME.toLowerCase();
+        let coinReplace = await coinID_replacements(coinName, coinId);
 
-            console.log("addcoinIdToAnalysis old coinName: " + coinName);
-            console.log("addcoinIdToAnalysis old coinId: " + coinId);
+        // Prepare the analysis item to be added
+        const analysisItem = { coinName: coinReplace.coinName, coinId: coinReplace.coinId };
 
-            let coinReplace = await coinID_replacements(coinName, coinId);
+        // Get the portfolio from the API
+        const response = await api.get(`http://localhost:8888/portfolios/${props.id}`);
+        const portfolio = response.data;
 
-            console.log("addcoinIdToAnalysis new coinName: " + coinReplace.coinName);
-            console.log("addcoinIdToAnalysis new coinId: ", coinReplace.coinId);
+        const updatedAnalysis = Array.isArray(portfolio.analysis)
+        ? [...portfolio.analysis, analysisItem]
+        : [analysisItem];        
 
-            const analysisItem = { coinName: coinReplace.coinName, coinId: coinReplace.coinId };
-            portfolio.analysis.push(analysisItem);
+        // PATCH request to update the server with the new analysis array
+        await api.patch(`http://localhost:8888/portfolios/${props.id}`, { analysis: updatedAnalysis });
 
-            console.log("addcoinIdToAnalysis new analysisItem: ", analysisItem);
-            console.log("addcoinIdToAnalysis new portfolio.analysis: ", portfolio.analysis);
-
-            await api.patch(`http://localhost:8888/portfolios/${props.id}`, { analysis: portfolio.analysis });
-
-            // Show success toast
-            toast.success('Coin added to analysis!', {
-                position: toast.POSITION.TOP_CENTER
-            });
-
-        } catch (error) {
-            if (error.response && error.response.status === 404) {
-                // Coin not found, skip it
-                console.error('Coin not found:', coinId);
-            } else {
-                // Handle other errors
-                console.error(error);
-            }
-        }
+        // Show success toast after completion
+        toast.success('Coin added to analysis!', {
+          position: toast.POSITION.TOP_CENTER,
+          autoClose: 3000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true
+        });
+      } catch (error) {
+        console.error('Error adding coin to analysis:', error);        
+      }
     }
 
     async function removeCoinHandler(coinId) {        
-      // your logic to delete the coin from the API
       try { 
-
-          const response = await api.get(`http://localhost:8888/portfolios/${props.id}`);
-          const portfolio = response.data;
-          
-          // find the index of the coin in the portfolio's coins array
-          if(coinId !== undefined){
-
-            const coinIndex = portfolio.coins.indexOf(coinId);            
-
-            if(portfolio.values !== undefined){   
-              const coinValue = portfolio.values.findIndex(value => value.coinId === coinId);
-              portfolio.values.splice(coinValue, 1);  
-            }
-            
-            if (coinIndex === -1) {
-            throw new Error(`Coin with id ${coinId} not found in portfolio with id ${props.id}`);
-            }
-
-            // remove the coin from the portfolio's coins array
-            portfolio.coins.splice(coinIndex, 1);
-
-            // update the portfolio with the new coins array
-            await api.patch(`http://localhost:8888/portfolios/${props.id}`, { coins: portfolio.coins, values: portfolio.values });       
-
-          } else {
-
-            throw new Error(`Coin with id ${coinId} not found in portfolio with id ${props.id}`);
-
-          }           
-
-          props.coinRefresh(); 
-          
-
-        } catch (error) {
-          console.log(error.message);
-        }
-  };   
-
-  const sortedCoins = coinData.slice().sort((a, b) => {
-    const aValue = a[sortBy];
-    const bValue = b[sortBy];
-
-
-     // Check if both values are strings before performing alphabetical sorting
-  if (typeof aValue === 'string' && typeof bValue === 'string') {
-    // Perform alphabetical sorting
-    return sortOrder === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
-  } else {
-
-    // If one or both values are not strings, maintain the existing order
-    return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
-
-  }  
+        const response = await api.get(`http://localhost:8888/portfolios/${props.id}`);
+        const portfolio = response.data;
+        
+        if (coinId !== undefined) {
+          const coinIndex = portfolio.coins.indexOf(coinId);            
     
-  });
+          if (portfolio.values !== undefined) {   
+            const coinValue = portfolio.values.findIndex(value => value.coinId === coinId);
+            portfolio.values.splice(coinValue, 1);  
+          }
+          
+          if (coinIndex === -1) {
+            throw new Error(`Coin with id ${coinId} not found in portfolio with id ${props.id}`);
+          }
+    
+          // Remove the coin from the portfolio's coins array
+          portfolio.coins.splice(coinIndex, 1);    
 
+          await api.patch(`http://localhost:8888/portfolios/${props.id}`, { coins: portfolio.coins, values: portfolio.values });   
+          
+          // Directly update coinData state after removing the coin          
+          setCoinData(prevCoins => prevCoins.filter(coin => coin.key !== coinId));
+    
+        } else {
+          throw new Error(`Coin with id ${coinId} not found in portfolio with id ${props.id}`);
+        }           
+    
+        // Call the CoinRefresh method directly to refresh the coins after the removal
+        await props.coinRefresh();
+    
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+  
+  
+
+    const sortedCoins = coinData
+    .slice() // Copy the array to avoid mutating the original state
+    .sort((a, b) => {
+      const aValue = a[sortBy];
+      const bValue = b[sortBy];
+  
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return sortOrder === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+      } else {
+        return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+    });
    
   if(props.portfolioCoins !== undefined){
 
@@ -833,7 +843,7 @@ const PortfolioCoinList = (props) => {
               ))
             )
           }
-          <ToastContainer className="custom-toast-container" />
+          
           <button className="ui button blue right" onClick={addAllCoinsToAnalysis}>Add All Coins to Analysis</button>
         </div>
       </div>

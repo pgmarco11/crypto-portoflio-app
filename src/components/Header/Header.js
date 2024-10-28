@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './../font-awesome/css/font-awesome.min.css';
 import './Header.css';
-import axios from 'axios';
 import api from '../../api/portfolios';
 import { MenuList } from './MenuList';
 import { Link, NavLink } from 'react-router-dom';
@@ -9,7 +8,6 @@ import { Link, NavLink } from 'react-router-dom';
 // Functional component
 const Header = () => {
   const [clicked, setClicked] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [portfolioData, setPortfolioData] = useState([]);
   const [showPortfolioList, setShowPortfolioList] = useState(false);
 
@@ -19,22 +17,20 @@ const Header = () => {
       .catch((error) => console.error('Error fetching portfolio data:', error));
   }, []);
 
-  const handleClick = () => {
-    if (menuList.some(({ title }) => title === 'Portfolios')) {
-      setShowPortfolioList(!showPortfolioList);
-    } else {
-      setClicked(!clicked);
-    }
+  const handleMenuIconClick = () => {
+    setClicked((prevClicked) => !prevClicked); // Toggle the clicked state
+  };
+
+  const handlePortfolioClick = () => {
+    setShowPortfolioList((prevShow) => !prevShow); // Toggle portfolio list visibility
   };
 
   const handleMouseEnter = () => {
-    if (menuList.some(({ title }) => title === 'Portfolios')) {
-      setShowPortfolioList(true);
-    }
+    setShowPortfolioList(true); // Show portfolio list on hover
   };
 
   const handleMouseLeave = () => {
-    setShowPortfolioList(false);
+    setShowPortfolioList(false); // Hide portfolio list when not hovering
   };
 
   const menuList = MenuList.map(({ url, title }, index) => {
@@ -43,9 +39,6 @@ const Header = () => {
         <li key={index}>
           <a
             href="/portfolios"
-            onClick={handleClick}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
             className="portfolio-link"
           >
             {title}
@@ -77,7 +70,6 @@ const Header = () => {
       );
     }
   });
-  
 
   return (
     <div className="app-header">
@@ -85,10 +77,12 @@ const Header = () => {
         <div className="logo">
           Digital<font> Crypto Zone</font>
         </div>
-        <div className="menu-icon" onClick={handleClick}>
+        <div className="menu-icon" onClick={handleMenuIconClick}>
           <i className={clicked ? 'fa fa-times' : 'fa fa-bars'}></i>
         </div>
-        <ul className={clicked ? 'menu-list open' : 'menu-list'}>{menuList}</ul>
+        <ul className={clicked ? 'menu-list open' : 'menu-list'} style={{ display: clicked ? 'block' : 'none' }}>
+          {menuList}
+        </ul>
       </nav>
     </div>
   );

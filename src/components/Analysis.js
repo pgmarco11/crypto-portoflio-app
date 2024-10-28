@@ -34,14 +34,19 @@ function Analysis() {
 
               console.log("analysisCoins 0: ",analysisCoins);
 
-              for (let value of analysisCoins) {
-                let coinNameAnalysis = value.coinName.replace(/\s+/g, '-'); // Replace spaces with hyphens
-                let coinIdAnalysis = value.coinId;
-                allAnalysisCoins.push({
-                    coinName: coinNameAnalysis,
-                    coinId: coinIdAnalysis,
-                });
-              }
+              if(analysisCoins && analysisCoins !== undefined){
+                for (let value of analysisCoins) {
+                  let coinNameAnalysis = value.coinName.replace(/\s+/g, '-'); // Replace spaces with hyphens
+                  let coinIdAnalysis = value.coinId;
+                  allAnalysisCoins.push({
+                      coinName: coinNameAnalysis,
+                      coinId: coinIdAnalysis,
+                  });
+                }
+              } else {
+                setNoCoins(true);
+              }             
+
           }
 
           setAnalysisCoins(allAnalysisCoins);
@@ -1268,9 +1273,12 @@ function Analysis() {
                              
 
                   if(twitterInfo !== false){
+                    console.log("sort twitterFollowers "+coinId+": ",twitterInfo.twitterFollowers);
                     twitterFollowers = parseInt(twitterInfo.twitterFollowers);
+
+                    console.log("sort twitterFollowers "+coinId+": ",twitterFollowers);
                     twitterURL = twitterInfo.twitterURL;                  
-                  }
+                  } 
 
                   if (twitterFollowers !== null && twitterFollowers > 25000) {
                     twitterScore = 1;                  
@@ -1605,13 +1613,13 @@ function Analysis() {
                   if(parseInt(coinMarketCap) === 0){
 
                     coinMarketCap = await fetchMarketCapWhenZero(coinId, coinName);
-                    coinMarketCap = parseInt(coinMarketCap);
-
-                    console.log("coinMarketCap after results: "+coinId+": ",coinMarketCap); 
+                    coinMarketCap = parseInt(coinMarketCap);                    
 
                   } else {
                     coinMarketCap = parseInt(coinMarketCap);
                   }
+
+                  console.log("sort coinMarketCap: "+coinId+": ",coinMarketCap); 
 
                   let coinCurrentPrice = parseFloat(latestPrice);
 
@@ -1683,9 +1691,9 @@ function Analysis() {
                   coinCurrentPrice = parseFloat(coinCurrentPrice);
                 
                   if (coinCurrentPrice > 0.00000001) {
-                    coinCurrentPrice = coinCurrentPrice.toFixed(8);
+                    coinCurrentPrice = parseFloat(coinCurrentPrice.toFixed(8));
                   } else {
-                    coinCurrentPrice = coinCurrentPrice.toFixed(12);
+                    coinCurrentPrice = parseFloat(coinCurrentPrice.toFixed(12));
                   }
                 
                   inceptionPriceChange = parseFloat(inceptionPriceChange);
@@ -1693,9 +1701,9 @@ function Analysis() {
                   if( isNaN(inceptionPriceChange) === false && inceptionPriceChange !== null){
                 
                     if (inceptionPriceChange > 0) {
-                      inceptionPriceChange = inceptionPriceChange.toFixed(4);
+                      inceptionPriceChange = parseInt(inceptionPriceChange.toFixed(4));
                     } else {
-                      inceptionPriceChange = inceptionPriceChange.toFixed(8);
+                      inceptionPriceChange = parseInt(inceptionPriceChange.toFixed(8));
                     }
                     console.log("inceptionPriceChange 1: ",inceptionPriceChange);
                 
@@ -1706,9 +1714,9 @@ function Analysis() {
                   if( isNaN(ninetyDaysPercentChange) === false && ninetyDaysPercentChange !== "N/A"){
                 
                     if (ninetyDaysPercentChange > 0) {
-                      ninetyDaysPercentChange = ninetyDaysPercentChange.toFixed(4);
+                      ninetyDaysPercentChange = parseFloat(ninetyDaysPercentChange.toFixed(4));
                     } else {
-                      ninetyDaysPercentChange = ninetyDaysPercentChange.toFixed(8);
+                      ninetyDaysPercentChange = parseFloat(ninetyDaysPercentChange.toFixed(8));
                     }
                 
                     console.log("3 month percentage ninetyDaysPercentChange 1: ",ninetyDaysPercentChange);
@@ -1720,9 +1728,9 @@ function Analysis() {
                   if( isNaN(highestPricePercentage) === false && highestPricePercentage !== null){
                 
                     if (highestPricePercentage > 0) {
-                      highestPricePercentage = highestPricePercentage.toFixed(4);
+                      highestPricePercentage = parseFloat(highestPricePercentage.toFixed(4));
                     } else {
-                      highestPricePercentage = highestPricePercentage.toFixed(8);
+                      highestPricePercentage = parseFloat(highestPricePercentage.toFixed(8));
                     }                 
                 
                   }

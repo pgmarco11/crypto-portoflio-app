@@ -32,19 +32,13 @@ const PortfolioPage = (props) => {
 
     try {
 
-      console.log("help cachedCoinValues: ",cachedCoinValues)
-
     const cachedValue = cachedCoinValues[coinId];
 
     if (cachedValue !== undefined) {
 
-      console.log("help cachedValue: ",cachedValue)
-
       return cachedValue * amount;      
 
     } else {   
-
-      console.log("help coinId: ",coinId)
 
       const url = `https://min-api.cryptocompare.com/data/price?fsym=${coinId}&tsyms=USD`;
 
@@ -189,12 +183,21 @@ const PortfolioPage = (props) => {
   }, [portfolios]);
 
   async function idPortfolioHandler(id) {
-    const response = await api.delete(`http://localhost:8888/portfolios/${id}`);
+        // Ask for confirmation before deleting
+        const confirmDelete = window.confirm("Are you sure you want to delete this portfolio?");
 
-    if (response.status === 200) {
-      const newPortfolioList = portfolios.filter((portfolio) => portfolio.id !== id);
-      setPortfolios(newPortfolioList);
-    }
+        // If the user confirms, proceed with deletion
+        if (confirmDelete) {
+            const response = await api.delete(`http://localhost:8888/portfolios/${id}`);
+    
+            if (response.status === 200) {
+                const newPortfolioList = portfolios.filter((portfolio) => portfolio.id !== id);
+                setPortfolios(newPortfolioList);
+            }
+        } else {
+            // Optionally handle if the user cancels the delete action
+            console.log("Deletion canceled");
+        }
   };
 
   function percent24Hours(grandTotal, totalValue24HoursAgo){
