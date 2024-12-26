@@ -62,7 +62,7 @@ span {
 }
 .ui.container.app {
   padding: 0.5% 10px 0.5%;
-  margin: 5px;
+  margin: 5px auto;
   text-align: left;
   height: 100%;
   width: 100%;
@@ -155,6 +155,7 @@ span {
 .item {
   display: flex;
   padding: 0;
+  align-items: center;
 }
 .headerCell, 
 .rowCell {
@@ -184,32 +185,44 @@ span {
 
 .coin-portfolio .headerCell {
   width: 10.9%;
+  text-align: left;
   padding: 5px 10px;
 }
 
 .coin-portfolio .rowCell {
   width: 10.9%;
-  margin: 5px 0;
+  margin: 15px auto;
+  justify-content: left;
   float: left;
+}
+.item.rowCell.image {
+  margin: 8px auto;
 }
 .coin-portfolio .rowCell img {
   width: 22.2%;
-  padding: 0px 4px 4px 4px;
+  padding: 0;
   margin-top: -5px;
 }
-button.ui.red.basic.button {
-  padding: 4px 3px;
-    font-size: .83em;
-    font-weight: bold;
-    color: #000 !important;
+.ui.button {
+  margin: 0 auto;
+  padding: 0.5rem 1rem;
+}
+button.ui.basic.button {
+  padding: .5rem;
+  font-size: .83em;
+  font-weight: bold;
+  color: #000 !important;
+}
+.item.btn-group button.ui.basic.button {
+    margin: 0 auto 0 .5rem;
+}
+.item.rowCell.button {
+  margin: 0;
 }
 .item.btn-group {
   position: relative;
   left: -55px;
 }
-
-
-
 @media (max-width: 767px) {
   .headerCell,
   .rowCell {
@@ -300,6 +313,7 @@ select.currrency-options {
 /* Added new CSS */
 
 /* Container styles */
+
 .analysis-main {
   max-width: 100%;
   margin: 0 auto;

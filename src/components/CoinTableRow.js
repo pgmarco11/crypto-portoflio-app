@@ -25,6 +25,8 @@ function CoinTableRow({ coin, coinInputValues, handleInputChange, handleCoinPred
     formattedGainPred = parseInt(0);
   }
 
+  console.log("test missing data name for "+coin.id+": "+coin.name);
+  
   console.log("twitter url for "+coin.id+": "+coin.twitterURL);
   console.log("twitter followers for "+coin.id+": "+coin.twitterFollowers);
 
@@ -41,7 +43,7 @@ function CoinTableRow({ coin, coinInputValues, handleInputChange, handleCoinPred
       <div className="item rowCell" align="left" style={{ fontWeight: coin.volume && parseInt(coin.volume) > 250000 ? 'bold' : 'normal' }}>
         {coin.volume}
       </div>
-      <div className="item rowCell" align="left">{parseFloat(coin.coinCurrentPrice)}</div>
+      <div className="item rowCell" align="left">{coin.coinCurrentPrice}</div>
       <div className="item rowCell" align="center" style={{ fontWeight: coin.oneYearPercentChange && parseInt(coin.oneYearPercentChange) > 2 ? 'bold' : 'normal' }}>
         {`${coin.oneYearPercentChange}%`}                 
       </div>

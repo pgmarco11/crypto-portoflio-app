@@ -18,18 +18,17 @@ const PortfolioCoinList = (props) => {
     }    
   }, [props.portfolioCoins]); 
 
-  useEffect(() => {
-    // Simulate loading data (you can replace this with your actual data fetching logic)
+  useEffect(() => {    
     setTimeout(() => {
       setIsLoading(false);
     }, 7000); // Adjust the time as needed
   }, []);
 
-  const handleSort = (attribute) => {
+  const handleSort = async (attribute) => {
     // Update sort order and attribute
     setSortOrder((prevSortOrder) => (prevSortOrder === "asc" ? "desc" : "asc"));
     setSortBy(attribute);
-  };  
+  }; 
 
   async function handleAmountChange(event, coinId) {
     const inputValue = event.target.value;
@@ -56,49 +55,235 @@ const PortfolioCoinList = (props) => {
 
   async function updateAmtHandler(coinId) {
     try {
-      const response = await api.get(`http://localhost:8888/portfolios/${props.id}`);
-      const portfolio = response.data;  
-      let portfolioValues = [...portfolio.values]; // Create a copy of the portfolio values array 
+        const response = await api.get(`http://localhost:8888/portfolios/${props.id}`);
+        const portfolio = response.data;
+        let portfolioValues = [...portfolio.values];
 
-      console.log("portfolioValues: ",portfolioValues);
-  
-      const existingIndex = portfolioValues.findIndex((item) => item.coinId === coinId);
+        const existingIndex = portfolioValues.findIndex((item) => item.coinId === coinId);
 
-      console.log("existingIndex: ",existingIndex);
-  
-      if (existingIndex !== -1) {
-        // If the coinId exists, update the amount
-        portfolioValues[existingIndex].amount = inputValues[coinId];
+        if (existingIndex !== -1) {
+            // Update the amount, even if it's 0 or explicitly provided
+            if (typeof inputValues[coinId] !== 'undefined' || inputValues[coinId] === 0) {
+              portfolioValues[existingIndex].amount = inputValues[coinId];
+              console.log("portfolioValues "+coinId+" ",portfolioValues[existingIndex]);
+              console.log("inputValues: "+coinId+" ",inputValues[coinId]);
+            } else {
+              console.error('Amount is invalid or missing for coinId:', coinId);
+              return; // Important: Exit the function if the input is invalid
+            }
+        } else {
+            // If coinId doesn't exist, create a new entry ONLY if inputValues[coinId] is defined and not an empty string
+            if (typeof inputValues[coinId] !== 'undefined' && inputValues[coinId] !== "") {
+              const newPortfolioAmount = { coinId: coinId, amount: inputValues[coinId] };
+              portfolioValues.push(newPortfolioAmount);
+              console.log("newPortfolioAmount: "+coinId+" ",newPortfolioAmount);
+            } else {
+              console.error('Amount is invalid or missing for coinId:', coinId);
+              return; // Exit if input is undefined or empty string
+            }
+        }
 
-        console.log("portfolioValues "+coinId+" ",portfolioValues[existingIndex]);
-        
+        console.log("all inputValues: "+coinId+" ",inputValues);
         console.log("inputValues: "+coinId+" ",inputValues[coinId]);
-  
-      } else {
-        // If coinId doesn't exist, create a new entry
-        const newPortfolioAmount = { coinId: coinId, amount: inputValues[coinId] };
-        console.log("newPortfolioAmount: "+coinId+" ",newPortfolioAmount);
-  
-        portfolioValues.push(newPortfolioAmount);
-      }
-  
-      console.log("all inputValues: "+coinId+" ",inputValues);
-      console.log("inputValues: "+coinId+" ",inputValues[coinId]);
+        console.log("portfolioValues after update: ", portfolioValues);
 
-      // Ensure the input value exists before making the patch request
-      if (inputValues[coinId]) {
         await api.patch(`http://localhost:8888/portfolios/${props.id}`, { values: portfolioValues });
-        console.log("portfolioValues: "+coinId+" ",portfolioValues);
+        console.log("portfolioValues after patch: "+coinId+" ",portfolioValues);
 
         fetchData(); // Refresh data after patching
-      } else {
-        console.error('Amount is invalid or missing for coinId:', coinId);
-      }
+
     } catch (error) {
-      console.error('Error updating portfolio:', error);
+        console.error('Error updating portfolio:', error);
+    }
+}
+  
+  async function coinID_replacements(coinName, coinId){   
+
+    console.log("coinID_replacements 0 coinName: "+coinName);
+    console.log("coinID_replacements 0 coinId: "+coinId);
+    coinId = coinId.toLowerCase();
+    coinName = coinName.toLowerCase();
+
+    console.log("coinID_replacements 1 coinName: "+coinName);
+    console.log("coinID_replacements 1 coinId: "+coinId);
+
+    if (coinName.includes(" ")) {
+      coinName = coinName.replace(/ /g, "-"); // replace all spaces with dashes
+    }
+    if (coinName.includes(".")) {
+      coinName = coinName.replace(".", "-"); // replace all dots with dashes
+    }
+    if (coinName.charAt(0) === '-') {
+      coinName = coinName.substring(1); // remove first character if it is a dash
+    }
+    if (coinName.charAt(coinName.length - 1) === '-') {
+      coinName = coinName.substring(0, coinName.length - 1); // remove last character if it is a dash
+    }
+    if (coinName.includes("stellite")) {
+      coinName = coinName.replace("stellite", "scala");
+    }
+    if (coinName.includes("travala")) {
+       coinName = coinName.replace("travala", "concierge-io");
+    }
+    if (coinName.includes("juno")) {
+      coinName = coinName.replace("juno", "juno-network");
+    }
+    if (coinName.includes("vectorspace-ai")) {
+      coinName = coinName.replace("vectorspace-ai", "vectorspace");
+    }
+    if (coinName.includes("solve")) {
+    coinName = coinName.replace("solve", "solve-care");
+    }
+    if (coinName.includes("retreeb")) {
+      coinName = coinName.replace("retreeb", "treeb");
+    }
+    if (coinName.includes("floki-inu")) {
+      coinName = coinName.replace("floki-inu", "floki");
+    }
+    if (coinName.includes("rich-quack")) {
+    coinName = coinName.replace("rich-quack", "richquack");
+    }
+    if (coinName.includes("xrp")) {
+      coinName = coinName.replace("xrp", "ripple");
+    }
+    if (coinName.includes("quant")) {
+      coinName = coinName.replace("quant", "quant-network");
+    }
+    if (coinName.includes("polygon")) {
+      coinName = coinName.replace("polygon", "matic-network");
+    }
+    if (coinName.includes("binance-coin")) {
+      coinName = coinName.replace("binance-coin", "binancecoin");
+    }
+    if (coinName.includes("avalanche")) {
+      coinName = coinName.replace("avalanche", "avalanche-2");
+    }
+    if (coinName.includes("cronos")) {
+      coinName = coinName.replace("cronos", "crypto-com-chain");
+    }
+    if (coinName.includes("egold")) {
+      coinName = coinName.replace("egold", "elrond-erd-2");
+    }
+    if (coinName.includes("haven-protocol")) {
+      coinName = coinName.replace("haven-protocol", "haven");
+    }
+    if (coinName.includes("firo")) {
+      coinName = coinName.replace("firo", "zcoin");
+    }
+    if (coinName.includes("stacks")) {
+      coinName = coinName.replace("stacks", "blockstack");
+    }
+    if (coinName.includes("conflux-network")) {
+      coinName = coinName.replace("conflux-network", "conflux-token");  
+    }
+    if (coinName.includes("babydoge")) {
+      coinName = coinName.replace("babydoge", "baby-doge-coin");  
+    }
+    if (coinName.includes("iotex-network")) {
+      coinName = coinName.replace("iotex-network", "iotex");  
+    }
+    if (coinName.includes("hello")) {
+      coinName = coinName.replace("hello", "hello-labs");  
+    }
+    if (coinName.includes("lukso")) {
+      coinName = coinName.replace("lukso", "lukso-token");  
+    }
+    if (coinName.includes("oasis-labs")) {
+      coinName = coinName.replace("oasis-labs", "oasis-network");  
+    }
+    if (coinName.includes("flux")) {
+      coinName = coinName.replace("flux", "zelcash");  
+    }
+    if (coinName.includes("spool-dao")) {
+      coinName = coinName.replace("spool-dao", "spool-dao-token");  
+    }  
+    if (coinName.includes("volt-inu")) {
+      coinName = coinName.replace("volt-inu", "volt-inu-2");  
+    }   
+    if (coinName.includes("theta-network")) {
+      coinName = coinName.replace("theta-network", "theta-token");
+    }   
+    if (coinName.includes("rocketpool")) {
+      coinName = coinName.replace("rocketpool", "rocket-pool");  
+    }
+    if (coinName.includes("conzelcash-token")) {
+      coinName = coinName.replace("conzelcash-token", "conflux-token");  
+    }
+    if (coinName.includes("ethereumpow")) {
+      coinName = coinName.replace("ethereumpow", "ethereum-pow-iou");  
+    }
+    if (coinName === "terra") {
+      coinName = coinName.replace("terra", "terra-luna-2");  
+    }
+    if (coinName === "terra-classic") {
+      coinName = coinName.replace("terra-classic", "terra-luna");  
+    }
+    if (coinName.includes("flare")) {
+      coinName = coinName.replace("flare", "flare-networks");         
+    }
+    if (coinName.includes("horizen")) {
+      coinName = coinName.replace("horizen", "zencash");  
+    }
+    if (coinName.includes("fun-token")) {
+      coinName = coinName.replace("fun-token", "funfair");  
+    }
+    if (coinName.includes("guaranteed-entrance-token")) {
+      coinName = coinName.replace("guaranteed-entrance-token", "get-token");  
+    }
+    if (coinName.includes("constellation")) {
+      coinName = coinName.replace("constellation", "constellation-labs");  
+    }
+    if (coinName.includes("pancakeswap")) {
+      coinName = coinName.replace("pancakeswap", "pancakeswap-token");  
+    }
+    if (coinName.includes("worldwide-asset-exchange")) {
+      coinName = coinName.replace("worldwide-asset-exchange", "wax");  
+    }
+    if (coinName.includes("render")) {
+      coinName = coinName.replace("render", "render-token");  
+    }
+    //concierge-io-com -> concierge-io
+    if (coinName.includes("concierge-io-com")) {
+      coinName = coinName.replace("concierge-io-com", "concierge-io");  
+    }
+    if (coinName.includes("spartan-casino")) {
+      coinName = coinName.replace("spartan-casino", "iron-fish");  
+    }
+    if (coinName.includes("gamestop")) {  
+      coinName = coinName.replace("gamestop", "gme");
+    }
+    if (coinName.includes("turbo")) {
+      coinId = coinId.replace("turbot", "turbo");
+    }
+    if (coinName.includes("the-open-network")) {
+      coinId = coinId.replace("toncoin", "ton");
+    }
+   // GST-SOL
+   if (coinName.includes("green-satoshi-token-(sol)") ) {  
+      coinName = coinName.replace("green-satoshi-token-(sol)", "green-satoshi-token");
+   }
+   if (coinName.includes("sedracoin")) {
+      coinName = coinName.replace("sedracoin", "sedra-coin");
+    }
+    if (coinName.includes("yadacoin")) {
+      coinName = coinName.replace("yadacoin", "yada-coin");
+    }
+    if (coinId.includes("gst-sol")) {  
+      coinId = coinId.replace("gst-sol", "gstsol");  
+    }
+    return { coinName: coinName, coinId: coinId }
+  }
+
+  const fetchCoinNameFromCoinGecko = async (coin) => {
+    try {
+      const response = await axios.get(`https://api.coingecko.com/api/v3/coins/list`);
+      const coinData = response.data.find((c) => c.symbol.toLowerCase() === coin.toLowerCase());
+      return coinData ? coinData.id : null; // Use `id` as it corresponds to the name used in CoinPaprika
+    } catch (error) {
+      console.error(`CoinGecko error for ${coin}:`, error);
+      return null;
     }
   };
-  
   
   let portfolioTotalValue = [];     
 
@@ -120,38 +305,36 @@ const PortfolioCoinList = (props) => {
         let imagePath = coinData ? `https://www.cryptocompare.com${coinData.IMAGEURL}` : '';
   
         if (!coinData || coinData.CONVERSIONTYPE === 'not_possible') {
-          // Try CoinPaprika API
+          // Fetch the full coin name for CoinPaprika
           try {
-            const coinPaprikaResponse = await axios.get(
-              `https://api.coinpaprika.com/v1/tickers/${coin.toLowerCase()}-usd`
-            );
-            coinData = {
-              PRICE: coinPaprikaResponse.data.quotes.USD.price,
-              MKTCAP: coinPaprikaResponse.data.quotes.USD.market_cap,
-            };
-            imagePath = coinPaprikaResponse.data.logo || ''; // Adjust the image path if needed
-            source = 'coinpaprika';
+            console.log("coinReplace Name coin: ",coin);
+
+            const coinName = await fetchCoinNameFromCoinGecko(coin);
+            let coinReplaceName = null;
+            if(coin){
+              coinReplaceName = await coinID_replacements(coinName, coin);
+            }
+
+            console.log("coinReplace Name: ",coinReplaceName.coinName);
+            console.log("coinReplace Id: ",coinReplaceName.coinId);
+
+            if (coinReplaceName && coinReplaceName !== null) {
+              const coinPaprikaResponse = await axios.get(
+                `https://api.coinpaprika.com/v1/tickers/${coin.toLowerCase()}-${coinReplaceName.coinName.toLowerCase()}`
+              );
+              coinData = {
+                PRICE: coinPaprikaResponse.data.quotes.USD.price,
+                MKTCAP: coinPaprikaResponse.data.quotes.USD.market_cap,
+              };
+              imagePath = coinPaprikaResponse.data.logo || ''; // Adjust the image path if needed
+              source = 'coinpaprika';
+            }
           } catch (error) {
             console.error(`CoinPaprika error for ${coin}:`, error);
           }
         }
-  
-        if (!coinData || coinData.PRICE === undefined) {
-          // Try Messari API
-          try {
-            const messariResponse = await axios.get(
-              `https://data.messari.io/api/v1/assets/${coin.toLowerCase()}/metrics`
-            );
-            coinData = {
-              PRICE: messariResponse.data.data.market_data.price_usd,
-              MKTCAP: messariResponse.data.data.marketcap.marketcap_dominance_percent,
-            };
-            imagePath = messariResponse.data.data.logo || ''; // Adjust the image path if needed
-            source = 'messari';
-          } catch (error) {
-            console.error(`Messari error for ${coin}:`, error);
-          }
-        }
+        
+        console.log(coin+" "+source+" coinData: ",coinData);    
   
         if (coinData && coinData.PRICE !== undefined) {
           let change24Hours = coinData.CHANGEPCT24HOUR ? coinData.CHANGEPCT24HOUR / 100 : null;
@@ -213,11 +396,15 @@ const PortfolioCoinList = (props) => {
           )?.amount;
   
           let value = 0;
+
+          console.log("update value "+coin+", amountValue: ",amountValue);
   
           if (amountValue !== 0) {
+            console.log("update value "+coin+", price: ",price)            
             const totalValue = amountValue * price;
-            value = isNaN(totalValue) ? 0 : totalValue;
+            value = isNaN(totalValue) ? 0 : totalValue;            
           }
+          console.log("update value "+coin+", value: ",value)
   
           if (value !== 0) {
             portfolioTotalValue.push(value);
@@ -240,9 +427,8 @@ const PortfolioCoinList = (props) => {
       }
   
       setCoinData(coinDataArray);
-  
+
       let portfolioValue = 0;
-  
       for (let v = 0; v < portfolioTotalValue.length; v++) {
         portfolioValue = portfolioValue + portfolioTotalValue[v];
       }
@@ -459,171 +645,7 @@ const PortfolioCoinList = (props) => {
         }
     };
 
-    async function coinID_replacements(coinName, coinId){   
-
-      coinId = coinId.toLowerCase();
-      coinName = coinName.toLowerCase();
-
-      console.log("analysis outside coinName: "+coinName);
-      console.log("analysis outside coinId: "+coinId);
-
-      if (coinName.includes(" ")) {
-        coinName = coinName.replace(/ /g, "-"); // replace all spaces with dashes
-      }
-      if (coinName.includes(".")) {
-        coinName = coinName.replace(".", "-"); // replace all dots with dashes
-      }
-      if (coinName.charAt(0) === '-') {
-        coinName = coinName.substring(1); // remove first character if it is a dash
-      }
-      if (coinName.charAt(coinName.length - 1) === '-') {
-        coinName = coinName.substring(0, coinName.length - 1); // remove last character if it is a dash
-      }
-      if (coinName.includes("travala")) {
-         coinName = coinName.replace("travala", "concierge-io");
-      }
-      if (coinName.includes("juno")) {
-        coinName = coinName.replace("juno", "juno-network");
-      }
-      if (coinName.includes("vectorspace-ai")) {
-        coinName = coinName.replace("vectorspace-ai", "vectorspace");
-      }
-      if (coinName.includes("solve")) {
-      coinName = coinName.replace("solve", "solve-care");
-      }
-      if (coinName.includes("retreeb")) {
-        coinName = coinName.replace("retreeb", "treeb");
-      }
-      if (coinName.includes("floki-inu")) {
-        coinName = coinName.replace("floki-inu", "floki");
-      }
-      if (coinName.includes("rich-quack")) {
-      coinName = coinName.replace("rich-quack", "richquack");
-      }
-      if (coinName.includes("xrp")) {
-        coinName = coinName.replace("xrp", "ripple");
-      }
-      if (coinName.includes("quant")) {
-        coinName = coinName.replace("quant", "quant-network");
-      }
-      if (coinName.includes("polygon")) {
-        coinName = coinName.replace("polygon", "matic-network");
-      }
-      if (coinName.includes("binance-coin")) {
-        coinName = coinName.replace("binance-coin", "binancecoin");
-      }
-      if (coinName.includes("avalanche")) {
-        coinName = coinName.replace("avalanche", "avalanche-2");
-      }
-      if (coinName.includes("cronos")) {
-        coinName = coinName.replace("cronos", "crypto-com-chain");
-      }
-      if (coinName.includes("egold")) {
-        coinName = coinName.replace("egold", "elrond-erd-2");
-      }
-      if (coinName.includes("haven-protocol")) {
-        coinName = coinName.replace("haven-protocol", "haven");
-      }
-      if (coinName.includes("firo")) {
-        coinName = coinName.replace("firo", "zcoin");
-      }
-      if (coinName.includes("stacks")) {
-        coinName = coinName.replace("stacks", "blockstack");
-      }
-      if (coinName.includes("conflux-network")) {
-        coinName = coinName.replace("conflux-network", "conflux-token");  
-      }
-      if (coinName.includes("babydoge")) {
-        coinName = coinName.replace("babydoge", "baby-doge-coin");  
-      }
-      if (coinName.includes("iotex-network")) {
-        coinName = coinName.replace("iotex-network", "iotex");  
-      }
-      if (coinName.includes("hello")) {
-        coinName = coinName.replace("hello", "hello-labs");  
-      }
-      if (coinName.includes("lukso")) {
-        coinName = coinName.replace("lukso", "lukso-token");  
-      }
-      if (coinName.includes("oasis-labs")) {
-        coinName = coinName.replace("oasis-labs", "oasis-network");  
-      }
-      if (coinName.includes("flux")) {
-        coinName = coinName.replace("flux", "zelcash");  
-      }
-      if (coinName.includes("spool-dao")) {
-        coinName = coinName.replace("spool-dao", "spool-dao-token");  
-      }  
-      if (coinName.includes("volt-inu")) {
-        coinName = coinName.replace("volt-inu", "volt-inu-2");  
-      }   
-      if (coinName.includes("theta-network")) {
-        coinName = coinName.replace("theta-network", "theta-token");
-      }   
-      if (coinName.includes("rocketpool")) {
-        coinName = coinName.replace("rocketpool", "rocket-pool");  
-      }
-      if (coinName.includes("conzelcash-token")) {
-        coinName = coinName.replace("conzelcash-token", "conflux-token");  
-      }
-      if (coinName.includes("ethereumpow")) {
-        coinName = coinName.replace("ethereumpow", "ethereum-pow-iou");  
-      }
-      if (coinName === "terra") {
-        coinName = coinName.replace("terra", "terra-luna-2");  
-      }
-      if (coinName === "terra-classic") {
-        coinName = coinName.replace("terra-classic", "terra-luna");  
-      }
-      if (coinName.includes("flare")) {
-        coinName = coinName.replace("flare", "flare-networks");         
-      }
-      if (coinName.includes("horizen")) {
-        coinName = coinName.replace("horizen", "zencash");  
-      }
-      if (coinName.includes("fun-token")) {
-        coinName = coinName.replace("fun-token", "funfair");  
-      }
-      if (coinName.includes("guaranteed-entrance-token")) {
-        coinName = coinName.replace("guaranteed-entrance-token", "get-token");  
-      }
-      if (coinName.includes("constellation")) {
-        coinName = coinName.replace("constellation", "constellation-labs");  
-      }
-      if (coinName.includes("pancakeswap")) {
-        coinName = coinName.replace("pancakeswap", "pancakeswap-token");  
-      }
-      if (coinName.includes("worldwide-asset-exchange")) {
-        coinName = coinName.replace("worldwide-asset-exchange", "wax");  
-      }
-      if (coinName.includes("render")) {
-        coinName = coinName.replace("render", "render-token");  
-      }
-      //concierge-io-com -> concierge-io
-      if (coinName.includes("concierge-io-com")) {
-        coinName = coinName.replace("concierge-io-com", "concierge-io");  
-      }
-      if (coinName.includes("spartan-casino")) {
-        coinName = coinName.replace("spartan-casino", "iron-fish");  
-      }
-      if (coinName.includes("gamestop")) {  
-        coinName = coinName.replace("gamestop", "gme");
-      }
-      if (coinName.includes("turbo")) {
-        coinId = coinId.replace("turbot", "turbo");
-      }
-      if (coinName.includes("the-open-network")) {
-        coinId = coinId.replace("toncoin", "ton");
-      }
-     // GST-SOL
-     if (coinName.includes("green-satoshi-token-(sol)") ) {  
-        coinName = coinName.replace("green-satoshi-token-(sol)", "green-satoshi-token");
-     }
-     if (coinId.includes("gst-sol")) {  
-        coinId = coinId.replace("gst-sol", "gstsol");  
-      }
-      return { coinName: coinName, coinId: coinId }
-    }
+    
 
     async function addcoinIdToAnalysis(coinId) {
       try {      
@@ -781,7 +803,7 @@ const PortfolioCoinList = (props) => {
           </div>
   
           {
-            sortedCoins.length !== 0 && isLoading ? (
+            sortedCoins.length === 0 && isLoading ? (
               <h3>Loading...</h3>
             ) : (
               sortedCoins.map((coin) => (
@@ -803,10 +825,10 @@ const PortfolioCoinList = (props) => {
                     />
                   </div>
                   <div className="item rowCell price">
-                    {coin?.PRICE?.toLocaleString('en-US', {style: 'currency', currency: 'USD', minimumFractionDigits: 5})}
+                    {coin?.PRICE?.toLocaleString('en-US', {style: 'currency', currency: 'USD', minimumFractionDigits: 4})}
                   </div>
                   <div className="item rowCell price">
-                    {coin?.VALUE?.toLocaleString('en-US', {style: 'currency', currency: 'USD', minimumFractionDigits: 2})}
+                    {coin?.VALUE?.toLocaleString('en-US', {style: 'currency', currency: 'USD', minimumFractionDigits: 4})}
                   </div>
                   <div className="item rowCell price">
                     {coin?.CHANGEPCT24HOUR?.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 2 })}

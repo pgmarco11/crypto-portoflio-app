@@ -216,8 +216,7 @@ const PortfolioCoins = (props) => {
                     coinPrice = coinValues?.price || 0;
                     coinAmount = await getCoinAmount(coin, portfolioId);
                     // Accumulate the coin values for the day             
-                  }  
-            
+                  }                      
                   coinValue = coinPrice * coinAmount;
                   updatePortfolioValue += coinValue;
                 }
@@ -418,12 +417,11 @@ const PortfolioCoins = (props) => {
                             <ToastContainer className="custom-toast-container" />
                             
                             <PortfolioCoinList 
-                            id={portfolioId} 
-                            portfolioCoins={portfolioCoins} 
+                            id={portfolioId}
+                            portfolioCoins={portfolioCoins}
                             coinRefresh={CoinRefresh} 
-                            sendValueToCoin={handlePortoflioValue}                                                                                
+                            sendValueToCoin={handlePortoflioValue}
                             />
-
                         </div> 
                         
                     </div>
